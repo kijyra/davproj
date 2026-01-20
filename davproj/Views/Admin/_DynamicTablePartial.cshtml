@@ -94,8 +94,17 @@
                                 var deleteUrl = Url.Action(deleteActionName, controllerName, new { id = idValue });
 
                                 <div class="btn-group btn-group-sm">
-                                    <a href="@editUrl" class="btn btn-outline-primary btn-open-modal">Редактировать</a>
-                                    <a href="@deleteUrl" class="btn btn-outline-danger btn-open-modal">Удалить</a>
+                                    <button type="button"
+                                            class="btn btn-outline-warning d-flex align-items-center btn-open-child-modal"
+                                            data-url="@editUrl">
+                                        Редактировать
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-outline-danger d-flex align-items-center btn-trigger-delete"
+                                            data-url="@deleteUrl"
+                                            data-url-template="@deleteUrl">
+                                        Удалить
+                                    </button>
                                 </div>
                             }
                         </td>

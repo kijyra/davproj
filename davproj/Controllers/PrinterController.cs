@@ -94,6 +94,7 @@ namespace davproj.Controllers
         {
             ViewData["workplaces"] = _db.Workplaces.ToList();
             ViewData["models"] = _db.PrinterModels.ToList();
+            ViewData["FormAction"] = "PrinterAdd";
             return PartialView("Printer");
         }
         [Authorize(Roles = "IT_Full")]
@@ -108,6 +109,7 @@ namespace davproj.Controllers
             }
             ViewData["workplaces"] = _db.Workplaces.ToList();
             ViewData["models"] = _db.PrinterModels.ToList();
+            ViewData["FormAction"] = "PrinterAdd";
             return PartialView("Printer", printer);
         }
         [Authorize(Roles = "IT_Full")]
@@ -120,6 +122,7 @@ namespace davproj.Controllers
             }
             ViewData["workplaces"] = _db.Workplaces.ToList();
             ViewData["models"] = _db.PrinterModels.ToList();
+            ViewData["FormAction"] = "PrinterEdit";
             Printer printer = _db.Printers.Find(id);
 
             if (printer != null)
@@ -140,6 +143,7 @@ namespace davproj.Controllers
             }
             ViewData["workplaces"] = _db.Workplaces.ToList();
             ViewData["models"] = _db.PrinterModels.ToList();
+            ViewData["FormAction"] = "PrinterEdit";
             return PartialView("Printer", printer);
         }
         [Authorize(Roles = "IT_Full")]
@@ -157,6 +161,7 @@ namespace davproj.Controllers
         [HttpGet]
         public IActionResult ManufactorAdd()
         {
+            ViewData["FormAction"] = "ManufactorAdd";
             return PartialView("Manufactor");
         }
         [Authorize(Roles = "IT_Full")]
@@ -169,6 +174,7 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, manufactor = new { id = manufactor.Id, title = manufactor.Name } });
             }
+            ViewData["FormAction"] = "ManufactorAdd";
             return PartialView("Manufactor", manufactor);
         }
         [Authorize(Roles = "IT_Full")]
@@ -179,6 +185,7 @@ namespace davproj.Controllers
             {
                 return NotFound();
             }
+            ViewData["FormAction"] = "ManufactorEdit";
             Manufactor manufactor = _db.Manufactors.Find(id);
             if (manufactor != null)
             {
@@ -196,6 +203,7 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, manufactor = new { id = manufactor.Id, title = manufactor.Name } });
             }
+            ViewData["FormAction"] = "ManufactorEdit";
             return PartialView("Manufactor", manufactor);
         }
         [Authorize(Roles = "IT_Full")]
@@ -213,7 +221,8 @@ namespace davproj.Controllers
         [HttpGet]
         public IActionResult CartridgeAdd()
         {
-            ViewData["manufactors"] = _db.Manufactors.ToList();   
+            ViewData["manufactors"] = _db.Manufactors.ToList();
+            ViewData["FormAction"] = "CartridgeAdd";
             return PartialView("Cartridge");
         }
         [Authorize(Roles = "IT_Full")]
@@ -227,6 +236,7 @@ namespace davproj.Controllers
                 return Json(new { success = true, cartridge = new { id = cartridge.Id, title = cartridge.Name } });
             }
             ViewData["manufactors"] = _db.Manufactors.ToList();
+            ViewData["FormAction"] = "CartridgeAdd";
             return PartialView("Cartridge", cartridge);
         }
         [Authorize(Roles = "IT_Full")]
@@ -239,6 +249,7 @@ namespace davproj.Controllers
             }
             Cartridge cartridge = _db.Cartridges.Find(id);
             ViewData["manufactors"] = _db.Manufactors.ToList();
+            ViewData["FormAction"] = "CartridgeEdit";
             if (cartridge != null)
             {
                 return PartialView("Cartridge", cartridge);
@@ -256,6 +267,7 @@ namespace davproj.Controllers
                 return Json(new { success = true, cartridge = new { id = cartridge.Id, title = cartridge.Name } });
             }
             ViewData["manufactors"] = _db.Manufactors.ToList();
+            ViewData["FormAction"] = "CartridgeEdit";
             return PartialView("Cartridge", cartridge);
         }
         [Authorize(Roles = "IT_Full")]
@@ -274,6 +286,7 @@ namespace davproj.Controllers
         public IActionResult PrinterModelAdd()
         {
             ViewData["cartridges"] = _db.Cartridges.Include(c => c.Manufactor).ToList();
+            ViewData["FormAction"] = "PrinterModelAdd";
             return PartialView("PrinterModel");
         }
         [Authorize(Roles = "IT_Full")]
@@ -287,6 +300,7 @@ namespace davproj.Controllers
                 return Json(new { success = true, printerModel = new { id = printerModel.Id, title = printerModel.Name } });
             }
             ViewData["cartridges"] = _db.Cartridges.Include(c => c.Manufactor).ToList();
+            ViewData["FormAction"] = "PrinterModelAdd";
             return PartialView("PrinterModel", printerModel);
         }
         [Authorize(Roles = "IT_Full")]
@@ -298,6 +312,7 @@ namespace davproj.Controllers
                 return NotFound();
             }
             ViewData["cartridges"] = _db.Cartridges.Include(c => c.Manufactor).ToList();
+            ViewData["FormAction"] = "PrinterModelEdit";
             PrinterModel printerModel = _db.PrinterModels.Find(id);
             if (printerModel != null)
             {
@@ -316,6 +331,7 @@ namespace davproj.Controllers
                 return Json(new { success = true, printerModel = new { id = printerModel.Id, title = printerModel.Name } });
             }
             ViewData["cartridges"] = _db.Cartridges.ToList();
+            ViewData["FormAction"] = "PrinterModelEdit";
             return PartialView("PrinterModel", printerModel);
         }
         [Authorize(Roles = "IT_Full")]

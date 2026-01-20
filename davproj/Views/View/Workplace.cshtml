@@ -6,7 +6,7 @@
     var pcs = ViewData["pcs"] as List<PC> ?? new List<PC>();
     var phones = ViewData["phones"] as List<Phone> ?? new List<Phone>();
 }
-<form method="post" asp-controller="View" asp-action="WorkplaceAdd">
+<form method="post" asp-controller="View" asp-action="@ViewData["FormAction"]">
     <div class="modal-header">
         <h5 class="modal-title">Изменение рабочего места</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
@@ -54,11 +54,11 @@
         <div class="input-group">
             <div class="form-floating">
                 <select class="form-select js-action-select"
-                        asp-for="User"
+                        asp-for="UserId"
                         asp-items="@(new SelectList(users, "Id", "FullName"))">
                     <option value="">-- Не выбран --</option>
                 </select>
-                <label asp-for="User">Выберите пользователя</label>
+                <label asp-for="UserId">Выберите пользователя</label>
             </div>
             <div class="btn-group">
                 <a class="btn btn-outline-info d-flex align-items-center btn-open-child-modal"
@@ -84,11 +84,11 @@
         <div class="input-group">
             <div class="form-floating">
                 <select class="form-select js-action-select"
-                        asp-for="PC"
+                        asp-for="PCId"
                         asp-items="@(new SelectList(pcs, "Id", "Hostname"))">
                     <option value="">-- Не выбран --</option>
                 </select>
-                <label asp-for="PC">Выберите компьютер</label>
+                <label asp-for="PCId">Выберите компьютер</label>
             </div>
             <div class="btn-group">
                 <a class="btn btn-outline-info d-flex align-items-center btn-open-child-modal"
@@ -114,11 +114,11 @@
         <div class="input-group">
             <div class="form-floating">
                 <select class="form-select js-action-select"
-                        asp-for="Phone"
+                        asp-for="PhoneId"
                         asp-items="@(new SelectList(phones, "Id", "Number"))">
                     <option value="">-- Не выбран --</option>
                 </select>
-                <label asp-for="PC">Выберите телефон</label>
+                <label asp-for="PhoneId">Выберите телефон</label>
             </div>
             <div class="btn-group">
                 <a class="btn btn-outline-info d-flex align-items-center btn-open-modal"
@@ -142,11 +142,11 @@
         <div class="input-group">
             <div class="form-floating">
                 <select class="form-select js-action-select"
-                        asp-for="Printer"
+                        asp-for="PrinterId"
                         asp-items="@(new SelectList(printers, "Id", "PrinterName"))">
                     <option value="">-- Не выбран --</option>
                 </select>
-                <label asp-for="PC">Выберите принтер</label>
+                <label asp-for="PrinterId">Выберите принтер</label>
             </div>
             <div class="btn-group">
                 <a class="btn btn-outline-info d-flex align-items-center btn-open-modal"

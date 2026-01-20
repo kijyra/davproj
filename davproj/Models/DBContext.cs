@@ -26,67 +26,47 @@ namespace davproj.Models
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // ОЧЕНЬ ВАЖНО: вызвать базовую реализацию в первую очередь
             base.OnModelCreating(modelBuilder);
-
-            // --- Отношения 1:1 (Внешний ключ находится в дочерней сущности) ---
-
-            // Workplace <--> Phone (FK находится в Phone: p.WorkplaceId)
+            // Связь с телефоном
             modelBuilder.Entity<Workplace>()
                 .HasOne(w => w.Phone)
                 .WithOne(p => p.Workplace)
-                .HasForeignKey<Phone>(p => p.WorkplaceId);
-
-            // Workplace <--> User (FK находится в User: u.WorkplaceId)
-            modelBuilder.Entity<Workplace>()
-                .HasOne(w => w.User)
-                .WithOne(u => u.Workplace)
-                .HasForeignKey<User>(u => u.WorkplaceId);
-
-            // Workplace <--> PC (FK находится в PC: p.WorkplaceId)
+                .HasForeignKey<Workplace>(w => w.PhoneId)
+                .IsRequired(false);
             modelBuilder.Entity<Workplace>()
                 .HasOne(w => w.PC)
                 .WithOne(p => p.Workplace)
-                .HasForeignKey<PC>(p => p.WorkplaceId);
-
-            // User <--> ADUser (FK находится в User: u.ADUserId)
+                .HasForeignKey<Workplace>(w => w.PCId)
+                .IsRequired(false);
+            modelBuilder.Entity<Workplace>()
+                .HasOne(w => w.User)
+                .WithOne(u => u.Workplace)
+                .HasForeignKey<Workplace>(w => w.UserId)
+                .IsRequired(false);
             modelBuilder.Entity<User>()
                  .HasOne(u => u.ADUser)
                  .WithOne(p => p.User)
                  .HasForeignKey<User>(u => u.ADUserId);
-
-            // --- Отношения 1:Many (Внешний ключ находится в родительской сущности) ---
-
-            // Workplace <--> Printer (FK находится в Workplace: w.PrinterId)
-            // Это ваша проблемная связь. Используем WithMany(), так как 1 принтер может быть у многих рабочих мест
             modelBuilder.Entity<Workplace>()
                 .HasOne(w => w.Printer)
-                .WithMany(p => p.Workplaces)     // Предполагаем, что у Printer есть ICollection<Workplace> Workplaces
+                .WithMany(p => p.Workplaces)    
                 .HasForeignKey(w => w.PrinterId)
-                .IsRequired(false);             // Разрешаем NULL (nullable int?)
-
-            // User <--> Printer (FK находится в User: u.PrinterId)
+                .IsRequired(false);           
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Printer)
-                .WithMany(p => p.Users)         // Предполагаем, что у Printer есть ICollection<User> Users
+                .WithMany(p => p.Users)         
                 .HasForeignKey(u => u.PrinterId)
                 .OnDelete(DeleteBehavior.SetNull);
-
-            // Building <--> Location (FK находится в Building: b.LocationId)
             modelBuilder.Entity<Building>()
                 .HasOne(b => b.Location)
                 .WithMany(l => l.Buildings)
                 .HasForeignKey(b => b.LocationId)
                 .OnDelete(DeleteBehavior.SetNull);
-
-            // Floor <--> Building (FK находится в Floor: f.BuildingId)
             modelBuilder.Entity<Floor>()
                 .HasOne(f => f.Building)
                 .WithMany(b => b.Floors)
                 .HasForeignKey(f => f.BuildingId)
                 .OnDelete(DeleteBehavior.SetNull);
-
-            // Office <--> Floor (FK находится в Office: o.FloorId)
             modelBuilder.Entity<Office>()
                 .HasOne(o => o.Floor)
                 .WithMany(f => f.Offices)

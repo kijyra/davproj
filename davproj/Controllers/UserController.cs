@@ -20,6 +20,7 @@ namespace davproj.Controllers
             ViewData["workplaces"] = _db.Workplaces.ToList();
             ViewData["adusers"] = _db.ADUsers.ToList();
             ViewData["printers"] = _db.Printers.ToList();
+            ViewData["FormAction"] = "UserAdd";
             return PartialView("User");
         }
         [Authorize(Roles = "IT_Full")]
@@ -30,11 +31,12 @@ namespace davproj.Controllers
             {
                 _db.Users.Add(user);
                 _db.SaveChanges();
-                return Json(new { success = true });
+                return Json(new { success = true, user = new { id = user.Id, title = user.FullName } });
             }
             ViewData["workplaces"] = _db.Workplaces.ToList();
             ViewData["adusers"] = _db.ADUsers.ToList();
             ViewData["printers"] = _db.Printers.ToList();
+            ViewData["FormAction"] = "UserAdd";
             return PartialView("User", user);
         }
         [Authorize(Roles = "IT_Full")]
@@ -52,6 +54,7 @@ namespace davproj.Controllers
                 ViewData["workplaces"] = _db.Workplaces.ToList();
                 ViewData["adusers"] = _db.ADUsers.ToList();
                 ViewData["printers"] = _db.Printers.ToList();
+                ViewData["FormAction"] = "UserEdit";
                 return PartialView("User", user);
             }
             return NotFound();
@@ -64,11 +67,12 @@ namespace davproj.Controllers
             {
                 _db.Entry(user).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 _db.SaveChanges();
-                return Json(new { success = true });
+                return Json(new { success = true, user = new { id = user.Id, title = user.FullName } });
             }
             ViewData["workplaces"] = _db.Workplaces.ToList();
             ViewData["adusers"] = _db.ADUsers.ToList();
             ViewData["printers"] = _db.Printers.ToList();
+            ViewData["FormAction"] = "UserEdit";
             return PartialView("User", user);
         }
         [Authorize(Roles = "IT_Full")]

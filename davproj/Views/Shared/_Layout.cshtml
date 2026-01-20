@@ -93,14 +93,14 @@
         <main role="main" class="pb-3">
             @RenderBody()
             
-            <div id="modal-container" class="modal fade" tabindex="-1" role="dialog">
+            <div id="modal-container" class="modal fade" role="dialog">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <!-- Модальные окна -->
                     </div>
                 </div>
             </div>
-            <div id="modal-container-child" class="modal fade" tabindex="-1" role="dialog">
+            <div id="modal-container-child" class="modal fade" role="dialog">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <!-- Вторые модальные окна -->
@@ -108,7 +108,7 @@
                 </div>
             </div>
             
-            <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal fade" id="deleteConfirmationModal" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -137,6 +137,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     <script type="text/javascript">
         $(function () {
             // --- 1. ОТКРЫТИЕ ДИНАМИЧЕСКИХ ОКОН ---
@@ -156,36 +157,42 @@
                 });
             });
 
-            // --- 2. САБМИТ ФОРМЫ ДОЧЕРНЕГО ОКНА (Второе окно) ---
-            $(document).on('submit', '#modal-container-child form', function (e) {
-                e.preventDefault();
-                var form = $(this);
-                $.ajax({
-                    url: form.attr('action'),
-                    type: 'POST',
-                    data: form.serialize(),
-                    dataType: 'json',
-                    success: function(data) {
-                        if (data.success) {
-                            $('#modal-container-child').modal('hide');
-                            if (data.office) {
-                                var newOption = new Option(data.office.title, data.office.id, true, true);
-                                var $targetSelect = $('.js-action-select.last-active-select');
-                                if ($targetSelect.length) {
-                                    $targetSelect.append(newOption).trigger('change');
-                                    $targetSelect.removeClass('last-active-select');
-                                } else {
-                                    $('.js-action-select').append(new Option(data.office.title, data.office.id));
-                                }
+                    // --- 2. САБМИТ ФОРМЫ ДОЧЕРНЕГО ОКНА (Второе окно) ---
+        $(document).on('submit', '#modal-container-child form', function (e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            var form = $(this);
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                success: function(data) {
+                    if (data.success) {
+                        if (data.item) {
+                            var $targetSelect = $('.js-action-select.last-active-select');
+                            if ($targetSelect.length) {
+                                var newOption = new Option(data.item.title, data.item.id, true, true);
+                                $targetSelect.append(newOption).trigger('change');
+                                $targetSelect.removeClass('last-active-select');
+                                $('#modal-container-child').modal('hide');
                             } else {
-                                location.reload();
+                                $('.js-action-select').append(new Option(data.item.title, data.item.id));
+                                $('#modal-container-child').modal('hide');
                             }
                         } else {
-                            $('#modal-container-child').find('.modal-content').html(data.responseText || data);
+                            location.reload();
                         }
+                    } else {
+                        $('#modal-container-child').find('.modal-content').html(data);
                     }
-                });
+                },
+                error: function(xhr) {
+                    console.error("AJAX Error in child modal submission");
+                    $('#modal-container-child').find('.modal-content').html(xhr.responseText);
+                }
             });
+        });
+
 
             // --- 3. САБМИТ ФОРМЫ РОДИТЕЛЬСКОГО ОКНА (Первое окно) ---
             $(document).on('submit', '#modal-container form', function (e) {
@@ -196,17 +203,17 @@
                     url: form.attr('action'),
                     type: 'POST',
                     data: form.serialize(),
-                    dataType: 'json',
                     success: function(data) {
                         if (data.success) {
                             $('#modal-container').modal('hide');
                             location.reload();
                         } else {
-                            $('#modal-container').find('.modal-content').html(data.responseText || data);
+                            $('#modal-container').find('.modal-content').html(data);
                         }
                     },
                     error: function(xhr) {
-                        console.error("AJAX Error");
+                        console.error("AJAX Error in main modal submission");
+                        $('#modal-container').find('.modal-content').html(xhr.responseText);
                     }
                 });
             });
@@ -216,14 +223,10 @@
                 e.preventDefault();
                 var actionUrl = $(this).attr('data-url');
                 var $confirmModal = $('#deleteConfirmationModal');
-                // returnUrl логика тут не нужна, если вы решили использовать location.reload()
-
                 if (actionUrl && actionUrl !== "0") {
-                    // Если контроллер ждет ID в теле формы:
                     var selectedId = actionUrl.split('/').pop();
                     $('#deleteObjectId').val(selectedId);
                     $('#deleteForm').attr('action', $(this).attr('data-url-template').replace('/0', ''));
-
                     $confirmModal.modal('show');
                 }
             });

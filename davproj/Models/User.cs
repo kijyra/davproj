@@ -20,12 +20,11 @@ namespace davproj.Models
         public string Position { get; set; }
         [DisplayName("ID в битриксе")]
         public int? Bitrix { get; set; }
-        public ADUser ADUser { get; set; }
+        public ADUser? ADUser { get; set; }
         [DisplayName("ID пользователя AD")]
         public int? ADUserId { get; set; }
         [DisplayName("ID рабочего места")]
-        public int? WorkplaceId { get; set; }
-        public Workplace Workplace { get; set; }
+        public Workplace? Workplace { get; set; }
         public Printer? Printer { get; set; }
         [DisplayName("ID принтера")]
         public int? PrinterId { get; set; }

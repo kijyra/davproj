@@ -149,6 +149,7 @@ namespace davproj.Controllers
                     .ThenInclude(pm => pm.Cartridge)
                     .ThenInclude(c => c.Manufactor)
                 .ToList();
+            ViewData["FormAction"] = "WorkplaceAdd";
             return PartialView("Workplace");
         }
         [Authorize(Roles = "IT_Full")]
@@ -159,9 +160,9 @@ namespace davproj.Controllers
             {
                 var printer = _db.Printers.Find(workplace.PrinterId);
                 var office = _db.Offices.Find(workplace.OfficeId);
-                var user = _db.Users.Find(workplace.User.Id);
-                var pc = _db.PCs.Find(workplace.PC.Id);
-                var phone = _db.Phones.Find(workplace.Phone.Id);
+                var user = _db.Users.Find(workplace.UserId);
+                var pc = _db.PCs.Find(workplace.PCId);
+                var phone = _db.Phones.Find(workplace.PhoneId);
                 if (printer != null)
                 {
                     workplace.Printer = printer;
@@ -199,6 +200,7 @@ namespace davproj.Controllers
                     .ThenInclude(pm => pm.Cartridge)
                     .ThenInclude(c => c.Manufactor)
                 .ToList();
+            ViewData["FormAction"] = "WorkplaceAdd";
             return PartialView("Workplace", workplace);
         }
         [Authorize(Roles = "IT_Full")]
@@ -226,6 +228,7 @@ namespace davproj.Controllers
                         .ThenInclude(pm => pm.Cartridge)
                         .ThenInclude(c => c.Manufactor)
                     .ToList();
+                ViewData["FormAction"] = "WorkplaceEdit";
                 return PartialView("Workplace", workplace);
             }
             return NotFound();
@@ -238,9 +241,9 @@ namespace davproj.Controllers
             {
                 var printer = _db.Printers.Find(workplace.PrinterId);
                 var office = _db.Offices.Find(workplace.OfficeId);
-                var user = _db.Users.Find(workplace.User.Id);
-                var pc = _db.PCs.Find(workplace.PC.Id);
-                var phone = _db.Phones.Find(workplace.Phone.Id);
+                var user = _db.Users.Find(workplace.UserId);
+                var pc = _db.PCs.Find(workplace.PCId);
+                var phone = _db.Phones.Find(workplace.PhoneId);
                 if (printer != null)
                 {
                     workplace.Printer = printer;
@@ -278,6 +281,7 @@ namespace davproj.Controllers
                     .ThenInclude(pm => pm.Cartridge)
                     .ThenInclude(c => c.Manufactor)
                 .ToList();
+            ViewData["FormAction"] = "WorkplaceEdit";
             return PartialView("Workplace", workplace);
         }
         [Authorize(Roles = "IT_Full")]

@@ -6,7 +6,7 @@
     var printers = ViewData["printers"] as List<Printer>;
 }
     
-<form method="post" asp-controller="User" asp-action="UserAdd">
+<form method="post" asp-controller="User" asp-action="@ViewData["FormAction"]">
     <div class="p-2 bd-highlight">
         <h3>Редактирование пользователя</h3>
         <div asp-validation-summary="All" class="text-danger"></div>
@@ -49,11 +49,11 @@
         </div>
         <div class="form-floating">
             <select class="form-select"
-                    asp-for="WorkplaceId"
+                    asp-for="Workplace"
                     asp-items="@(new SelectList(workplacelist, "Id", "Name"))">
                 <option value="">-- Не выбрано --</option>
             </select>
-            <label asp-for="WorkplaceId">Выберите рабочее место</label>
+            <label asp-for="Workplace">Выберите рабочее место</label>
         </div>
         <div class="input-group">
             <div class="form-floating">

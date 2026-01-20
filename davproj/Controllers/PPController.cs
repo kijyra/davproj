@@ -16,6 +16,7 @@ namespace davproj.Controllers
         public IActionResult PhoneAdd()
         {
             ViewData["workplaces"] = _db.Workplaces.ToList();
+            ViewData["FormAction"] = "PhoneAdd";
             return PartialView("Phone");
         }
         [Authorize(Roles = "IT_Full")]
@@ -29,6 +30,7 @@ namespace davproj.Controllers
                 return Json(new { success = true, phone = new { id = phone.Id, title = phone.Number } });
             }
             ViewData["workplaces"] = _db.Workplaces.ToList();
+            ViewData["FormAction"] = "PhoneAdd";
             return PartialView("Phone", phone);
         }
         [Authorize(Roles = "IT_Full")]
@@ -43,6 +45,7 @@ namespace davproj.Controllers
             if (phone != null)
             {
                 ViewData["workplaces"] = _db.Workplaces.ToList();
+                ViewData["FormAction"] = "PhoneEdit";
                 return PartialView("Phone", phone);
             }
             return NotFound();
@@ -58,6 +61,7 @@ namespace davproj.Controllers
                 return Json(new { success = true, phone = new { id = phone.Id, title = phone.Number } });
             }
             ViewData["workplaces"] = _db.Workplaces.ToList();
+            ViewData["FormAction"] = "PhoneEdit";
             return PartialView("Phone", phone);
         }
         [Authorize(Roles = "IT_Full")]
@@ -69,13 +73,14 @@ namespace davproj.Controllers
             if (phone == null) { return NotFound(); }
             _db.Phones.Remove(phone);
             _db.SaveChanges();
-            return Ok();
+            return Json(new { success = true });
         }
         [Authorize(Roles = "IT_Full")]
         [HttpGet]
         public IActionResult PCAdd()
         {
             ViewData["workplaces"] = _db.Workplaces.ToList();
+            ViewData["FormAction"] = "PCAdd";
             return PartialView("PC");
         }
         [Authorize(Roles = "IT_Full")]
@@ -89,6 +94,7 @@ namespace davproj.Controllers
                 return Json(new { success = true, pc = new { id = pc.Id, title = pc.Hostname } });
             }
             ViewData["workplaces"] = _db.Workplaces.ToList();
+            ViewData["FormAction"] = "PCAdd";
             return PartialView("PC", pc);
         }
         [Authorize(Roles = "IT_Full")]
@@ -103,6 +109,7 @@ namespace davproj.Controllers
             if (pc != null)
             {
                 ViewData["workplaces"] = _db.Workplaces.ToList();
+                ViewData["FormAction"] = "PCEdit";
                 return PartialView("PC", pc);
             }
             return NotFound();
@@ -118,6 +125,7 @@ namespace davproj.Controllers
                 return Json(new { success = true, pc = new { id = pc.Id, title = pc.Hostname } });
             }
             ViewData["workplaces"] = _db.Workplaces.ToList();
+            ViewData["FormAction"] = "PCEdit";
             return PartialView("PC", pc);
         }
         [Authorize(Roles = "IT_Full")]
@@ -129,7 +137,7 @@ namespace davproj.Controllers
             if (pc == null) { return NotFound(); }
             _db.PCs.Remove(pc);
             _db.SaveChanges();
-            return Ok();
+            return Json(new { success = true });
         }
     }
 }

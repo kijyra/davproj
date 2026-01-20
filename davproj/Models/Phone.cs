@@ -23,7 +23,5 @@ namespace davproj.Models
         [DisplayName("Номер")]
         public int Number {  get; set; }
         public Workplace? Workplace { get; set; }
-        [DisplayName("ID рабочего места")]
-        public int? WorkplaceId { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 @{
     var locationsList = ViewData["Locations"] as List<Location>;
 }
-<form method="post" asp-controller="Geo" asp-action="BuildingAdd">
+<form method="post" asp-controller="Geo" asp-action="@ViewData["FormAction"]">
     <div class="modal-header">
         <h5 class="modal-title">Редактирование здания</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>

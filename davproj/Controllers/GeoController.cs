@@ -25,6 +25,7 @@ namespace davproj.Controllers
         [HttpGet]
         public IActionResult LocationAdd()
         {
+            ViewData["FormAction"] = "LocationAdd";
             return PartialView("Location");
         }
         [Authorize(Roles = "IT_Full")]
@@ -37,6 +38,7 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, location = new { id = location.Id, title = location.Name } });
             }
+            ViewData["FormAction"] = "LocationAdd";
             return PartialView("Location", location);
         }
         [Authorize(Roles = "IT_Full")]
@@ -48,6 +50,7 @@ namespace davproj.Controllers
                 return NotFound();
             }
             Location location = _db.Locations.Find(id);
+            ViewData["FormAction"] = "LocationEdit";
             if (location != null)
             {
                 return PartialView("Location", location);
@@ -64,6 +67,7 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, location = new { id = location.Id, title = location.Name } });
             }
+            ViewData["FormAction"] = "LocationEdit";
             return PartialView("Location", location);
         }
         [Authorize(Roles = "IT_Full")]
@@ -90,6 +94,7 @@ namespace davproj.Controllers
         public IActionResult BuildingAdd()
         {
             ViewData["locations"] = _db.Locations.ToList();
+            ViewData["FormAction"] = "BuildingAdd";
             return PartialView("Building");
         }
         [Authorize(Roles = "IT_Full")]
@@ -102,6 +107,7 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, building = new { id = building.Id, title = building.Name } });
             }
+            ViewData["FormAction"] = "BuildingAdd";
             ViewData["locations"] = _db.Locations.ToList();
             return PartialView("Building", building);
         }
@@ -115,6 +121,7 @@ namespace davproj.Controllers
                 return NotFound();
             }
             ViewData["locations"] = _db.Locations.ToList();
+            ViewData["FormAction"] = "BuildingEdit";
             Building building = _db.Buildings.Find(id);
             if (building != null)
             {
@@ -133,6 +140,7 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, building = new { id = building.Id, title = building.Name } });
             }
+            ViewData["FormAction"] = "BuildingEdit";
             return PartialView("Building", building);
         }
         [Authorize(Roles = "IT_Full")]
@@ -150,6 +158,7 @@ namespace davproj.Controllers
         public IActionResult FloorAdd()
         {
             ViewData["buildings"] = _db.Buildings.ToList();
+            ViewData["FormAction"] = "FloorAdd";
             return PartialView("Floor");
         }
         [Authorize(Roles = "IT_Full")]
@@ -162,6 +171,7 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, floor = new { id = floor.Id, title = floor.FloorNum } });
             }
+            ViewData["FormAction"] = "FloorAdd";
             ViewData["buildings"] = _db.Buildings.ToList();
             return PartialView("Floor",floor);
         }
@@ -174,6 +184,7 @@ namespace davproj.Controllers
                 return NotFound();
             }
             ViewData["buildings"] = _db.Buildings.ToList();
+            ViewData["FormAction"] = "FloorEdit";
             Floor floor = _db.Floors.Find(id);
             if (floor != null)
             {
@@ -191,6 +202,7 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, floor = new { id = floor.Id, title = floor.FloorNum } });
             }
+            ViewData["FormAction"] = "FloorEdit";
             ViewData["buildings"] = _db.Buildings.ToList();
             return PartialView("Floor", floor);
         }
@@ -213,6 +225,7 @@ namespace davproj.Controllers
                 .Include(f => f.Building)
                 .OrderBy(m => m.Id)
                 .ToList();
+            ViewData["FormAction"] = "OfficeAdd";
             return PartialView("Office");
         }
         [HttpPost]
@@ -225,6 +238,7 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, office = new { id = office.Id, title = office.FullTitle } });
             }
+            ViewData["FormAction"] = "OfficeAdd";
             ViewData["floors"] = _db.Floors
                 .Include(f => f.Building)
                 .OrderBy(m => m.Id)
@@ -239,6 +253,7 @@ namespace davproj.Controllers
             {
                 return NotFound();
             }
+            ViewData["FormAction"] = "OfficeEdit";
             ViewData["floors"] = _db.Floors.ToList();
             Office office = _db.Offices.Find(id);
             if (office != null)
@@ -257,6 +272,7 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, office = new { id = office.Id, title = office.FullTitle } });
             }
+            ViewData["FormAction"] = "OfficeEdit";
             ViewData["floors"] = _db.Floors
                 .Include(f => f.Building)
                 .OrderBy(m => m.Id)
