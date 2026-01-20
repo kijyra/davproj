@@ -1,0 +1,47 @@
+﻿@inject davproj.Services.UserSettingsService Settings
+@model UserSettings
+@{
+    var mySettings = Settings.GetFor(User.Identity.Name);
+    var pcKeys = new[] { "Any", "VNC"};
+    var domainKeys = new[] { "Any", "VNC", "RDPc", "RDPs" };
+    var thinkKeys = new[] { "VNC", "WTRC", "WEB" };
+}
+<form method="post" asp-controller="Home" asp-action="UserSettings">
+    <div class="modal-header">
+        <h5 class="modal-title">Изменение настроек @User.Identity.Name.Split('\\')[1]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+    </div>
+    <div class="modal-body">
+        <div class="form-floating mb-3">
+            <select class="form-select" asp-for="DefaultConnection">
+                @foreach (var item in UserSettings.Connections.Where(x => pcKeys.Contains(x.Key)))
+                {
+                    <option value="@item.Key">@item.Value</option>
+                }
+            </select>
+            <label asp-for="DefaultConnection">Подключение к компьютерам вне домена</label>
+        </div>
+        <div class="form-floating mb-3">
+            <select class="form-select" asp-for="DomainConnection">
+                @foreach (var item in UserSettings.Connections.Where(x => domainKeys.Contains(x.Key)))
+                {
+                    <option value="@item.Key">@item.Value</option>
+                }
+            </select>
+            <label asp-for="DomainConnection">Подключение к доменным компьютерам</label>
+        </div>
+        <div class="form-floating mb-3">
+            <select class="form-select" asp-for="ThinkConnection">
+                @foreach (var item in UserSettings.Connections.Where(x => thinkKeys.Contains(x.Key)))
+                {
+                    <option value="@item.Key">@item.Value</option>
+                }
+            </select>
+            <label asp-for="ThinkConnection">Подключение к тонким клиентам</label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+    </div>
+</form>

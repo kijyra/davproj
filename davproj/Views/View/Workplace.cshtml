@@ -1,0 +1,192 @@
+﻿@model Workplace
+@{
+    var offices = ViewData["offices"] as List<Office> ?? new List<Office>();
+    var users = ViewData["users"] as List<User> ?? new List<User>();
+    var printers = ViewData["printers"] as List<Printer> ?? new List<Printer>();
+    var pcs = ViewData["pcs"] as List<PC> ?? new List<PC>();
+    var phones = ViewData["phones"] as List<Phone> ?? new List<Phone>();
+}
+<form method="post" asp-controller="View" asp-action="WorkplaceAdd">
+    <div class="modal-header">
+        <h5 class="modal-title">Изменение рабочего места</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+    </div>
+    <div class="modal-body">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="form-floating">
+            <input type="text" class="form-control" asp-for="Name" placeholder="Название">
+            <label asp-for="Name">Название</label>
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-text">
+                <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" asp-for="Print">
+            </div>
+            <label class="input-group-text">Рабочее место - принтер?</label>
+        </div>
+        <div class="input-group">
+            <div class="form-floating">
+                <select class="form-select js-action-select"
+                        asp-for="OfficeId"
+                        asp-items="@(new SelectList(offices, "Id", "FullTitle"))">
+                    <option value="">-- Не выбрано --</option>
+                </select>
+                <label asp-for="OfficeId">Выберите кабинет</label>
+            </div>
+            <div class="btn-group">
+                <a class="btn btn-outline-info d-flex align-items-center btn-open-child-modal"
+                   asp-area="" asp-controller="Geo" asp-action="OfficeAdd"
+                   title="Добавить">
+                    <i class="bi bi-plus-lg"></i>
+                </a>
+                <a class="btn btn-outline-warning d-flex align-items-center disabled btn-open-child-modal js-btn-edit"
+                   data-url-template="@Url.Action("OfficeEdit", "Geo", new { id = "0" })"
+                   title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a class="btn btn-outline-danger js-btn-delete d-flex align-items-center btn-trigger-delete disabled"
+                   data-url-template="@Url.Action("OfficeDelete", "Geo", new { id = "0" })"
+                   title="Удалить">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </div>
+        <div class="input-group">
+            <div class="form-floating">
+                <select class="form-select js-action-select"
+                        asp-for="User"
+                        asp-items="@(new SelectList(users, "Id", "FullName"))">
+                    <option value="">-- Не выбран --</option>
+                </select>
+                <label asp-for="User">Выберите пользователя</label>
+            </div>
+            <div class="btn-group">
+                <a class="btn btn-outline-info d-flex align-items-center btn-open-child-modal"
+                   asp-area="" asp-controller="User" asp-action="UserAdd"
+                   title="Добавить">
+                    <i class="bi bi-plus-lg"></i>
+                </a>
+                <a class="btn btn-outline-warning d-flex align-items-center disabled btn-open-child-modal js-btn-edit"
+                   href="#"
+                   data-url-template="@Url.Action("UserEdit", "User", new { id = "0" })"
+                   title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a class="btn btn-outline-danger disabled js-btn-delete d-flex align-items-center"
+                   role="button"
+                   data-bs-toggle="modal"
+                   data-bs-target="#deleteConfirmationModal"
+                   data-url-template="@Url.Action("UserDelete", "User", new { id = "0" })">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </div>
+        <div class="input-group">
+            <div class="form-floating">
+                <select class="form-select js-action-select"
+                        asp-for="PC"
+                        asp-items="@(new SelectList(pcs, "Id", "Hostname"))">
+                    <option value="">-- Не выбран --</option>
+                </select>
+                <label asp-for="PC">Выберите компьютер</label>
+            </div>
+            <div class="btn-group">
+                <a class="btn btn-outline-info d-flex align-items-center btn-open-child-modal"
+                   asp-area="" asp-controller="PP" asp-action="PCAdd"
+                   title="Добавить">
+                    <i class="bi bi-plus-lg"></i>
+                </a>
+                <a class="btn btn-outline-warning d-flex align-items-center disabled btn-open-child-modal js-btn-edit"
+                   href="#"
+                   data-url-template="@Url.Action("PCEdit", "PP", new { id = "0" })"
+                   title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a class="btn btn-outline-danger disabled js-btn-delete d-flex align-items-center"
+                   role="button"
+                   data-bs-toggle="modal"
+                   data-bs-target="#deleteConfirmationModal"
+                   data-url-template="@Url.Action("PCDelete", "PP", new { id = "0" })">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </div>
+        <div class="input-group">
+            <div class="form-floating">
+                <select class="form-select js-action-select"
+                        asp-for="Phone"
+                        asp-items="@(new SelectList(phones, "Id", "Number"))">
+                    <option value="">-- Не выбран --</option>
+                </select>
+                <label asp-for="PC">Выберите телефон</label>
+            </div>
+            <div class="btn-group">
+                <a class="btn btn-outline-info d-flex align-items-center btn-open-modal"
+                   asp-area="" asp-controller="PP" asp-action="PhoneAdd"
+                   title="Добавить">
+                    <i class="bi bi-plus-lg"></i>
+                </a>
+                <a class="btn btn-outline-warning d-flex align-items-center disabled btn-open-child-modal js-btn-edit"
+                   href="#"
+                   data-url-template="@Url.Action("PhoneEdit", "PP", new { id = "0" })"
+                   title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a class="btn btn-outline-danger js-btn-delete d-flex align-items-center btn-open-child-modal"
+                   role="button"
+                   href="@Url.Action("PhoneDelete", "PP", new { id = "0" })">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </div>
+        <div class="input-group">
+            <div class="form-floating">
+                <select class="form-select js-action-select"
+                        asp-for="Printer"
+                        asp-items="@(new SelectList(printers, "Id", "PrinterName"))">
+                    <option value="">-- Не выбран --</option>
+                </select>
+                <label asp-for="PC">Выберите принтер</label>
+            </div>
+            <div class="btn-group">
+                <a class="btn btn-outline-info d-flex align-items-center btn-open-modal"
+                   asp-area="" asp-controller="Printer" asp-action="PrinterAdd"
+                   title="Добавить">
+                    <i class="bi bi-plus-lg"></i>
+                </a>
+                <a class="btn btn-outline-warning d-flex align-items-center disabled btn-open-modal js-btn-edit"
+                   href="#"
+                   data-url-template="@Url.Action("PrinterEdit", "Printer", new { id = "0" })"
+                   title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a class="btn btn-outline-danger disabled js-btn-delete d-flex align-items-center"
+                   role="button"
+                   data-bs-toggle="modal"
+                   data-bs-target="#deleteConfirmationModal"
+                   data-url-template="@Url.Action("PrinterDelete", "Printer", new { id = "0" })">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+    </div>
+</form>
+
+<style>
+    .input-group > .form-floating {
+        flex: 1 1 auto;
+        width: 1%;
+    }
+        .input-group > .form-floating > .form-select {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+    .input-group > .btn {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+</style>

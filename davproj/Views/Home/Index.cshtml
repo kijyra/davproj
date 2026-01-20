@@ -1,0 +1,24 @@
+﻿@model List<FileSystemItemViewModel>
+@using System.Linq
+@using static davproj.Controllers.HomeController
+
+@{
+    ViewData["Title"] = "Главная";
+    ViewData["ActivePage"] = "Home";
+}
+
+<center><h3>Загрузки</h3></center>
+<ul class="list-group w-50 mx-auto">
+    @foreach (var item in Model)
+    {
+        @Html.Partial("_FileSystemItem", item)
+    }
+</ul>
+<script>
+    function toggleChildren(element) {
+        var childrenList = element.nextElementSibling;
+        if (childrenList && childrenList.tagName.toLowerCase() === 'ul') {
+            childrenList.style.display = childrenList.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+</script>

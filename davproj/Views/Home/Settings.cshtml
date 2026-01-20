@@ -1,0 +1,292 @@
+﻿@inject davproj.Services.UserSettingsService Settings
+@{
+    ViewData["Title"] = "Настройки";
+    ViewData["ActivePage"] = "Settings";
+}
+
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
+                        @User.Identity.Name.Split('\\').Last().Substring(0, 1).ToUpper()
+                    </div>
+                    <h4 class="mb-0">@Model.GivenName</h4>
+                    <p class="text-muted small">@@@User.Identity.Name.Split('\\').Last()</p>
+
+                    <div class="d-flex justify-content-center align-items-center gap-2 mb-4">
+                        @if (Model.Admin)
+                        {
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                Администратор
+                            </span>
+                            <a asp-controller="Admin"
+                               asp-action="ManageDatabase"
+                               class="text-muted"
+                               data-bs-toggle="tooltip"
+                               data-bs-placement="top"
+                               title="Управление данными в БД">
+                                <i class="bi bi-database fs-6"></i>
+                            </a>
+                        }
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                            Активен
+                        </span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a class="btn btn-outline-primary btn-open-modal @(Model.Admin ? "" : "disabled")
+                           asp-area=""
+                           asp-controller="Home"
+                           asp-action="UserSettings">
+                            Настройки профиля
+                        </a>
+                        <button class="btn btn-link btn-sm text-decoration-none" @(Model.Admin ? "" : "disabled") data-bs-toggle="modal" data-bs-target="#guideModal">
+                            Как подключиться?
+                        </button>
+                    </div>
+                </div>
+                <hr class="mx-3 my-0">
+                <div class="card-body">
+                    <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Детали учетной записи</small>
+                    <ul class="list-unstyled mt-2 mb-0">
+                        <li class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Логин:</span>
+                            <span class="fw-medium">@User.Identity.Name.Split('\\').Last()</span>
+                        </li>
+                        <li class="d-flex justify-content-between">
+                            <span class="text-muted">Домен:</span>
+                            <span class="fw-medium">@User.Identity.Name.Split('\\').First()</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="card-title mb-0">Группы доступа AD</h5>
+                </div>
+                <div class="card-body px-4">
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var group in Model.Group)
+                        {
+                            <div class="p-2 border rounded bg-body-tertiary d-flex align-items-center">
+                                <i class="bi bi-people text-body-secondary me-2"></i>
+                                <span style="font-size: 0.9rem;">@group</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-lg fade" id="guideModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Инструкция по подключению</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="stepper">
+                    <h5>Зачем?</h5>
+                    <p class="text-muted small">
+                        На странице <b>Рабочие места</b> есть ссылки для подключения к компьютерам пользователей,
+                        чтобы эти ссылки правильно отрабатывали и выполняли подключение в один клик
+                        необходимо внести некоторые настройки в параметры Вашей системы,
+                        подробнее о том какие именно настройки - ниже.
+                    </p>
+                    <h5>Типы подключений</h5>
+                    <p class="text-muted small">
+                        <dl>
+                            <dt class="small text-muted">VNC</dt>
+                            <dd class="small text-muted">
+                                На удалённом компьютере должен быть установлен сервер VNC с паролем <i>233566</i>. Практически на всех компьютерах установлено.
+                                Подключение через TightVNC, через скрипт с автоподстановкой пароля. Подключение без ведома пользователя,
+                                с возможностью управления его сессией. На время подключения заставка рабочего стола удалённого компьютера
+                                заменяется чёрным фоном.
+                            </dd>
+                            <dt class="small text-muted">Anydesk</dt>
+                            <dd class="small text-muted">
+                                Обычное подключение через Anydesk, на удалённом компьютере должен быть установлен (либо запущен).
+                                Подключение происходит через ссылку <code>anydesk://ip</code>, которая открывает Anydesk.<br />
+                                <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="anydesk-5-4-2.exe">
+                                    Скачать старую версию Anydesk
+                                </a>
+                                без ограничения на количество и частоту подключений (одновременно может быть активна только одна сессия).
+                            </dd>
+                            <dt class="small text-muted">Shadow RDP</dt>
+                            <dd class="small text-muted">
+                                Удалённый компьютер должен находиться в домене. Подключение происходит без ведома пользователя, заставка рабочего стола не меняется.
+                                Управлять сеансом нельзя.
+                            </dd>
+                            <dt class="small text-muted">Control RDP</dt>
+                            <dd class="small text-muted">
+                                Удалённый компьютер должен находиться в домене. Подключение происходит после запроса и с разрешения пользователя, заставка рабочего стола не меняется.
+                                Полное управление удалённым сеансом пользователя.
+                            </dd>
+                            <dt class="small text-muted">WTRC</dt>
+                            <dd class="small text-muted">
+                                Если компьютер пользователя - тонкий клиент, то к нему возможно подключиться только по VNC и через специальную утилиту
+                                <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="setup.wtrc.exe">
+                                    wtrc.exe
+                                </a>
+                                . Пароль при подключениее - <i>233566</i>.<br />
+                                Важно! Для успешного управления тонкими клиентами IP-адрес вашего устройства должен находиться в конфигурационном файле
+                                самого тонкого клиента. Управление всем этим происходит из интерфейса сервера WTware.
+                            </dd>
+                        </dl>
+                    </p>
+                    <h5>Автоматическая установка</h5>
+                    <p class="text-muted small">
+                        Нужно скачать и распаковать 
+                        <b>
+                            <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="protocols.zip">
+                            protocols.zip
+                            </a>
+                        </b> 
+                        , установить <b>TightVNC</b>, установить <b>wtrc</b> (для управления тонкими клиентами), выполнить скрипт <b>start.bat</b> для внесения требуемых изменений в систему.
+                    </p>
+                    <h5>Ручная установка</h5>
+                    <p class="text-muted small">
+                        Чтобы работало подключение по ссылкам типа <code>vnc://</code> нужно: 
+                        <ol class="list-group-numbered text-muted small">
+                            <li class="list-group-item small text-muted">
+                                Установить сам
+                                <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="tightvnc-2.8.81-gpl.setup-64.bit.msi">
+                                    TightVNC
+                                </a>
+                            </li>
+                            <li class="list-group-item small text-muted">
+                                В папке TightVNC создать папку web, добавить в неё скрипт 
+                                <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="vnc.cmd">
+                                    vnc.cmd
+                                </a>
+                                . Полный путь к скрипту будет <code>C:\Program Files\TightVNC\web\vnc.cmd</code>.<br />
+                                Код самого скрипта:<br />
+                                <code>
+                                    set a=%1%<br />
+                                    "C:\Program Files\TightVNC\tvnviewer.exe" %a:~6,-1% -password="233566"
+                                </code>
+                            </li>
+                            <li class="list-group-item small text-muted">
+                                Нужно научить Windows работать со ссылками <code>vnc://</code>, для этого потребуется добавить раздел в реестр. <br />
+                                Можно применить изменения из файла 
+                                <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="vnc.reg">
+                                    vnc.reg
+                                </a>
+                                , либо произвести изменение реестра вручную.
+                                <div>
+                                    <a class="d-inline-flex align-items-center text-decoration-none"
+                                       style="cursor: pointer;"
+                                       role="button"
+                                       data-bs-toggle="collapse"
+                                       href="#spoilervnc"
+                                       aria-expanded="false">
+                                        <span class="me-2">Содержимое файла</span>
+                                        <i class="bi bi-chevron-down transition-icon"></i>
+                                    </a>
+
+                                    <div class="collapse mt-2" id="spoilervnc">
+                                        <div class="card card-body shadow-sm border-info p-3">
+                                            <code class="text-start">
+                                                [HKEY_CLASSES_ROOT\vnc]<br />
+                                                @@="URL:TightVNC Protocol"<br />
+                                                "URL Protocol"=""<br />
+                                                <br />
+                                                [HKEY_CLASSES_ROOT\vnc\shell]<br />
+                                                <br />
+                                                [HKEY_CLASSES_ROOT\vnc\shell\open]<br />
+                                                <br />
+                                                [HKEY_CLASSES_ROOT\vnc\shell\open\command]<br />
+                                                @@="\"C:\\Program Files\\TightVNC\\web\\vnc.cmd\" %1"<br />
+                                            </code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ol>
+                        Чтобы работало подключение по ссылкам типа <code>rdps://</code> и <code>rdpc://</code> нужно:
+                        <ol class="list-group-numbered text-muted small">
+                            <li class="list-group-item small text-muted">
+                                В папке TightVNC создать папку web, добавить в неё скрипты
+                                <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="rdp_control.cmd">
+                                    rdp_control.cmd
+                                </a> и 
+                                <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="rdp_shadow.cmd">
+                                    rdp_shadow.cmd
+                                </a>
+                                .<br />
+                                Код rdp_control:<br />
+                                <code>
+                                    set a=%1%<br />
+                                    "C:\Windows\System32\mstsc.exe" /v: %a:~7,-1% /shadow:1 /control<br />
+                                </code>
+                                Код rdp_shadow:<br />
+                                <code>
+                                    set a=%1%<br />
+                                    "C:\Windows\System32\mstsc.exe" /v: %a:~7,-1% /shadow:1 /noConsentPrompt<br />
+                                </code>
+                            </li>
+                            <li class="list-group-item small text-muted">
+                                И снова изменения в 
+                                <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="rdp.reg">
+                                    реестр
+                                </a>.
+                                <div>
+                                    <a class="d-inline-flex align-items-center text-decoration-none"
+                                       style="cursor: pointer;"
+                                       role="button"
+                                       data-bs-toggle="collapse"
+                                       href="#spoilerrdp"
+                                       aria-expanded="false">
+                                        <span class="me-2">Содержимое файла</span>
+                                        <i class="bi bi-chevron-down transition-icon"></i>
+                                    </a>
+
+                                    <div class="collapse mt-2" id="spoilerrdp">
+                                        <div class="card card-body shadow-sm border-info p-3">
+                                            <code>
+                                                [HKEY_CLASSES_ROOT\rdpc]<br />
+                                                @@="URL:RDPc Protocol"<br />
+                                                "URL Protocol"=""<br />
+                                                <br />
+                                                [HKEY_CLASSES_ROOT\rdpc\shell]<br />
+                                                <br />
+                                                [HKEY_CLASSES_ROOT\rdpc\shell\open]<br />
+                                                <br />
+                                                [HKEY_CLASSES_ROOT\rdpc\shell\open\command]<br />
+                                                @@="C:\\Program Files\\TightVNC\\web\\rdp_control.cmd\" %1"<br />
+                                                <br />
+                                                <br />
+                                                [HKEY_CLASSES_ROOT\rdps]<br />
+                                                @@="URL:RDPs Protocol"<br />
+                                                "URL Protocol"=""<br />
+                                                <br />
+                                                [HKEY_CLASSES_ROOT\rdps\shell]<br />
+                                                <br />
+                                                [HKEY_CLASSES_ROOT\rdps\shell\open]<br />
+                                                <br />
+                                                [HKEY_CLASSES_ROOT\rdps\shell\open\command]<br />
+                                                @@="C:\\Program Files\\TightVNC\\web\\rdp_shadow.cmd %1"<br />
+                                            </code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ol>
+                        Для подключения к тонким клиентам по <code>wtrc://</code> достаточно установить сам 
+                        <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="setup.wtrc.exe">
+                            wtrc
+                        </a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

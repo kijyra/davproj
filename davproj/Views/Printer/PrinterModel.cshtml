@@ -1,0 +1,32 @@
+﻿@model PrinterModel
+@{
+    var cartridges = ViewData["cartridges"] as List<Cartridge>;
+}
+<form method="post" asp-controller="Printer" asp-action="PrinterModelAdd">
+    <div class="modal-header">
+        <h5 class="modal-title">Редактирование модели принтера</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+    </div>
+    <div class="modal-body">
+        <div class="form-floating">
+            <input type="text" class="form-control" asp-for="Name" placeholder="Наименование модели">
+            <label asp-for="Name">Наименование модели</label>
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div class="input-group flex-nowrap">
+            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" asp-for="MFP">
+            <label class="form-check-label" for="flexSwitchCheckDefault">МФУ</label>
+        </div>
+        <div class="form-floating">
+            <select class="form-select"
+                    asp-for="CartridgeId"
+                    asp-items="@(new SelectList(cartridges, "Id", "Name"))">
+            </select>
+            <label asp-for="CartridgeId">Выберите картридж</label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+    </div>
+</form>

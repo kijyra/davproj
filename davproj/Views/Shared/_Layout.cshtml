@@ -1,0 +1,348 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/davproj.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    @RenderSection("Styles", required: false)
+    <style>
+        html {
+            transition: color 0.3s ease, background-color 0.3s ease;
+        }
+        :root, [data-bs-theme="light"] {
+            transition: all 0.3s ease-in-out;
+        }
+
+        [data-bs-theme="dark"] {
+            transition: all 0.3s ease-in-out;
+        }
+        #theme-icon {
+            display: inline-block;
+            transition: transform 0.4s ease-in-out;
+        }
+        .rotate-icon {
+            transform: rotate(180deg);
+        }
+
+        header {
+            background-color: var(--bs-secondary-bg);
+            color: var(--bs-body-color);
+            border-bottom: 1px solid var(--bs-border-color);
+        }
+
+        body {
+            padding-top: 56px;
+        }
+    </style>
+
+</head>
+<body>
+    <header class="fixed-top">
+        <div class="px-3 py-2 bg-body-secondary border-bottom border-bottom-subtle">
+            <div class="container">
+                <div class="d-flex flex-wrap align-items-center justify-content-lg-end">
+                    <ul class="nav col-12 col-lg-auto my-2 justify-content-center my-md-0 text-small">
+                        @{
+                            Func<string, string> activeClass = (page) => ViewData["ActivePage"].Equals(page) ? "active" : "text-body-secondary";
+                        }
+
+                        <li>
+                            <a class="nav-link px-2 @activeClass("Home")" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-file-earmark-fill"></i>
+                                Главная
+                            </a>
+                        </li>
+    
+                        @if (Context.User.Identity.IsAuthenticated)
+                        {
+                            <li>
+                                <a class="nav-link px-2 @activeClass("View")" asp-area="" asp-controller="View" asp-action="Index">
+                                    <i class="bi bi-person-workspace"></i>
+                                    Рабочие места
+                                </a>
+                            </li>
+                        }
+                        <li>
+                            @{
+                                string userName = Context.User.Identity.IsAuthenticated ? User.Identity.Name.Split('\\')[1] : "Войти";
+                                string settingsClass = Context.User.Identity.IsAuthenticated && ViewData["ActivePage"].Equals("Settings") ? "active" : "text-body-secondary";
+                            }
+                            <a class="nav-link px-2 @settingsClass" asp-area="" asp-controller="Home" asp-action="Settings">
+                                <i class="bi bi-sliders2-vertical"></i>
+                                @userName
+                            </a>
+                        </li>
+                        <li>
+                            <button class="btn btn-link p-0" id="theme-toggle" title="Toggle theme" type="button">
+                                <i class="bi bi-moon-fill" id="theme-icon"></i>
+                            </button>
+                        </li>
+                    </ul>
+
+                    </div>
+                </div>
+            </div>
+        </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+            
+            <div id="modal-container" class="modal fade" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <!-- Модальные окна -->
+                    </div>
+                </div>
+            </div>
+            <div id="modal-container-child" class="modal fade" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <!-- Вторые модальные окна -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Подтверждение удаления</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Вы уверены, что хотите удалить выбранный объект?<br />
+                            Это действие необратимо
+                        </div>
+                        <div class="modal-footer">
+                            <form id="deleteForm" method="post">
+                                <input type="hidden" name="id" id="deleteObjectId" value="" />
+                                <button type="submit" id="confirmDeleteSubmit" class="btn btn-danger">Удалить</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script type="text/javascript">
+        $(function () {
+            // --- 1. ОТКРЫТИЕ ДИНАМИЧЕСКИХ ОКОН ---
+            $(document).on('click', '.btn-open-modal, .btn-open-child-modal', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('href') || $(this).data('url');
+                if (!url || url === '#') return;
+                $('.js-action-select').removeClass('last-active-select');
+                $(this).closest('.input-group').find('.js-action-select').addClass('last-active-select');
+                var isChild = $(this).hasClass('btn-open-child-modal');
+                var targetContainer = isChild ? $('#modal-container-child') : $('#modal-container');
+                $.get(url).done(function (data) {
+                    targetContainer.find('.modal-content').html(data);
+                    targetContainer.modal('show');
+                }).fail(function() {
+                    alert("Не удалось загрузить форму.");
+                });
+            });
+
+            // --- 2. САБМИТ ФОРМЫ ДОЧЕРНЕГО ОКНА (Второе окно) ---
+            $(document).on('submit', '#modal-container-child form', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            $('#modal-container-child').modal('hide');
+                            if (data.office) {
+                                var newOption = new Option(data.office.title, data.office.id, true, true);
+                                var $targetSelect = $('.js-action-select.last-active-select');
+                                if ($targetSelect.length) {
+                                    $targetSelect.append(newOption).trigger('change');
+                                    $targetSelect.removeClass('last-active-select');
+                                } else {
+                                    $('.js-action-select').append(new Option(data.office.title, data.office.id));
+                                }
+                            } else {
+                                location.reload();
+                            }
+                        } else {
+                            $('#modal-container-child').find('.modal-content').html(data.responseText || data);
+                        }
+                    }
+                });
+            });
+
+            // --- 3. САБМИТ ФОРМЫ РОДИТЕЛЬСКОГО ОКНА (Первое окно) ---
+            $(document).on('submit', '#modal-container form', function (e) {
+                var form = $(this);
+                if (form.closest('#modal-container-child').length > 0) return;
+                e.preventDefault();
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            $('#modal-container').modal('hide');
+                            location.reload();
+                        } else {
+                            $('#modal-container').find('.modal-content').html(data.responseText || data);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error("AJAX Error");
+                    }
+                });
+            });
+
+            // --- 4. УДАЛЕНИЕ (Открытие модалки) ---
+            $(document).on('click', '.btn-trigger-delete', function (e) {
+                e.preventDefault();
+                var actionUrl = $(this).attr('data-url');
+                var $confirmModal = $('#deleteConfirmationModal');
+                // returnUrl логика тут не нужна, если вы решили использовать location.reload()
+
+                if (actionUrl && actionUrl !== "0") {
+                    // Если контроллер ждет ID в теле формы:
+                    var selectedId = actionUrl.split('/').pop();
+                    $('#deleteObjectId').val(selectedId);
+                    $('#deleteForm').attr('action', $(this).attr('data-url-template').replace('/0', ''));
+
+                    $confirmModal.modal('show');
+                }
+            });
+
+            // --- 5. Сабмит формы удаления (POST) ---
+            $(document).on('submit', '#deleteForm', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            $('#deleteConfirmationModal').modal('hide');
+                            var $confirmModal = $('#deleteConfirmationModal');
+                            var urlToRefresh = $confirmModal.data('url-source');
+
+                              if (urlToRefresh) {
+                                   $.get(urlToRefresh).done(function(newData) {
+                                   $('#modal-container').find('.modal-content').html(newData);
+                               });
+                                } else {
+                               location.reload();
+                       }
+                        } else {
+                            alert("Ошибка при удалении");
+                        }
+                    }
+                });
+            });
+
+            // --- 6. ЛОГИКА АКТИВАЦИИ КНОПОК EDIT/DELETE ---
+            $(document).on('change', '.js-action-select', function () {
+                var selectedId = $(this).val();
+                var $container = $(this).closest('.input-group');
+                var $editBtn = $container.find('.js-btn-edit');
+                var $deleteBtn = $container.find('.js-btn-delete');
+
+                if (selectedId && selectedId !== "") {
+                    var editTemplate = $editBtn.attr('data-url-template');
+                    var deleteTemplate = $deleteBtn.attr('data-url-template');
+
+                    if (editTemplate) {
+                        $editBtn.attr('href', editTemplate.replace('0', selectedId)).removeClass('disabled');
+                    }
+                    if (deleteTemplate) {
+                        $deleteBtn.attr('data-url', deleteTemplate.replace('0', selectedId)).removeClass('disabled');
+                    }
+                } else {
+                    $editBtn.addClass('disabled').removeAttr('href');
+                    $deleteBtn.addClass('disabled').removeAttr('data-url');
+                }
+            });
+        });
+
+        // Смена темы
+                (function () {
+            'use strict';
+
+            const getStoredTheme = () => localStorage.getItem('theme');
+            const setStoredTheme = theme => localStorage.setItem('theme', theme);
+            const getPreferredTheme = () => {
+                const storedTheme = getStoredTheme();
+                if (storedTheme) {
+                    return storedTheme;
+                }
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            };
+
+            const setTheme = theme => {
+                if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', theme);
+                }
+            };
+
+            setTheme(getPreferredTheme());
+
+            const showActiveTheme = (theme, focus = false) => {
+                const themeToggle = document.getElementById('theme-toggle');
+                const themeIcon = document.getElementById('theme-icon');
+                if (!themeToggle || !themeIcon) return;
+                themeIcon.classList.add('rotate-icon');
+                const themeText = document.getElementById('theme-text');
+                const isDarkMode = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                setTimeout(() => {
+                    themeIcon.classList.remove('bi-moon-fill', 'bi-sun-fill');
+                    themeIcon.classList.add(isDarkMode ? 'bi-sun-fill' : 'bi-moon-fill');
+                    themeIcon.classList.remove('rotate-icon');
+                }, 200);
+                if (focus) {
+                    themeToggle.focus();
+                }
+            };
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                const storedTheme = getStoredTheme();
+                if (storedTheme !== 'light' && storedTheme !== 'dark') {
+                    setTheme(getPreferredTheme());
+                    showActiveTheme(getPreferredTheme());
+                }
+            });
+
+            window.addEventListener('DOMContentLoaded', () => {
+                showActiveTheme(getPreferredTheme());
+                document.getElementById('theme-toggle').addEventListener('click', () => {
+                    const currentTheme = getStoredTheme() || getPreferredTheme();
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    setStoredTheme(newTheme);
+                    setTheme(newTheme);
+                    showActiveTheme(newTheme, true);
+                });
+            });
+        })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

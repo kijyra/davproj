@@ -1,0 +1,111 @@
+﻿@using System.Reflection
+@using System.Collections
+@model IEnumerable
+@{
+    var itemType = Model.GetType().GetGenericArguments().FirstOrDefault();
+    var properties = itemType?.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+    var idProperty = properties?.FirstOrDefault(p => p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase));
+
+    // 1. Объявляем переменные маппинга по умолчанию
+    string mController = "Default", mCreate = "Create", mEdit = "Edit", mDelete = "Delete";
+
+    // 2. Выполняем маппинг на основе типа модели
+    if (itemType != null)
+    {
+        (mController, mCreate, mEdit, mDelete) = itemType.Name switch
+        {
+            "Location" => ("Geo", "LocationAdd", "LocationEdit", "LocationDelete"),
+            "Building" => ("Geo", "BuildingAdd", "BuildingEdit", "BuildingDelete"),
+            "Office" => ("Geo", "OfficeAdd", "OfficeEdit", "OfficeDelete"),
+            "Floor" => ("Geo", "FloorAdd", "FloorEdit", "FloorDelete"),
+            "Manufactor" => ("Printer", "ManufactorAdd", "ManufactorEdit", "ManufactorDelete"),
+            "Cartridge" => ("Printer", "CartridgeAdd", "CartridgeEdit", "CartridgeDelete"),
+            "PrinterModel" => ("Printer", "ModelAdd", "ModelEdit", "ModelDelete"),
+            "Printer" => ("Printer", "PrinterAdd", "PrinterEdit", "PrinterDelete"),
+            "User" => ("User", "UserAdd", "UserEdit", "UserDelete"),
+            "ADUser" => ("User", "ADUserAdd", "ADUserEdit", "ADUserDelete"),
+            "PC" => ("PP", "PCAdd", "PCEdit", "PCDelete"),
+            "Phone" => ("PP", "PhoneAdd", "PhoneEdit", "PhoneDelete"),
+            "Workplace" => ("View", "WorkplaceAdd", "WorkplaceEdit", "WorkplaceDelete"),
+            _ => ("Default", "Add", "Edit", "Delete")
+        };
+    }
+
+    // 3. Финальные переменные: приоритет у ViewBag, если пусто — берем из маппинга
+    var controllerName = ViewBag.ControllerName as string ?? mController;
+    var createActionName = ViewBag.CreateActionName as string ?? mCreate;
+    var editActionName = ViewBag.EditActionName as string ?? mEdit;
+    var deleteActionName = ViewBag.DeleteActionName as string ?? mDelete;
+}
+
+
+@if (properties != null && Model.Cast<object>().Any())
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Таблица: @itemType.Name</h3>
+        <a href="@Url.Action(createActionName, controllerName)" class="btn btn-success btn-open-modal">Добавить запись</a>
+    </div>
+
+    <div class="table-responsive">
+        <table id="dynamicTable" class="table table-striped table-bordered table-sm table-hover">
+            <thead>
+                <tr>
+                    @foreach (var prop in properties)
+                    {
+                        var displayAttr = prop.GetCustomAttribute<System.ComponentModel.DataAnnotations.DisplayAttribute>();
+                        <th>@(displayAttr?.Name ?? prop.Name)</th>
+                    }
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        @foreach (var prop in properties)
+                        {
+                            var value = prop.GetValue(item);
+                            <td>
+                                @if (value == null)
+                                {
+                                    <span class="text-muted">null</span>
+                                }
+                                else if (value is IEnumerable collection && !(value is string))
+                                {
+                                    <span class="badge bg-info">@Enumerable.Count(collection.Cast<object>())</span>
+                                }
+                                else if (prop.PropertyType.IsClass && prop.PropertyType != typeof(string))
+                                {
+                                    var displayName = value.GetType().GetProperty("Name")?.GetValue(value) ?? value.ToString();
+                                    <i>@displayName</i>
+                                }
+                                else
+                                {
+
+                                    @value
+                                }
+                            </td>
+                        }
+                        <td>
+                            @if (idProperty != null)
+                            {
+                                var idValue = idProperty.GetValue(item);
+                                var editUrl = Url.Action(editActionName, controllerName, new { id = idValue });
+                                var deleteUrl = Url.Action(deleteActionName, controllerName, new { id = idValue });
+
+                                <div class="btn-group btn-group-sm">
+                                    <a href="@editUrl" class="btn btn-outline-primary btn-open-modal">Редактировать</a>
+                                    <a href="@deleteUrl" class="btn btn-outline-danger btn-open-modal">Удалить</a>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p>Нет данных для отображения или не удалось определить структуру таблицы.</p>
+}

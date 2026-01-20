@@ -1,0 +1,49 @@
+﻿@model Floor
+@{
+    var buildingsList = ViewData["buildings"] as List<Building>;
+}
+<form method="post" asp-controller="Geo" asp-action="FloorAdd">
+    <div class="modal-header">
+        <h5 class="modal-title">Редактирование этажа</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+    </div>
+    <div class="modal-body">
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" asp-for="FloorNum" placeholder="Название этажа">
+            <label asp-for="FloorNum">Название этажа</label>
+            <span asp-validation-for="FloorNum" class="text-danger"></span>
+        </div>
+        <div class="input-group">
+            <div class="form-floating">
+                <select class="form-select js-action-select"
+                        asp-for="BuildingId"
+                        asp-items="@(new SelectList(buildingsList, "Id", "Name"))">
+                    <option value="">-- Не выбрано --</option>
+                </select>
+                <label asp-for="BuildingId">Выберите здание</label>
+            </div>
+            <div class="btn-group">
+                <a class="btn btn-outline-info d-flex align-items-center btn-open-child-modal"
+                   asp-area="" asp-controller="Geo" asp-action="BuildingAdd"
+                   title="Добавить">
+                    <i class="bi bi-plus-lg"></i>
+                </a>
+                <a class="btn btn-outline-warning d-flex align-items-center disabled btn-open-child-modal js-btn-edit"
+                   data-url-template="@Url.Action("BuildingEdit", "Geo", new { id = "0" })"
+                   title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a class="btn btn-outline-danger js-btn-delete d-flex align-items-center btn-trigger-delete disabled"
+                   data-url-template="@Url.Action("BuildingDelete", "Geo", new { id = "0" })"
+                   title="Удалить">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+    </div>
+
+</form>

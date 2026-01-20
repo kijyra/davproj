@@ -1,0 +1,20 @@
+﻿<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="updateUserModalLabel">Обновление пользователя</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <form method="post" asp-controller="User" asp-action="ADUserUpdate">
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text" id="basic-addon1"><i class="bi bi-people"></i></span>
+                    <input type="text" class="form-control" placeholder="IdentityName" aria-label="IdentityName" aria-describedby="basic-addon1" name="IdentityName" value="dallari\">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-success">Отправить</button>
+            </div>
+        </form>
+    </div>
+</div>

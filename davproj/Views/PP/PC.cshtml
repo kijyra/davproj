@@ -1,0 +1,48 @@
+﻿@model PC
+@{
+    var workplacelist = ViewData["workplaces"] as List<Workplace>;
+}
+<form method="post" asp-controller="PP" asp-action="PCAdd">
+    <div class="modal-header">
+        <h5 class="modal-title">Редактирование компьютера</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+    </div>
+    <div class="modal-body">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="form-floating">
+            <input type="text" class="form-control" asp-for="Hostname" placeholder="Имя компьютера">
+            <label asp-for="Hostname">Имя компьютера</label>
+            <span asp-validation-for="Hostname" class="text-danger"></span>
+        </div>
+        <div class="form-floating">
+            <input type="text" class="form-control" asp-for="IP" placeholder="IP-адрес">
+            <label asp-for="IP">IP-адрес</label>
+            <span asp-validation-for="IP" class="text-danger"></span>
+        </div>
+        <div class="form-floating">
+            <input type="text" class="form-control" asp-for="Anydesk" placeholder="Anydesk ID">
+            <label asp-for="Anydesk">Anydesk ID</label>
+            <span asp-validation-for="Anydesk" class="text-danger"></span>
+        </div>
+        <div class="input-group flex-nowrap">
+            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" asp-for="Domain">
+            <label class="form-check-label" for="flexSwitchCheckDefault">В домене</label>
+        </div>
+        <div class="input-group flex-nowrap">
+            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" asp-for="Think">
+            <label class="form-check-label" for="flexSwitchCheckDefault">Тонкий клиент</label>
+        </div>
+        <div class="form-floating">
+            <select class="form-select"
+                    asp-for="WorkplaceId"
+                    asp-items="@(new SelectList(workplacelist, "Id", "Name"))">
+                <option value="">-- Не выбрано --</option>
+            </select>
+            <label asp-for="WorkplaceId">Выберите рабочее место</label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+    </div>
+</form>

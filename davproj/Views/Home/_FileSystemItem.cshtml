@@ -1,0 +1,44 @@
+﻿@model FileSystemItemViewModel
+
+<li class="list-group-item">
+    @if (Model.Type == "Directory")
+    {
+        <span class="fw-bold" onclick="toggleChildren(this)" style="cursor: pointer;">📂 @Model.Name</span>
+        @if (Model.Children.Any())
+        {
+            <ul class="list-group mt-1 ms-3" style="display: none;">
+                @foreach (var item in Model.Children)
+                {
+                    @Html.Partial("_FileSystemItem", item)
+                }
+            </ul>
+        }
+    }
+    else // Type == "File"
+    {
+        <div class="d-flex justify-content-between align-items-center">
+            @{
+                string icon = "📄";
+                switch (Model.FileExtension)
+                {
+                    case ".msi":
+                    case ".exe":
+                        icon = "💻";
+                        break;
+                    case ".zip":
+                    case ".rar":
+                        icon = "📦";
+                        break;
+                    case ".pdf":
+                        icon = "📑";
+                        break;
+                        // Добавьте другие типы файлов по мере необходимости
+                }
+            }
+            <span>@icon @Model.Name</span>
+            <a href="@Model.RelativePath" download class="btn btn-outline-primary btn-sm">
+                @Model.FormattedSize
+            </a>
+        </div>
+    }
+</li>
