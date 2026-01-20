@@ -1,6 +1,8 @@
 ﻿using davproj.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
+using System.Reflection;
 
 namespace davproj.Controllers
 {
@@ -10,6 +12,18 @@ namespace davproj.Controllers
         public PPController(DBContext db)
         {
             _db = db;
+        }
+        public string GetDNS(string ipAddress)
+        {
+            try
+            {
+                IPHostEntry entry = Dns.GetHostEntry(ipAddress);
+                return entry.HostName;
+            }
+            catch (Exception)
+            {
+                return "Имя не найдено";
+            }
         }
         [Authorize(Roles = "IT_Full")]
         [HttpGet]
@@ -89,6 +103,10 @@ namespace davproj.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (pc.Hostname == null && pc.IP != null)
+                {
+                    pc.Hostname = GetDNS(pc.IP);
+                }
                 _db.PCs.Add(pc);
                 _db.SaveChanges();
                 return Json(new { success = true, pc = new { id = pc.Id, title = pc.Hostname } });
@@ -120,6 +138,10 @@ namespace davproj.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (pc.Hostname == null && pc.IP != null)
+                {
+                    pc.Hostname = GetDNS(pc.IP);
+                }
                 _db.Entry(pc).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 _db.SaveChanges();
                 return Json(new { success = true, pc = new { id = pc.Id, title = pc.Hostname } });

@@ -3,6 +3,7 @@ using davproj.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 using System.Reflection;
 
 namespace davproj.Controllers
@@ -50,6 +51,18 @@ namespace davproj.Controllers
                 return Redirect(Request.Headers["Referer"].ToString());
             }
             return View(printer);
+        }
+        public string GetDNS(string ipAddress)
+        {
+            try
+            {
+                IPHostEntry entry = Dns.GetHostEntry(ipAddress);
+                return entry.HostName;
+            }
+            catch (Exception)
+            {
+                return "Не найдено";
+            }
         }
         [Authorize(Roles = "IT_Full")]
         [HttpGet]
@@ -103,6 +116,10 @@ namespace davproj.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (printer.HostName == null && printer.IP != null)
+                {
+                    printer.HostName = GetDNS(printer.IP);
+                }
                 _db.Printers.Add(printer);
                 _db.SaveChanges();
                 return Json(new { success = true, printer = new { id = printer.Id, title = printer.PrinterName } });
@@ -137,6 +154,10 @@ namespace davproj.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (printer.HostName == null && printer.IP != null)
+                {
+                    printer.HostName = GetDNS(printer.IP);
+                }
                 _db.Entry(printer).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 _db.SaveChanges();
                 return Json(new { success = true, printer = new { id = printer.Id, title = printer.PrinterName } });

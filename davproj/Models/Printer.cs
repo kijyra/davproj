@@ -31,5 +31,6 @@ namespace davproj.Models
         public List<string>? LastFuserRepair { get; set; } = new List<string>();
         public ICollection<Workplace> Workplaces { get; set; } = new List<Workplace>();
         public ICollection<User> Users { get; set; } = new List<User>();
+        public string FullName => IP + " - " + HostName;
     }
 }

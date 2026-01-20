@@ -85,7 +85,7 @@
             <div class="form-floating">
                 <select class="form-select js-action-select"
                         asp-for="PCId"
-                        asp-items="@(new SelectList(pcs, "Id", "Hostname"))">
+                        asp-items="@(new SelectList(pcs, "Id", "FullName"))">
                     <option value="">-- Не выбран --</option>
                 </select>
                 <label asp-for="PCId">Выберите компьютер</label>
