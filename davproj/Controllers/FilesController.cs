@@ -10,7 +10,6 @@ public class FilesController : Controller
     {
         _hostingEnvironment = hostingEnvironment;
     }
-
     [Authorize(Roles = "IT_Full")]
     public IActionResult DownloadPrivateFile(string fileName)
     {

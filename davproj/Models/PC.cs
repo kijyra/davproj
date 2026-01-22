@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using HardwareShared;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
 
@@ -23,5 +24,8 @@ namespace davproj.Models
         public string? Anydesk { get; set; }
         public Workplace? Workplace { get; set; }
         public string FullName => IP + " - " + Hostname;
+        public int? CurrentHardwareInfoId { get; set; }
+        public virtual HardwareInfo CurrentHardwareInfo { get; set; }
+        public virtual ICollection<HardwareInfo> HardwareHistory { get; set; } = new List<HardwareInfo>();
     }
 }

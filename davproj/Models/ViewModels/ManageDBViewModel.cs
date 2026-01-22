@@ -1,4 +1,6 @@
-﻿namespace davproj.Models.ViewModels
+﻿using HardwareShared;
+
+namespace davproj.Models.ViewModels
 {
     public class ManageDBViewModel
     {
@@ -15,5 +17,6 @@
         public List<PrinterModel> PrinterModels { get; set; }
         public List<User> Users { get; set; }
         public List<Workplace> Workplaces { get; set; }
+        public List<HardwareInfo> HardwareInfo { get; set; }
     }
 }

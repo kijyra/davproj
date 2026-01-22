@@ -50,14 +50,12 @@
                         @{
                             Func<string, string> activeClass = (page) => ViewData["ActivePage"].Equals(page) ? "active" : "text-body-secondary";
                         }
-
                         <li>
                             <a class="nav-link px-2 @activeClass("Home")" asp-area="" asp-controller="Home" asp-action="Index">
                                 <i class="bi bi-file-earmark-fill"></i>
                                 Главная
                             </a>
                         </li>
-    
                         @if (Context.User.Identity.IsAuthenticated)
                         {
                             <li>
@@ -83,12 +81,10 @@
                             </button>
                         </li>
                     </ul>
-
-                    </div>
                 </div>
             </div>
-        </header>
-
+        </div>
+    </header>
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -156,7 +152,6 @@
                     alert("Не удалось загрузить форму.");
                 });
             });
-
                     // --- 2. САБМИТ ФОРМЫ ДОЧЕРНЕГО ОКНА (Второе окно) ---
         $(document).on('submit', '#modal-container-child form', function (e) {
             e.preventDefault();
@@ -192,8 +187,6 @@
                 }
             });
         });
-
-
             // --- 3. САБМИТ ФОРМЫ РОДИТЕЛЬСКОГО ОКНА (Первое окно) ---
             $(document).on('submit', '#modal-container form', function (e) {
                 var form = $(this);
@@ -217,7 +210,6 @@
                     }
                 });
             });
-
             // --- 4. УДАЛЕНИЕ (Открытие модалки) ---
             $(document).on('click', '.btn-trigger-delete', function (e) {
                 e.preventDefault();
@@ -230,7 +222,6 @@
                     $confirmModal.modal('show');
                 }
             });
-
             // --- 5. Сабмит формы удаления (POST) ---
             $(document).on('submit', '#deleteForm', function (e) {
                 e.preventDefault();
@@ -259,18 +250,15 @@
                     }
                 });
             });
-
             // --- 6. ЛОГИКА АКТИВАЦИИ КНОПОК EDIT/DELETE ---
             $(document).on('change', '.js-action-select', function () {
                 var selectedId = $(this).val();
                 var $container = $(this).closest('.input-group');
                 var $editBtn = $container.find('.js-btn-edit');
                 var $deleteBtn = $container.find('.js-btn-delete');
-
                 if (selectedId && selectedId !== "") {
                     var editTemplate = $editBtn.attr('data-url-template');
                     var deleteTemplate = $deleteBtn.attr('data-url-template');
-
                     if (editTemplate) {
                         $editBtn.attr('href', editTemplate.replace('0', selectedId)).removeClass('disabled');
                     }
@@ -283,11 +271,9 @@
                 }
             });
         });
-
         // Смена темы
                 (function () {
             'use strict';
-
             const getStoredTheme = () => localStorage.getItem('theme');
             const setStoredTheme = theme => localStorage.setItem('theme', theme);
             const getPreferredTheme = () => {
@@ -297,7 +283,6 @@
                 }
                 return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             };
-
             const setTheme = theme => {
                 if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     document.documentElement.setAttribute('data-bs-theme', 'dark');
@@ -305,9 +290,7 @@
                     document.documentElement.setAttribute('data-bs-theme', theme);
                 }
             };
-
             setTheme(getPreferredTheme());
-
             const showActiveTheme = (theme, focus = false) => {
                 const themeToggle = document.getElementById('theme-toggle');
                 const themeIcon = document.getElementById('theme-icon');
@@ -324,7 +307,6 @@
                     themeToggle.focus();
                 }
             };
-
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
                 const storedTheme = getStoredTheme();
                 if (storedTheme !== 'light' && storedTheme !== 'dark') {
@@ -332,7 +314,6 @@
                     showActiveTheme(getPreferredTheme());
                 }
             });
-
             window.addEventListener('DOMContentLoaded', () => {
                 showActiveTheme(getPreferredTheme());
                 document.getElementById('theme-toggle').addEventListener('click', () => {
@@ -345,7 +326,6 @@
             });
         })();
     </script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

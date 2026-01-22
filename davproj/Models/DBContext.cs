@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using davproj.Models;
 using System.Text.Json;
+using HardwareShared;
 
 namespace davproj.Models
 {
@@ -16,9 +17,10 @@ namespace davproj.Models
         public DbSet<PC> PCs { get; set; } = null!;
         public DbSet<Phone> Phones { get; set; } = null!;
         public DbSet<Printer> Printers { get; set; } = null!;
-        public DbSet<PrinterModel> PrinterModels { get; set; } = null;
+        public DbSet<PrinterModel> PrinterModels { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Workplace> Workplaces { get; set; } = null!;
+        public DbSet<HardwareInfo> HardwareInfo { get; set; } = null!;
 
         public DBContext(DbContextOptions<DBContext> options)
     : base(options)
@@ -27,7 +29,6 @@ namespace davproj.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // Связь с телефоном
             modelBuilder.Entity<Workplace>()
                 .HasOne(w => w.Phone)
                 .WithOne(p => p.Workplace)
@@ -72,6 +73,18 @@ namespace davproj.Models
                 .WithMany(f => f.Offices)
                 .HasForeignKey(o => o.FloorId)
                 .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<HardwareInfo>(entity =>
+            {
+                entity.Property<int>("PCId");
+                entity.HasOne<PC>()
+                      .WithMany(p => p.HardwareHistory)
+                      .HasForeignKey("PCId")
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<PC>()
+                .HasOne(p => p.CurrentHardwareInfo)
+                .WithOne()
+                .HasForeignKey<PC>(p => p.CurrentHardwareInfoId);
         }
     }
 }

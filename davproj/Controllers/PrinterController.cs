@@ -141,7 +141,6 @@ namespace davproj.Controllers
             ViewData["models"] = _db.PrinterModels.ToList();
             ViewData["FormAction"] = "PrinterEdit";
             Printer printer = _db.Printers.Find(id);
-
             if (printer != null)
             {
                 return PartialView("Printer", printer);

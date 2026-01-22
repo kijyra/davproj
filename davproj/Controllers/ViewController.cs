@@ -13,7 +13,6 @@ namespace davproj.Controllers
             _db = db;
         }
         [Authorize(Roles = "IT_Full")]
-
         public IActionResult Index(int? buildingId, int? floorId)
         {
             var allBuildings = _db.Buildings
@@ -43,7 +42,6 @@ namespace davproj.Controllers
                                     .ThenInclude(pm => pm.Cartridge)
                                         .ThenInclude(c => c.Manufactor)
                 .ToList();
-
             if (!allBuildings.Any())
             {
                 return View();
@@ -93,7 +91,6 @@ namespace davproj.Controllers
             }
             Floor selectedFloor;
             IEnumerable<Floor> availableFloors = selectedBuilding?.Floors ?? Enumerable.Empty<Floor>();
-
             if (floorId.HasValue)
             {
                 selectedFloor = _db.Floors
@@ -129,7 +126,6 @@ namespace davproj.Controllers
             ViewBag.Buildings = allBuildings;
             ViewBag.SelectedBuilding = selectedBuilding;
             ViewBag.SelectedFloor = selectedFloor;
-
             return View();
         }
         [Authorize(Roles = "IT_Full")]
@@ -212,7 +208,6 @@ namespace davproj.Controllers
                 return NotFound();
             }
             Workplace workplace = _db.Workplaces.Find(id);
-
             if (workplace != null)
             {
                 ViewData["offices"] = _db.Offices

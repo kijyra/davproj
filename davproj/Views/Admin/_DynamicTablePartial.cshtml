@@ -5,11 +5,7 @@
     var itemType = Model.GetType().GetGenericArguments().FirstOrDefault();
     var properties = itemType?.GetProperties(BindingFlags.Public | BindingFlags.Instance);
     var idProperty = properties?.FirstOrDefault(p => p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase));
-
-    // 1. Объявляем переменные маппинга по умолчанию
     string mController = "Default", mCreate = "Create", mEdit = "Edit", mDelete = "Delete";
-
-    // 2. Выполняем маппинг на основе типа модели
     if (itemType != null)
     {
         (mController, mCreate, mEdit, mDelete) = itemType.Name switch
@@ -30,14 +26,11 @@
             _ => ("Default", "Add", "Edit", "Delete")
         };
     }
-
-    // 3. Финальные переменные: приоритет у ViewBag, если пусто — берем из маппинга
     var controllerName = ViewBag.ControllerName as string ?? mController;
     var createActionName = ViewBag.CreateActionName as string ?? mCreate;
     var editActionName = ViewBag.EditActionName as string ?? mEdit;
     var deleteActionName = ViewBag.DeleteActionName as string ?? mDelete;
 }
-
 
 @if (properties != null && Model.Cast<object>().Any())
 {
@@ -45,7 +38,6 @@
         <h3>Таблица: @itemType.Name</h3>
         <a href="@Url.Action(createActionName, controllerName)" class="btn btn-success btn-open-modal">Добавить запись</a>
     </div>
-
     <div class="table-responsive">
         <table id="dynamicTable" class="table table-striped table-bordered table-sm table-hover">
             <thead>

@@ -21,4 +21,8 @@
     <PackageReference Include="System.DirectoryServices.Protocols" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\HardwareShared\HardwareShared.csproj" />
+  </ItemGroup>
+
 </Project>

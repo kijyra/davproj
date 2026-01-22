@@ -2,9 +2,9 @@
     ViewData["Title"] = "Управление БД";
     ViewData["ActivePage"] = "Settings";
 }
+
 @section Styles{
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.bootstrap5.min.css">
-
 }
 
 <h1>Управление Базой Данных</h1>
@@ -34,19 +34,19 @@
             <li><a class="dropdown-item" onclick="loadTable('ADUsers', this)">Пользователи AD</a></li>
         </ul>
     </li>
-
     <li class="nav-item">
         <a class="nav-link" onclick="loadTable('PCs', this)">Компьютеры</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" onclick="loadTable('Phones', this)">Телефоны</a>
     </li>
-
     <li class="nav-item">
         <a class="nav-link" onclick="loadTable('Workplaces', this)">Рабочие места</a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link" onclick="loadTable('HardwareInfo', this)">Hardware</a>
+    </li>
 </ul>
-
 
 <div id="table-container">
     <p class="text-muted">Выберите таблицу для загрузки данных.</p>

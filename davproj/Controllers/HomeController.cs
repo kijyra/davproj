@@ -6,10 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace davproj.Controllers
 {
@@ -22,7 +19,6 @@ namespace davproj.Controllers
             _db = db;
             _env = env;
         }
-
         [AllowAnonymous]
         public IActionResult Index()
         {
@@ -78,7 +74,6 @@ namespace davproj.Controllers
             }
             return View(rootItems);
         }
-
         private void CreateDirectoryHierarchy(string rootPath, string relativePath, Dictionary<string, FileSystemItemViewModel> map, List<FileSystemItemViewModel> rootList)
         {
             var currentPath = string.Empty;
@@ -112,7 +107,6 @@ namespace davproj.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
         [Authorize]
         public IActionResult Settings()
         {
@@ -161,7 +155,7 @@ namespace davproj.Controllers
                     ? fullWinName.Split('\\').Last()
                     : fullWinName;
                 var adUser = _db.ADUsers
-                                    .FirstOrDefault(u => u.Cn == shortName);
+                    .FirstOrDefault(u => u.Cn == shortName);
                 if (adUser == null)
                 {
                     return Json(new { success = false, message = "Пользователь не найден в БД." });
@@ -172,7 +166,6 @@ namespace davproj.Controllers
             }
             return PartialView(userSettings);
         }
-
         [Authorize]
         static ADUser UpdateADUser(string IdentityName)
         {

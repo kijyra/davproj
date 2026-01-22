@@ -14,7 +14,6 @@
                     </div>
                     <h4 class="mb-0">@Model.GivenName</h4>
                     <p class="text-muted small">@@@User.Identity.Name.Split('\\').Last()</p>
-
                     <div class="d-flex justify-content-center align-items-center gap-2 mb-4">
                         @if (Model.Admin)
                         {
@@ -34,7 +33,6 @@
                             Активен
                         </span>
                     </div>
-
                     <div class="d-grid gap-2">
                         <a class="btn btn-outline-primary btn-open-modal @(Model.Admin ? "" : "disabled")
                            asp-area=""
@@ -63,7 +61,6 @@
                 </div>
             </div>
         </div>
-
         <div class="col-lg-8">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-transparent border-0 pt-4 px-4">
@@ -191,7 +188,6 @@
                                         <span class="me-2">Содержимое файла</span>
                                         <i class="bi bi-chevron-down transition-icon"></i>
                                     </a>
-
                                     <div class="collapse mt-2" id="spoilervnc">
                                         <div class="card card-body shadow-sm border-info p-3">
                                             <code class="text-start">
@@ -248,7 +244,6 @@
                                         <span class="me-2">Содержимое файла</span>
                                         <i class="bi bi-chevron-down transition-icon"></i>
                                     </a>
-
                                     <div class="collapse mt-2" id="spoilerrdp">
                                         <div class="card card-body shadow-sm border-info p-3">
                                             <code>

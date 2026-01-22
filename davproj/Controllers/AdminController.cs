@@ -3,7 +3,6 @@ using davproj.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NuGet.ProjectModel;
 using System.Collections;
 
 namespace davproj.Controllers
@@ -33,11 +32,10 @@ namespace davproj.Controllers
                 Workplaces = _db.Workplaces.ToList(),
                 Users = _db.Users.ToList(),
                 Printers = _db.Printers.ToList(),
+                HardwareInfo = _db.HardwareInfo.ToList()
             };
-
             return View(viewModel);
         }
-
         [Authorize(Roles = "IT_Full")]
         public IActionResult GetTableData(string tableName)
         {
@@ -81,7 +79,11 @@ namespace davproj.Controllers
                         .ToList();
                     break;
                 case "PCs":
-                    dataList = _db.PCs.Include(p => p.Workplace).ToList();
+                    dataList = _db.PCs
+                        .Include(p => p.Workplace)
+                        .Include(p => p.HardwareHistory)
+                        .Include(p => p.CurrentHardwareInfo)
+                        .ToList();
                     break;
                 case "Phones":
                     dataList = _db.Phones.Include(p => p.Workplace).ToList();
@@ -114,6 +116,9 @@ namespace davproj.Controllers
                         .Include(u => u.Printer)
                         .Include(u => u.Workplace)
                         .ToList();
+                    break;
+                case "HardwareInfo":
+                    dataList = _db.HardwareInfo.ToList();
                     break;
             }
             if (dataList == null)

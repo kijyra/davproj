@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using System.Xml.Linq;
 
 namespace davproj.Controllers
 {
@@ -290,6 +289,5 @@ namespace davproj.Controllers
             _db.SaveChanges();
             return Json(new { success = true });
         }
-
     }
 }

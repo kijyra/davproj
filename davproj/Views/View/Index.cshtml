@@ -10,24 +10,22 @@
     var userSettings = Settings.GetFor(User.Identity.Name);
     Func<dynamic, object> link = @<a href="@item.Url" class="btn btn-sm btn-outline-secondary" target="_blank">@item.Text</a>;
 }
+
 @section Styles {
     <style>
         body {
             background-color: var(--bs-body-bg);
             color: var(--bs-body-color);
         }
-
         .sidebar {
             background-color: var(--bs-secondary-bg);
             height: 100vh;
             padding: 20px;
             border-right: 1px solid var(--bs-border-color);
         }
-
         .content {
             padding: 20px;
         }
-
         .card {
             border: none;
             box-shadow: none;
@@ -37,7 +35,6 @@
             background-color: #007bff;
             color: white;
         }
-
         .dropdown-toggle-split::after {
             margin-left: 0.25em; /* Уменьшаем отступ от левого края */
             vertical-align: 0.1em; /* Поднимаем немного вверх */
@@ -48,12 +45,10 @@
             border-left: .3em solid transparent;
         }
     </style>
-
 }
 
 <div class="container-fluid">
     <div class="row">
-
         <!-- Боковая панель навигации (Sidebar) - Только здания -->
         <div class="col-md-3 sidebar">
             <h4 class="mb-4">Здания</h4>
@@ -83,7 +78,6 @@
                         <i class="bi bi-plus-lg"></i> Добавить рабочее место
                     </a>
                 </div>
-
                 <!-- Вкладки этажей -->
                 <ul class="nav nav-tabs mb-4">
                     @foreach (var floor in selectedBuilding.Floors)
@@ -96,12 +90,10 @@
                         </li>
                     }
                 </ul>
-
                 @if (selectedFloor != null)
                 {
                     <h3>Рабочие места на этаже "@selectedFloor.FloorNum"</h3>
                     <p class="small text-body-secondary">Нажмите на рабочее место, чтобы увидеть детали</p>
-
                     @foreach (var office in selectedFloor.Offices)
                     {
                         @if (office.Workplaces != null && office.Workplaces.Any())
@@ -115,7 +107,6 @@
                                         <h6 class="mb-0 fw-semibold text-body">@(office.Name ?? "Офис")</h6>
                                     </div>
                                 </div>
-
                                 <div class="accordion accordion-flush" id="accordion-office-@office.Id">
                                     @foreach (var wp in office.Workplaces)
                                     {
@@ -165,7 +156,6 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-
                                                         <!-- ПК -->
                                                         <div class="col-md-3">
                                                             <div class="card h-100 border-0 shadow-sm bg-body">
@@ -213,7 +203,6 @@
                                                                                 defaultConnectionType = currentSettings.DefaultConnection;
                                                                             }
                                                                             var defaultConnectionUrl = UserSettings.ConnectString[defaultConnectionType] + wp.PC.IP;
-
                                                                             <div class="btn-group">
                                                                                 <!-- Основная кнопка с действием -->
                                                                                 <a href="@defaultConnectionUrl" class="btn btn-sm btn-outline-primary">
@@ -226,10 +215,8 @@
                                                                                         aria-expanded="false">
                                                                                     <span class="visually-hidden">Переключить меню</span>
                                                                                 </button>
-
                                                                                 <div class="dropdown-menu">
                                                                                     @{
-                                                                                       
                                                                                         if (!wp.PC.Think && !wp.PC.Domain)
                                                                                         {
                                                                                            
@@ -245,7 +232,6 @@
                                                                                         else
                                                                                         {
                                                                                             var availableTypes = new List<(string Key, string Label)>();
-
                                                                                             if (wp.PC.Think)
                                                                                             {
                                                                                                 availableTypes.Add(("VNC", "VNC"));
@@ -269,19 +255,12 @@
                                                                                         }
                                                                                     }
                                                                                 </div>
-
                                                                             </div>
-
-
-
-
-
                                                                         }
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-
                                                         <!-- Телефон -->
                                                         <div class="col-md-3">
                                                             <div class="card h-100 border-0 shadow-sm bg-body">
@@ -322,7 +301,6 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-
                                                         <!-- Принтер -->
                                                         <div class="col-md-3">
                                                             <div class="card h-100 border-0 shadow-sm bg-body">
@@ -395,8 +373,5 @@
                 }
             }
         </div>
-
-        </div>
-
     </div>
 </div>

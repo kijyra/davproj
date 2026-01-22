@@ -6,6 +6,7 @@
     var domainKeys = new[] { "Any", "VNC", "RDPc", "RDPs" };
     var thinkKeys = new[] { "VNC", "WTRC", "WEB" };
 }
+
 <form method="post" asp-controller="Home" asp-action="UserSettings">
     <div class="modal-header">
         <h5 class="modal-title">Изменение настроек @User.Identity.Name.Split('\\')[1]</h5>

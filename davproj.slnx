@@ -1,3 +1,14 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="ClientAPI/HardwareAgent.csproj" Id="821f7620-72b3-48d9-afd6-dbbb63193117" />
   <Project Path="davproj/davproj.csproj" />
+  <Project Path="HardwareShared/HardwareShared.csproj" Id="5137aa37-050e-4dff-bcf5-859b97029982" />
+  <Project Path="InstallerService/InstallerService.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0" Id="b41556ca-9910-4151-9984-5f64ab494156">
+    <Platform Solution="*|Any CPU" Project="x64" />
+  </Project>
 </Solution>
