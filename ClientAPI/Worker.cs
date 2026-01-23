@@ -10,6 +10,8 @@ public class Worker : BackgroundService
     private readonly ClientAPI.HardwareAgent _agent;
     private readonly ApiClient _apiClient;
     private readonly int _collectionIntervalHours;
+    private const string RegistryPath = @"SOFTWARE\Dallari\HardwareAgent";
+    private const string ValueName = "LastRunDate";
 
     public Worker(ILogger<Worker> logger, ClientAPI.HardwareAgent agent, ApiClient apiClient, IOptions<Settings> options)
     {
@@ -27,47 +29,49 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        string registryPath = @"SOFTWARE\Dallari\HardwareAgent";
-        string valueName = "LastRunDate";
-
-        _logger.LogInformation("Служба запущена. Интервал: {hours} ч.", _collectionIntervalHours);
+        _logger.LogInformation("Служба сбора данных запущена. Интервал: {hours} ч.", _collectionIntervalHours);
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            DateTime lastRun = DateTime.MinValue;
-
-            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryPath))
+            try
             {
-                if (key != null)
-                {
-                    string rawValue = key.GetValue(valueName)?.ToString();
-                    DateTime.TryParse(rawValue, out lastRun);
-                }
+                await CheckAndCollectData();
             }
-
-            if ((DateTime.Now - lastRun).TotalHours >= _collectionIntervalHours)
+            catch (Exception ex)
             {
-                try
-                {
-                    _logger.LogInformation("Условие по времени выполнено. Сбор данных...");
-
-                    HardwareInfo info = _agent.CollectHardwareInfo();
-                    info.CollectedAtUtc = DateTime.UtcNow;
-
-                    await _apiClient.SendHardwareInfo(info);
-
-                    using (RegistryKey key = Registry.LocalMachine.CreateSubKey(registryPath))
-                    {
-                        key.SetValue(valueName, DateTime.Now.ToString("O"));
-                    }
-                    _logger.LogInformation("Данные успешно зафиксированы в реестре.");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Ошибка в цикле сбора/отправки");
-                }
+                _logger.LogError(ex, "Ошибка в фоновом цикле сбора данных");
             }
             await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
+        }
+    }
+
+    private async Task CheckAndCollectData()
+    {
+        DateTime lastRun = DateTime.MinValue;
+
+        using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(RegistryPath))
+        {
+            if (key != null)
+            {
+                string? rawValue = key.GetValue(ValueName)?.ToString();
+                DateTime.TryParse(rawValue, out lastRun);
+            }
+        }
+
+        if ((DateTime.Now - lastRun).TotalHours >= _collectionIntervalHours)
+        {
+            _logger.LogInformation("Условие по времени выполнено. Сбор данных о железе...");
+
+            HardwareInfo info = _agent.CollectHardwareInfo();
+            info.CollectedAtUtc = DateTime.UtcNow;
+
+            await _apiClient.SendHardwareInfo(info);
+
+            using (RegistryKey key = Registry.LocalMachine.CreateSubKey(RegistryPath))
+            {
+                key.SetValue(ValueName, DateTime.Now.ToString("O"));
+            }
+            _logger.LogInformation("Данные о железе успешно отправлены и зафиксированы.");
         }
     }
 }

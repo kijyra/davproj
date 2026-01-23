@@ -21,18 +21,18 @@ namespace davproj.Controllers
         [HttpGet]
         public async Task<ActionResult> UpdateCounters(int? id)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
-            Printer printer = await _db.Printers.FindAsync(id);
+            Printer? printer = await _db.Printers.FindAsync(id);
             if (printer == null)
             {
                 return NotFound();
             }
             try
             {
-                var counters = await _printerService.GetCountersAsync(printer.IP);
+                var counters = await _printerService.GetCountersAsync(printer.IP!);
                 var changed = false;
                 if (counters.PrintCounter > 0)
                 { printer.PrintCount = counters.PrintCounter; changed = true; }
@@ -68,27 +68,24 @@ namespace davproj.Controllers
         [HttpGet]
         public async Task<ActionResult> FuserRepair(int? id)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
-            Printer printer = await _db.Printers.FindAsync(id);
+            Printer? printer = await _db.Printers.FindAsync(id)!;
             if (printer == null)
             {
                 return NotFound();
             }
-            if (printer.LastFuserRepair == null)
-            {
-                printer.LastFuserRepair = new List<string>();
-            }
+            printer.LastFuserRepair ??= [];
             try
             {
-                UpdateCounters(id);
+                await UpdateCounters(id);
                 printer.LastFuserRepair.Add(DateTime.Now.ToString() + " | " + printer.PrintCount);
                 _db.Entry(printer).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                 _db.SaveChanges();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 printer.LastFuserRepair.Add(DateTime.Now.ToString() + " | " + printer.PrintCount);
                 _db.Entry(printer).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
@@ -133,14 +130,14 @@ namespace davproj.Controllers
         [HttpGet]
         public ActionResult PrinterEdit(int? id)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
             ViewData["workplaces"] = _db.Workplaces.ToList();
             ViewData["models"] = _db.PrinterModels.ToList();
             ViewData["FormAction"] = "PrinterEdit";
-            Printer printer = _db.Printers.Find(id);
+            Printer printer = _db.Printers.Find(id)!;
             if (printer != null)
             {
                 return PartialView("Printer", printer);
@@ -170,7 +167,7 @@ namespace davproj.Controllers
         [HttpPost]
         public ActionResult PrinterDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id == 0) { return NotFound(); }
             var printer = _db.Printers.Find(id);
             if (printer == null) { return NotFound(); }
             _db.Printers.Remove(printer);
@@ -201,12 +198,12 @@ namespace davproj.Controllers
         [HttpGet]
         public ActionResult ManufactorEdit(int? id)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
             ViewData["FormAction"] = "ManufactorEdit";
-            Manufactor manufactor = _db.Manufactors.Find(id);
+            Manufactor manufactor = _db.Manufactors.Find(id)!;
             if (manufactor != null)
             {
                 return PartialView("Manufactor", manufactor);
@@ -230,7 +227,7 @@ namespace davproj.Controllers
         [HttpPost]
         public ActionResult ManufactorDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id == 0) { return NotFound(); }
             var manufactor = _db.Manufactors.Find(id);
             if (manufactor == null) { return NotFound(); }
             _db.Manufactors.Remove(manufactor);
@@ -263,11 +260,11 @@ namespace davproj.Controllers
         [HttpGet]
         public ActionResult CartridgeEdit(int? id)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
-            Cartridge cartridge = _db.Cartridges.Find(id);
+            Cartridge cartridge = _db.Cartridges.Find(id)!;
             ViewData["manufactors"] = _db.Manufactors.ToList();
             ViewData["FormAction"] = "CartridgeEdit";
             if (cartridge != null)
@@ -294,7 +291,7 @@ namespace davproj.Controllers
         [HttpPost]
         public ActionResult CartridgeDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id == 0) { return NotFound(); }
             var cartridge = _db.Cartridges.Find(id);
             if (cartridge == null) { return NotFound(); }
             _db.Cartridges.Remove(cartridge);
@@ -327,13 +324,13 @@ namespace davproj.Controllers
         [HttpGet]
         public ActionResult PrinterModelEdit(int? id)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
             ViewData["cartridges"] = _db.Cartridges.Include(c => c.Manufactor).ToList();
             ViewData["FormAction"] = "PrinterModelEdit";
-            PrinterModel printerModel = _db.PrinterModels.Find(id);
+            PrinterModel printerModel = _db.PrinterModels.Find(id)!;
             if (printerModel != null)
             {
                 return PartialView("PrinterModel", printerModel);
@@ -358,7 +355,7 @@ namespace davproj.Controllers
         [HttpPost]
         public ActionResult PrinterModelDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id == 0) { return NotFound(); }
             var printerModel = _db.PrinterModels.Find(id);
             if (printerModel == null) { return NotFound(); }
             _db.PrinterModels.Remove(printerModel);

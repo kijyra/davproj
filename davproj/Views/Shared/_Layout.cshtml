@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/davproj.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
     @RenderSection("Styles", required: false)
     <style>
         html {
@@ -48,7 +49,7 @@
                 <div class="d-flex flex-wrap align-items-center justify-content-lg-end">
                     <ul class="nav col-12 col-lg-auto my-2 justify-content-center my-md-0 text-small">
                         @{
-                            Func<string, string> activeClass = (page) => ViewData["ActivePage"].Equals(page) ? "active" : "text-body-secondary";
+                            Func<string, string> activeClass = (page) => (ViewData["ActivePage"]?.Equals(page) ?? false) ? "active" : "text-body-secondary";
                         }
                         <li>
                             <a class="nav-link px-2 @activeClass("Home")" asp-area="" asp-controller="Home" asp-action="Index">
@@ -56,7 +57,7 @@
                                 Главная
                             </a>
                         </li>
-                        @if (Context.User.Identity.IsAuthenticated)
+                        @if (Context?.User?.Identity?.IsAuthenticated == true)
                         {
                             <li>
                                 <a class="nav-link px-2 @activeClass("View")" asp-area="" asp-controller="View" asp-action="Index">
@@ -67,8 +68,14 @@
                         }
                         <li>
                             @{
-                                string userName = Context.User.Identity.IsAuthenticated ? User.Identity.Name.Split('\\')[1] : "Войти";
-                                string settingsClass = Context.User.Identity.IsAuthenticated && ViewData["ActivePage"].Equals("Settings") ? "active" : "text-body-secondary";
+                                string userName = User.Identity?.IsAuthenticated == true 
+                                    ? User.Identity.Name?.Split('\\').ElementAtOrDefault(1) ?? "Пользователь"
+                                    : "Войти";
+
+                                string settingsClass = Context!.User.Identity?.IsAuthenticated == true 
+                                    && ViewData["ActivePage"]?.ToString() == "Settings" 
+                                    ? "active" 
+                                    : "text-body-secondary";
                             }
                             <a class="nav-link px-2 @settingsClass" asp-area="" asp-controller="Home" asp-action="Settings">
                                 <i class="bi bi-sliders2-vertical"></i>
@@ -132,6 +139,7 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script type="text/javascript">
@@ -325,6 +333,65 @@
                 });
             });
         })();
+
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "5000"
+        };
+
+        async function connectVnc(pcId, ip, fullControl) {
+            const btn = document.getElementById(`vnc-btn-${pcId}`);
+            const originalText = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            toastr.info("Запрос отправлен пользователю. Ожидайте...", "VNC");
+
+            try {
+                const url = `/VNC/Connect?pcId=${pcId}&fullControl=${fullControl}`;
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                // Обработка ответа
+                let result;
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    result = await response.json();
+                } else {
+                    result = await response.text();
+                }
+
+                if (response.ok) {
+                    toastr.success(result.message || "Пользователь разрешил подключение", "Успех");
+                    setTimeout(() => {
+                        window.location.href = `vnc://${ip}`;
+                    }, 500);
+                } else {
+                    const message = result.message || (typeof result === 'string' ? result : "Ошибка агента");
+
+                    if (response.status === 400) {
+                        toastr.warning(message, "Отказ");
+                    } else if (response.status === 504) {
+                        toastr.error("ПК выключен или агент не запущен (Timeout)", "Ошибка связи");
+                    } else {
+                        toastr.error(message, `Ошибка ${response.status}`);
+                    }
+                }
+            } catch (error) {
+                toastr.error("Не удалось связаться с сервером", "Ошибка");
+                console.error("VNC Error:", error);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

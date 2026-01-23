@@ -9,15 +9,15 @@ namespace davproj.Models
         [Required(ErrorMessage = "Введите имя")]
         [StringLength(20, MinimumLength = 3, ErrorMessage = "Длина от 3 до 20 символов")]
         [DisplayName("Имя")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         [Required(ErrorMessage = "Введите фамилию")]
         [StringLength(20, MinimumLength = 3, ErrorMessage = "Длина от 3 до 20 символов")]
         [DisplayName("Фамилия")]
-        public string SurName { get; set; }
+        public string SurName { get; set; } = string.Empty;
         [Required(ErrorMessage = "Введите должность")]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Длина от 3 до 50 символов")]
         [DisplayName("Должность")]
-        public string Position { get; set; }
+        public string Position { get; set; } = string.Empty;
         [DisplayName("ID в битриксе")]
         public int? Bitrix { get; set; }
         public ADUser? ADUser { get; set; }

@@ -51,11 +51,11 @@ namespace davproj.Controllers
         [HttpGet]
         public ActionResult PhoneEdit(int? id)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
-            Phone phone = _db.Phones.Find(id);
+            Phone phone = _db.Phones.Find(id)!;
             if (phone != null)
             {
                 ViewData["workplaces"] = _db.Workplaces.ToList();
@@ -82,7 +82,7 @@ namespace davproj.Controllers
         [HttpPost]
         public ActionResult PhoneDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id is 0) { return NotFound(); }
             var phone = _db.Phones.Find(id);
             if (phone == null) { return NotFound(); }
             _db.Phones.Remove(phone);
@@ -119,11 +119,11 @@ namespace davproj.Controllers
         [HttpGet]
         public ActionResult PCEdit(int? id)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
-            PC pc = _db.PCs.Find(id);
+            PC pc = _db.PCs.Find(id)!;
             if (pc != null)
             {
                 ViewData["workplaces"] = _db.Workplaces.ToList();
@@ -154,7 +154,7 @@ namespace davproj.Controllers
         [HttpPost]
         public ActionResult PCDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id is 0) { return NotFound(); }
             var pc = _db.PCs.Find(id);
             if (pc == null) { return NotFound(); }
             _db.PCs.Remove(pc);

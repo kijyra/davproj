@@ -43,11 +43,11 @@ namespace davproj.Controllers
         [HttpGet]
         public ActionResult UserEdit(int? id)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
-            User user = _db.Users.Find(id);
+            User user = _db.Users.Find(id)!;
 
             if (user != null)
             {
@@ -79,7 +79,7 @@ namespace davproj.Controllers
         [HttpPost]
         public ActionResult UserDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id == 0) { return NotFound(); }
             var user = _db.Users.Find(id);
             if (user == null) { return NotFound(); }
             _db.Users.Remove(user);

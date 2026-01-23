@@ -1,16 +1,17 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+     xmlns:firewall="http://wixtoolset.org/schemas/v4/wxs/firewall">
 
 	<Package Name="HardwareAgentService"
-			 Manufacturer="Dallari"
-			 Version="1.0.4"
-			 UpgradeCode="550e8400-e29b-41d4-a716-446655440000"
-			 Language="1049"
-			 Codepage="1251">
+             Manufacturer="Dallari"
+             Version="1.2.9"
+             UpgradeCode="550e8400-e29b-41d4-a716-446655440000"
+             Language="1049">
 
-		<MajorUpgrade DowngradeErrorMessage="Более новая версия уже установлена." />
-
+		<MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
 		<MediaTemplate EmbedCab="yes" />
+
 
 		<StandardDirectory Id="ProgramFiles64Folder">
 			<Directory Id="CompanyFolder" Name="Dallari">
@@ -26,43 +27,81 @@
 
 		<ComponentGroup Id="ServiceComponents" Directory="INSTALLFOLDER">
 			<Component Id="Cmp_HardwareAgentExe" Guid="*">
-				<File Id="File_Exe"
-					  Source="C:\proj\davproj\ClientAPI\bin\Release\net10.0-windows10.0.17763.0\win-x64\publish\HardwareAgent.exe"
-					  KeyPath="yes" />
+				<File Id="File_Exe" Source="C:\proj\davproj\ClientAPI\bin\Release\publish\HardwareAgent.exe" KeyPath="yes">
+					<firewall:FirewallException Id="FW_ApiPort"
+                                                Name="Hardware Agent API"
+                                                Port="5005"
+                                                Protocol="tcp"
+                                                Scope="any" />
+				</File>
+				<ServiceInstall Id="ServiceInstaller" Type="ownProcess" Name="HardwareAgentService" DisplayName="Hardware Agent Service" Start="auto" Account="LocalSystem" ErrorControl="normal" />
+				<ServiceControl Id="StartService" Name="HardwareAgentService" Start="install" Stop="both" Remove="uninstall" Wait="yes" />
+			</Component>
+			<Component Id="Cmp_AppSettingsJson" Guid="*">
+				<File Id="File_Config" Source="C:\proj\davproj\ClientAPI\bin\Release\publish\appsettings.json" KeyPath="yes" />
+			</Component>
+		</ComponentGroup>
 
-				<ServiceInstall Id="ServiceInstaller"
-								Type="ownProcess"
-								Name="HardwareAgentService"
-								DisplayName="Hardware Agent Service"
-								Start="auto"
-								Account="LocalSystem"
-								ErrorControl="normal" />
+		<ComponentGroup Id="VncSettings" Directory="INSTALLFOLDER">
+			<Component Id="Cmp_VncRegistry" Guid="a1b2c3d4-e5f6-4789-8000-112233445566">
+				<RegistryKey Root="HKLM" Key="Software\TightVNC\Server">
+					<RegistryValue Name="ControlPassword" Value="00" Type="binary" />
+					<RegistryValue Name="Password" Value="00" Type="binary" />
+					<RegistryValue Name="PasswordViewOnly" Value="00" Type="binary" />
+					<RegistryValue Name="CaptureMethod" Value="1" Type="integer" />
+					<RegistryValue Name="ControlLevel" Value="0" Type="integer" KeyPath="yes" />
+				</RegistryKey>
+			</Component>
+		</ComponentGroup>
 
-				<ServiceControl Id="StartService"
-								Name="HardwareAgentService"
-								Start="install"
-								Stop="both"
-								Remove="uninstall"
-								Wait="yes" />
+		<ComponentGroup Id="TrayAppComponents" Directory="INSTALLFOLDER">
+			<Component Id="Cmp_VncTrayAppExe" Guid="*">
+				<File Id="File_TrayAppExe" Source="C:\proj\davproj\VncTrayApp\bin\Release\net10.0-windows\VncTrayApp.exe" KeyPath="yes" />
+			</Component>
+			<Component Id="Cmp_VncTrayAppDll" Guid="*">
+				<File Id="File_TrayAppDll" Source="C:\proj\davproj\VncTrayApp\bin\Release\net10.0-windows\VncTrayApp.dll" />
+			</Component>
+			<Component Id="Cmp_DepsJson" Guid="*">
+				<File Id="File_DepsJson" Source="C:\proj\davproj\VncTrayApp\bin\Release\net10.0-windows\VncTrayApp.deps.json" />
+			</Component>
+			<Component Id="Cmp_RuntimeConfig" Guid="*">
+				<File Id="File_RuntimeConfig" Source="C:\proj\davproj\VncTrayApp\bin\Release\net10.0-windows\VncTrayApp.runtimeconfig.json" />
 			</Component>
 
-			<Component Id="Cmp_AppSettingsJson" Guid="*">
-				<File Id="File_Config"
-					  Source="C:\proj\davproj\ClientAPI\bin\Release\net10.0-windows10.0.17763.0\win-x64\publish\appsettings.json"
-					  KeyPath="yes" />
+			<Component Id="Cmp_AutoRunRegistry" Guid="*">
+				<RegistryKey Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run">
+					<RegistryValue Name="VncTrayAppDallari"
+                                   Value="[INSTALLFOLDER]VncTrayApp.exe"
+                                   Type="string"
+                                   KeyPath="yes" />
+				</RegistryKey>
 			</Component>
 		</ComponentGroup>
 
 		<ComponentGroup Id="AppDataComponents" Directory="MyAppProgramDataFolder">
 			<Component Id="CreateAppDataFolder" Guid="d4e5f678-9012-3456-7890-abcdef123456">
 				<CreateFolder />
-				<RegistryValue Root="HKCU" Key="Software\Dallari\HardwareAgent" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+				<RegistryValue Root="HKLM" Key="Software\Dallari\HardwareAgent" Name="installed" Type="integer" Value="1" KeyPath="yes" />
 			</Component>
 		</ComponentGroup>
 
 		<Feature Id="MainFeature" Title="Hardware Agent Service" Level="1">
 			<ComponentGroupRef Id="ServiceComponents" />
 			<ComponentGroupRef Id="AppDataComponents" />
+			<ComponentGroupRef Id="VncSettings" />
+			<ComponentGroupRef Id="TrayAppComponents" />
 		</Feature>
+
+		<CustomAction Id="SetVncManual"
+					  Directory="TARGETDIR"
+					  ExeCommand="cmd.exe /c sc config tvnserver start= demand"
+					  Execute="deferred"
+					  Return="ignore"
+					  Impersonate="no" />
+
+		<InstallExecuteSequence>
+			<Custom Action="SetVncManual" After="InstallExecute" Condition="NOT Installed" />
+		</InstallExecuteSequence>
+		
 	</Package>
 </Wix>

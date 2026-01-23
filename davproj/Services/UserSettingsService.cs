@@ -1,6 +1,5 @@
 ﻿using davproj.Models;
 using Microsoft.EntityFrameworkCore;
-using davproj.Models;
 
 namespace davproj.Services
 {

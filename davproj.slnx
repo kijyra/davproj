@@ -11,4 +11,8 @@
   <Project Path="InstallerService/InstallerService.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0" Id="b41556ca-9910-4151-9984-5f64ab494156">
     <Platform Solution="*|Any CPU" Project="x64" />
   </Project>
+  <Project Path="ServiceWithVNC/ServiceWithVNC.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0" Id="661283c9-49c0-41a7-808a-b5fa13a74bd8">
+    <Platform Solution="*|Any CPU" Project="x64" />
+  </Project>
+  <Project Path="VncTrayApp/VncTrayApp.csproj" Id="a507bcf1-2015-49bf-98ec-cca8346a1c2c" />
 </Solution>

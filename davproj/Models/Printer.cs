@@ -10,7 +10,7 @@ namespace davproj.Models
         [Required(ErrorMessage = "Введите имя принтера")]
         [StringLength(20, MinimumLength = 3, ErrorMessage = "Длина от 3 до 20 символов")]
         [DisplayName("Название принтера")]
-        public string PrinterName { get; set; }
+        public string PrinterName { get; set; } = String.Empty;
         [Required(ErrorMessage = "Выберите модель принтера")]
         [DisplayName("ID модели")]
         public int? PrinterModelId { get; set; }

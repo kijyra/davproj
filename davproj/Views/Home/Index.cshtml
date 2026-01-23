@@ -11,7 +11,7 @@
 <ul class="list-group w-50 mx-auto">
     @foreach (var item in Model)
     {
-        @Html.Partial("_FileSystemItem", item)
+        <partial name="_FileSystemItem" model="item" />
     }
 </ul>
 <script>

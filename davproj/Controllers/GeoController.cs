@@ -44,11 +44,11 @@ namespace davproj.Controllers
         [HttpGet]
         public ActionResult LocationEdit(int? id)
         {
-            if (id == null)
+            if (id is 0)
             {
                 return NotFound();
             }
-            Location location = _db.Locations.Find(id);
+            Location location = _db.Locations.Find(id)!;
             ViewData["FormAction"] = "LocationEdit";
             if (location != null)
             {
@@ -73,7 +73,7 @@ namespace davproj.Controllers
         [HttpPost]
         public ActionResult LocationDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id is 0) { return NotFound(); }
             var location = _db.Locations.Find(id);
             if (location == null) { return NotFound(); }
             if (location.Buildings != null)
@@ -115,13 +115,13 @@ namespace davproj.Controllers
         public ActionResult BuildingEdit(int? id)
         {
 
-            if (id == null)
+            if (id == 0)
             {
                 return NotFound();
             }
             ViewData["locations"] = _db.Locations.ToList();
             ViewData["FormAction"] = "BuildingEdit";
-            Building building = _db.Buildings.Find(id);
+            Building building = _db.Buildings.Find(id)!;
             if (building != null)
             {
                 return PartialView("Building", building);
@@ -145,7 +145,7 @@ namespace davproj.Controllers
         [Authorize(Roles = "IT_Full")]
         public ActionResult BuildingDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id == 0) { return NotFound(); }
             var building = _db.Buildings.Find(id);
             if (building == null) { return NotFound(); }
             _db.Buildings.Remove(building);
@@ -178,13 +178,13 @@ namespace davproj.Controllers
         [HttpGet]
         public ActionResult FloorEdit(int? id)
         {
-            if (id == null)
+            if (id is null or 0)
             {
                 return NotFound();
             }
             ViewData["buildings"] = _db.Buildings.ToList();
             ViewData["FormAction"] = "FloorEdit";
-            Floor floor = _db.Floors.Find(id);
+            Floor floor = _db.Floors.Find(id)!;
             if (floor != null)
             {
                 return PartialView("Floor", floor);
@@ -209,7 +209,7 @@ namespace davproj.Controllers
         [HttpPost]
         public ActionResult FloorDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id == 0) { return NotFound(); }
             var floor = _db.Floors.Find(id);
             if (floor == null) { return NotFound(); }
             _db.Floors.Remove(floor);
@@ -248,13 +248,13 @@ namespace davproj.Controllers
         [HttpGet]
         public IActionResult OfficeEdit(int id)
         {
-            if (id == null)
+            if (id == 0)
             {
                 return NotFound();
             }
             ViewData["FormAction"] = "OfficeEdit";
             ViewData["floors"] = _db.Floors.ToList();
-            Office office = _db.Offices.Find(id);
+            Office office = _db.Offices.Find(id)!;
             if (office != null)
             {
                 return PartialView("Office", office);
@@ -282,7 +282,7 @@ namespace davproj.Controllers
         [Authorize(Roles = "IT_Full")]
         public ActionResult OfficeDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id == 0) { return NotFound(); }
             var office = _db.Offices.Find(id);
             if (office == null) { return NotFound(); }
             _db.Offices.Remove(office);

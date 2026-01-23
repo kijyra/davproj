@@ -15,7 +15,7 @@ namespace davproj.Models
         [RegularExpression(@"^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$",
         ErrorMessage = "Некорректный формат IP-адреса")]
         [DisplayName("IP-адрес")]
-        public string IP {  get; set; }
+        public string IP {  get; set; } = String.Empty;
         [DisplayName("В домене")]
         public bool Domain { get; set; }
         [DisplayName("Тонкий клиент")]
@@ -25,7 +25,7 @@ namespace davproj.Models
         public Workplace? Workplace { get; set; }
         public string FullName => IP + " - " + Hostname;
         public int? CurrentHardwareInfoId { get; set; }
-        public virtual HardwareInfo CurrentHardwareInfo { get; set; }
+        public virtual HardwareInfo CurrentHardwareInfo { get; set; } = new HardwareInfo();
         public virtual ICollection<HardwareInfo> HardwareHistory { get; set; } = new List<HardwareInfo>();
     }
 }

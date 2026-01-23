@@ -36,7 +36,7 @@ namespace davproj.Services
                     ScanCounter = int.Parse(result[1].Data.ToString())
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new KyoceraCounters { PrintCounter = 0, ScanCounter = 0 };
             }

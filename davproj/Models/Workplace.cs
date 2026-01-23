@@ -9,7 +9,7 @@ namespace davproj.Models
         [Required(ErrorMessage = "Введите название рабочего места")]
         [StringLength(30, MinimumLength = 3, ErrorMessage = "Длина от 3 до 30 символов")]
         [DisplayName("Название")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         [DisplayName("Принтер?")]
         public bool Print { get; set; } 
         public Printer? Printer { get; set; }

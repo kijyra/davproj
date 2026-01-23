@@ -33,26 +33,32 @@ namespace davproj.Models
                 .HasOne(w => w.Phone)
                 .WithOne(p => p.Workplace)
                 .HasForeignKey<Workplace>(w => w.PhoneId)
-                .IsRequired(false);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull); ;
             modelBuilder.Entity<Workplace>()
                 .HasOne(w => w.PC)
                 .WithOne(p => p.Workplace)
                 .HasForeignKey<Workplace>(w => w.PCId)
-                .IsRequired(false);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Workplace>()
                 .HasOne(w => w.User)
                 .WithOne(u => u.Workplace)
                 .HasForeignKey<Workplace>(w => w.UserId)
-                .IsRequired(false);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull); ;
             modelBuilder.Entity<User>()
                  .HasOne(u => u.ADUser)
                  .WithOne(p => p.User)
-                 .HasForeignKey<User>(u => u.ADUserId);
+                 .HasForeignKey<User>(u => u.ADUserId)
+                 .IsRequired(false)
+                 .OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Workplace>()
                 .HasOne(w => w.Printer)
                 .WithMany(p => p.Workplaces)    
                 .HasForeignKey(w => w.PrinterId)
-                .IsRequired(false);           
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);           
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Printer)
                 .WithMany(p => p.Users)         

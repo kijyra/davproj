@@ -35,7 +35,7 @@
 @if (properties != null && Model.Cast<object>().Any())
 {
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Таблица: @itemType.Name</h3>
+        <h3>Таблица: @itemType?.Name</h3>
         <a href="@Url.Action(createActionName, controllerName)" class="btn btn-success btn-open-modal">Добавить запись</a>
     </div>
     <div class="table-responsive">

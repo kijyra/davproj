@@ -1,0 +1,31 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
+  <Bundle Id="TODO_Manufacturer.ServiceWithVNC" 
+		  Name="Hardware Agent Service" 
+		  Manufacturer="Dallari" 
+		  Version="1.2.91"
+		  UpgradeCode="49F2BAF0-D39C-47A6-9791-A1E4A35B108B">
+        
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication LicenseUrl="" Theme="hyperlinkLicense" />
+    </BootstrapperApplication>
+
+    <Chain>
+		<MsiPackage SourceFile="tightvnc.msi"
+					Permanent="yes"
+					Visible="no">
+			<MsiProperty Name="INSTALL_SERVER" Value="1" />
+			<MsiProperty Name="INSTALL_VIEWER" Value="0" />
+			<MsiProperty Name="SERVER_REGISTER_AS_SERVICE" Value="1" />
+			<MsiProperty Name="SERVER_ADD_FIREWALL_EXCEPTION" Value="1" />
+		</MsiPackage>
+		<ExePackage SourceFile="windowsdesktop-runtime-10.0.2-win-x64.exe"
+                  InstallArguments="/install /quiet /norestart"
+                  DetectCondition="DotNetRuntimeInstalledVariable" 
+				  DisplayName="Microsoft .NET Desktop Runtime 10.0"
+				  Permanent="yes"
+				Vital="yes"/>
+		<MsiPackage SourceFile="C:\proj\davproj\InstallerService\bin\x64\Release\InstallerService.msi" />
+    </Chain>
+
+  </Bundle>
+</Wix>

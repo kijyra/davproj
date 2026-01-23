@@ -19,27 +19,27 @@ namespace davproj.Controllers
         {
             var viewModel = new ManageDBViewModel
             {
-                ADUsers = _db.ADUsers.ToList(),
-                Buildings = _db.Buildings.ToList(),
-                Cartridges = _db.Cartridges.ToList(),
-                Floors = _db.Floors.ToList(),
-                Locations = _db.Locations.ToList(),
-                Manufactors = _db.Manufactors.ToList(),
-                Offices = _db.Offices.ToList(),
-                PCs = _db.PCs.ToList(),
-                Phones = _db.Phones.ToList(),
-                PrinterModels = _db.PrinterModels.ToList(),
-                Workplaces = _db.Workplaces.ToList(),
-                Users = _db.Users.ToList(),
-                Printers = _db.Printers.ToList(),
-                HardwareInfo = _db.HardwareInfo.ToList()
+                ADUsers = [.. _db.ADUsers],
+                Buildings = [.. _db.Buildings],
+                Cartridges = [.. _db.Cartridges],
+                Floors = [.. _db.Floors],
+                Locations = [.. _db.Locations],
+                Manufactors = [.. _db.Manufactors],
+                Offices = [.. _db.Offices],
+                PCs = [.. _db.PCs],
+                Phones = [.. _db.Phones],
+                PrinterModels = [.. _db.PrinterModels],
+                Workplaces = [.. _db.Workplaces],
+                Users = [.. _db.Users],
+                Printers = [.. _db.Printers],
+                HardwareInfo = [.. _db.HardwareInfo]
             };
             return View(viewModel);
         }
         [Authorize(Roles = "IT_Full")]
         public IActionResult GetTableData(string tableName)
         {
-            IEnumerable dataList = null;
+            IEnumerable? dataList = null;
             string viewName = "_DynamicTablePartial";
             switch (tableName)
             {
@@ -74,8 +74,8 @@ namespace davproj.Controllers
                     dataList = _db.Offices
                         .Include(o => o.Workplaces)
                         .Include(o => o.Floor)
-                            .ThenInclude(f => f.Building)
-                            .ThenInclude(b => b.Location)
+                            .ThenInclude(f => f!.Building)
+                            .ThenInclude(b => b!.Location)
                         .ToList();
                     break;
                 case "PCs":

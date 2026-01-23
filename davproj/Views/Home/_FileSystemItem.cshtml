@@ -9,7 +9,7 @@
             <ul class="list-group mt-1 ms-3" style="display: none;">
                 @foreach (var item in Model.Children)
                 {
-                    @Html.Partial("_FileSystemItem", item)
+                    <partial name="_FileSystemItem" model="item" />
                 }
             </ul>
         }

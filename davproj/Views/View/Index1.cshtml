@@ -1,0 +1,404 @@
+﻿@inject davproj.Services.UserSettingsService Settings
+@model IEnumerable<Workplace>
+@{
+    ViewData["Title"] = "Рабочие места";
+    ViewData["ActivePage"] = "View";
+    var currentSettings = Settings.GetFor(User.Identity?.Name ?? string.Empty);
+    var buildings = ViewBag.Buildings as List<Building>;
+    var selectedBuilding = ViewBag.SelectedBuilding as Building;
+    var selectedFloor = ViewBag.SelectedFloor as Floor;
+    var userSettings = Settings.GetFor(User!.Identity.Name);
+    Func<dynamic, object> link = @<a href="@item.Url" class="btn btn-sm btn-outline-secondary" target="_blank">@item.Text</a>;
+}
+
+@section Styles {
+    <style>
+        body {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+        .sidebar {
+            background-color: var(--bs-secondary-bg);
+            height: 100vh;
+            padding: 20px;
+            border-right: 1px solid var(--bs-border-color);
+        }
+        .content {
+            padding: 20px;
+        }
+        .card {
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+        }
+        .nav-pills .nav-link.active, .nav-pills .nav-link:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .dropdown-toggle-split::after {
+            margin-left: 0.25em; /* Уменьшаем отступ от левого края */
+            vertical-align: 0.1em; /* Поднимаем немного вверх */
+            content: ""; /* Нужно для отображения самой стрелки */
+            border-top: .3em solid; /* Размер самой стрелки */
+            border-right: .3em solid transparent;
+            border-bottom: 0;
+            border-left: .3em solid transparent;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Боковая панель навигации (Sidebar) - Только здания -->
+        <div class="col-md-3 sidebar">
+            <h4 class="mb-4">Здания</h4>
+            <ul class="nav nav-pills flex-column mb-auto">
+                @foreach (var b in buildings!)
+                {
+                    <li class="nav-item">
+                        <a asp-action="Index" asp-route-buildingId="@b.Id"
+                           class="nav-link @(selectedBuilding?.Id == b.Id ? "active" : "text-body-secondary")">
+                            @b.Name
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+        <!-- Main Content -->
+        <div class="col-md-9 content">
+            @if (selectedBuilding != null)
+            {
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>Здание: @selectedBuilding.Name</h1>
+                    <a class="btn btn-primary btn-open-modal"
+                       role="button"
+                       asp-area=""
+                       asp-controller="View"
+                       asp-action="WorkplaceAdd">
+                        <i class="bi bi-plus-lg"></i> Добавить рабочее место
+                    </a>
+                </div>
+                <!-- Вкладки этажей -->
+                <ul class="nav nav-tabs mb-4">
+                    @foreach (var floor in selectedBuilding!.Floors!)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(selectedFloor?.Id == floor.Id ? "active" : "")"
+                               asp-action="Index" asp-route-buildingId="@selectedBuilding.Id" asp-route-floorId="@floor.Id">
+                                @floor.FloorNum
+                            </a>
+                        </li>
+                    }
+                </ul>
+                @if (selectedFloor != null)
+                {
+                    <h3>Рабочие места на этаже "@selectedFloor!.FloorNum"</h3>
+                    <p class="small text-body-secondary">Нажмите на рабочее место, чтобы увидеть детали</p>
+                    @foreach (var office in selectedFloor!.Offices!)
+                    {
+                        @if (office.Workplaces != null && office.Workplaces.Any())
+                        {
+                            <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden bg-secondary-subtle">
+                                <div class="card-header bg-body border-0 pt-3 px-3 pb-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 p-1 rounded-2 me-2">
+                                            <i class="bi bi-building text-primary fs-6"></i>
+                                        </div>
+                                        <h6 class="mb-0 fw-semibold text-body">@(office.Name ?? "Офис")</h6>
+                                    </div>
+                                </div>
+                                <div class="accordion accordion-flush" id="accordion-office-@office.Id">
+                                    @foreach (var wp in office.Workplaces)
+                                    {
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed text-body" type="button" data-bs-toggle="collapse" data-bs-target="#wp-@wp.Id">
+                                                    <strong>@wp.Name</strong> &nbsp;
+                                                    <span class="text-body-secondary">(@(wp.User?.FullName ?? "Свободно"))</span>
+                                                </button>
+                                            </h2>
+                                            <div id="wp-@wp.Id" class="accordion-collapse collapse" data-bs-parent="#accordion-office-@office.Id">
+                                                <div class="accordion-body bg-body-tertiary">
+                                                    <div class="row gw-3">
+                                                        <!-- Пользователь -->
+                                                        <div class="col-md-3">
+                                                            <div class="card h-100 border-0 shadow-sm bg-body">
+                                                                <div class="card-body p-3">
+                                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                                        <h6 class="text-primary fw-bold mb-0">
+                                                                            <i class="bi bi-person me-1"></i> Пользователь
+                                                                        </h6>
+                                                                        @if (wp.User != null)
+                                                                        {
+                                                                            <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                                                                               asp-controller="User" asp-action="UserEdit" asp-route-id="@wp.User.Id">
+                                                                                <i class="bi bi-pencil-square"></i>
+                                                                            </a>
+                                                                        }
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <div class="fw-bold text-truncate text-body">
+                                                                            @(wp.User?.FullName ?? "Нет данных")
+                                                                        </div>
+                                                                        <div class="text-body-secondary small mb-2">
+                                                                            @(wp.User?.Position ?? "Нет данных")
+                                                                        </div>
+                                                                        <div class="text-body-secondary small">
+                                                                            <i class="bi bi-person-badge me-1"></i> DALLARI\@((wp.User?.ADUser?.Cn ?? "Нет данных").ToLower())
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="d-grid">
+                                                                        @if (wp.User != null && wp.User.Bitrix != null)
+                                                                        {
+                                                                            @link(new { Url = wp.User.BitrixPath, Text = "Профиль", Class = "btn btn-sm btn-outline-primary" })
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- ПК -->
+                                                        <div class="col-md-3">
+                                                            <div class="card h-100 border-0 shadow-sm bg-body">
+                                                                <div class="card-body p-3">
+                                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                                        <h6 class="text-primary fw-bold mb-0">
+                                                                            <i class="bi bi-laptop me-1"></i> Компьютер
+                                                                        </h6>
+                                                                        @if (wp.PC != null)
+                                                                        {
+                                                                            <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                                                                               asp-controller="PP" asp-action="PCEdit" asp-route-id="@wp.PC.Id">
+                                                                                <i class="bi bi-pencil-square"></i>
+                                                                            </a>
+                                                                        }
+                                                                    </div>
+                                                                    <div class="mb-3 text-white">
+                                                                        <div class="small">
+                                                                            <span class="text-body-secondary">Hostname:</span>
+                                                                            <span class="fw-bold">@(wp.PC?.Hostname ?? "Нет данных")</span>
+                                                                        </div>
+                                                                        <div class="small">
+                                                                            <span class="text-body-secondary">IP:</span>
+                                                                            <span class="fw-bold">@(wp.PC?.IP ?? "—")</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="bg-body-tertiary rounded p-2 mb-3 text-white">
+                                                                        <div class="row small mb-1">
+                                                                            <div class="col-6 text-body-secondary">Процессор:</div>
+                                                                            <div class="col-6 text-end fw-bold">@(wp.PC?.CurrentHardwareInfo?.ProcessorName ?? "—")</div>
+                                                                        </div>
+                                                                        <div class="row small mb-1">
+                                                                            <div class="col-6 text-body-secondary">Объем ОЗУ:</div>
+                                                                            <div class="col-6 text-end fw-bold">
+                                                                                @($"{wp.PC?.CurrentHardwareInfo?.TotalMemoryGB} GB" ?? "—")
+                                                                                @($"{wp.PC?.CurrentHardwareInfo?.RamType}" ?? "")    
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row small mb-1">
+                                                                            <div class="col-6 text-body-secondary">Слоты ОЗУ:</div>
+                                                                            <div class="col-6 text-end fw-bold">@($"{wp.PC?.CurrentHardwareInfo?.UsedRamSlots} / {wp.PC?.CurrentHardwareInfo?.TotalRamSlots}" ?? "—")</div>
+                                                                        </div>
+                                                                        <div class="row small mb-1">
+                                                                            <div class="col-6 text-body-secondary">Тип HDD:</div>
+                                                                            <div class="col-6 text-end fw-bold">@(wp.PC?.CurrentHardwareInfo?.DiskType ?? "—")</div>
+                                                                        </div>
+                                                                        <div class="row small">
+                                                                            <div class="col-6 text-body-secondary">Занято HDD:</div>
+                                                                            <div class="col-6 text-end fw-bold">@(wp.PC?.CurrentHardwareInfo?.DiskInfo ?? "—")</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="bg-body-tertiary rounded p-2 mb-3">
+                                                                        <div class="small fw-bold @(wp.PC?.Domain == true ? "text-success" : "text-danger")">
+                                                                            <i class="bi bi-circle-fill" style="font-size: 0.5rem; vertical-align: middle;"></i>
+                                                                            @(wp.PC?.Domain == true ? "В домене" : wp.PC?.Think == true ? "Тонкий клиент" : "Не в домене")
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="d-grid">
+                                                                        @if (wp.PC != null)
+                                                                        {
+                                                                            var defaultConnectionType = "";
+                                                                            if (wp.PC.Domain)
+                                                                            {
+                                                                                defaultConnectionType = currentSettings!.DomainConnection;
+                                                                            }
+                                                                            else if (wp.PC.Think)
+                                                                            {
+                                                                                defaultConnectionType = currentSettings!.ThinkConnection;
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                defaultConnectionType = currentSettings!.DefaultConnection;
+                                                                            }
+                                                                            var defaultConnectionUrl = UserSettings.ConnectString[defaultConnectionType] + wp.PC.IP;
+                                                                            <div class="btn-group">
+                                                                                <!-- Основная кнопка с действием -->
+                                                                                <a href="@defaultConnectionUrl" class="btn btn-sm btn-outline-primary">
+                                                                                    @defaultConnectionType
+                                                                                </a>
+                                                                                <button type="button"
+                                                                                        class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-split"
+                                                                                        data-bs-toggle="dropdown"
+                                                                                        data-toggle="dropdown"
+                                                                                        aria-expanded="false">
+                                                                                    <span class="visually-hidden">Переключить меню</span>
+                                                                                </button>
+                                                                                <div class="dropdown-menu">
+                                                                                    @{
+                                                                                        if (!wp.PC.Think && !wp.PC.Domain)
+                                                                                        {
+                                                                                           
+                                                                                            if (defaultConnectionType == "VNC")
+                                                                                            {
+                                                                                                <a class="dropdown-item" href="@(UserSettings.ConnectString["Any"] + wp.PC.IP)">Anydesk</a>
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <a class="dropdown-item" href="@(UserSettings.ConnectString["VNC"] + wp.PC.IP)">VNC</a>
+                                                                                            }
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            var availableTypes = new List<(string Key, string Label)>();
+                                                                                            if (wp.PC.Think)
+                                                                                            {
+                                                                                                availableTypes.Add(("VNC", "VNC"));
+                                                                                                availableTypes.Add(("WTRC", "WTRC"));
+                                                                                                availableTypes.Add(("WEB", "WEB"));
+                                                                                            }
+                                                                                            else if (wp.PC.Domain)
+                                                                                            {
+                                                                                                availableTypes.Add(("Any", "Anydesk"));
+                                                                                                availableTypes.Add(("VNC", "VNC"));
+                                                                                                availableTypes.Add(("RDPc", "RDP с запросом"));
+                                                                                                availableTypes.Add(("RDPs", "RDP без запроса"));
+                                                                                            }
+                                                                                            foreach (var type in availableTypes)
+                                                                                            {
+                                                                                                if (type.Key != defaultConnectionType && UserSettings.ConnectString.ContainsKey(type.Key))
+                                                                                                {
+                                                                                                    <a class="dropdown-item" href="@(UserSettings.ConnectString[type.Key] + wp.PC.IP)">@type.Label</a>
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                </div>
+                                                                            </div>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- Телефон -->
+                                                        <div class="col-md-3">
+                                                            <div class="card h-100 border-0 shadow-sm bg-body">
+                                                                <div class="card-body p-3">
+                                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                                        <h6 class="text-primary fw-bold mb-0">
+                                                                            <i class="bi bi-telephone me-1"></i> Телефон
+                                                                        </h6>
+                                                                        @if (wp.Phone != null)
+                                                                        {
+                                                                            <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                                                                               asp-controller="PP" asp-action="PhoneEdit" asp-route-id="@wp.Phone.Id">
+                                                                                <i class="bi bi-pencil-square"></i>
+                                                                            </a>
+                                                                        }
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <div class="fw-bold text-body">
+                                                                            @(wp.Phone?.Model ?? "Нет данных")
+                                                                        </div>
+                                                                        <div class="text-body-secondary small">
+                                                                            <i class="bi bi-globe me-1"></i> IP:
+                                                                            <span class="text-body">@(wp.Phone?.Ip ?? "—")</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    @if (wp.Phone?.Handset == true)
+                                                                    {
+                                                                        <div class="bg-body-tertiary rounded p-2 mb-3 small text-body-secondary">
+                                                                            <i class="bi bi-headset me-1"></i> Имя трубки в базе: @wp.Phone?.NameInBase
+                                                                        </div>
+                                                                    }
+                                                                    <div class="d-grid gap-2">
+                                                                        @if (wp.Phone != null)
+                                                                        {
+                                                                            <a href="http://@wp.Phone.Ip" target="_blank" class="btn btn-sm btn-outline-secondary">WEB</a>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- Принтер -->
+                                                        <div class="col-md-3">
+                                                            <div class="card h-100 border-0 shadow-sm bg-body">
+                                                                <div class="card-body p-3">
+                                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                                        <h6 class="text-primary fw-bold mb-0">
+                                                                            <i class="bi bi-printer me-1"></i> Принтер
+                                                                        </h6>
+                                                                        @if (wp.Printer != null)
+                                                                        {
+                                                                            <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                                                                               asp-controller="Printer" asp-action="PrinterEdit" asp-route-id="@wp.Printer.Id">
+                                                                                <i class="bi bi-pencil-square"></i>
+                                                                            </a>
+                                                                        }
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <div class="fw-bold small text-truncate text-body">
+                                                                            @(wp.Printer?.PrinterModel?.Cartridge?.Manufactor?.Name + " " + wp.Printer?.PrinterModel?.Name ?? "Нет данных")
+                                                                        </div>
+                                                                        <div class="text-body-secondary small">
+                                                                            Картридж:
+                                                                            <span class="text-body">@(wp.Printer?.PrinterModel?.Cartridge?.Model ?? "—")</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="bg-body-tertiary rounded p-2 mb-3">
+                                                                        <div class="d-flex justify-content-between small mb-1">
+                                                                            <span class="text-body-secondary italic">Печать:</span>
+                                                                            <span class="fw-bold text-body">@(wp.Printer?.PrintCount.ToString() ?? "0")</span>
+                                                                        </div>
+                                                                        <div class="d-flex justify-content-between small mb-1">
+                                                                            <span class="text-body-secondary">Сканы:</span>
+                                                                            <span class="fw-bold text-body">@(wp.Printer?.ScanCount.ToString() ?? "0")</span>
+                                                                        </div>
+                                                                        <div class="border-top mt-1 pt-1 text-body-secondary" style="font-size: 0.7rem;">
+                                                                            <i class="bi bi-clock-history"></i> @(wp.Printer?.LastUpdateSNMP ?? "Не обновлялось")
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="d-grid gap-2">
+                                                                        <div class="d-flex gap-2">
+                                                                            <a class="btn btn-sm btn-outline-primary w-100 py-0" style="font-size: 0.75rem;"
+                                                                               asp-controller="Printer" asp-action="UpdateCounters" asp-route-id="@wp.Printer?.Id">
+                                                                                <i class="bi bi-arrow-repeat"></i> Счётчики
+                                                                            </a>
+                                                                            @if (wp.Printer != null)
+                                                                            {
+                                                                                <a href="https://@wp.Printer.HostName" target="_blank" class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.75rem;">WEB</a>
+                                                                            }
+                                                                        </div>
+                                                                        <div class="d-flex align-items-center justify-content-between border-top pt-2">
+                                                                            <span class="text-body-secondary" style="font-size: 0.7rem;">Печь: @(wp.Printer?.LastFuserRepair?.Last().ToString() ?? "—")</span>
+                                                                            <a class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size: 0.7rem;"
+                                                                               asp-controller="Printer" asp-action="FuserRepair" asp-route-id="@wp.Printer?.Id">
+                                                                                Ремонт
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            }
+        </div>
+    </div>
+</div>

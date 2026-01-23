@@ -10,7 +10,7 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body text-center">
                     <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
-                        @User.Identity.Name.Split('\\').Last().Substring(0, 1).ToUpper()
+                        @User?.Identity.Name.Split('\\').Last().Substring(0, 1).ToUpper()
                     </div>
                     <h4 class="mb-0">@Model.GivenName</h4>
                     <p class="text-muted small">@@@User.Identity.Name.Split('\\').Last()</p>

@@ -116,7 +116,7 @@ namespace davproj.Controllers
             bool isAlready = false;
             foreach (ADUser u in users)
             {
-                if (u.Cn == User.Identity.Name.Split('\\').Last()) 
+                if (u.Cn == User?.Identity?.Name?.Split('\\').Last()) 
                 { 
                     isAlready = true;
                     adUser = u; 
@@ -126,7 +126,7 @@ namespace davproj.Controllers
             }
             if (!isAlready)
             {
-                adUser = UpdateADUser(User.Identity.Name);
+                adUser = UpdateADUser(User?.Identity?.Name ?? string.Empty);
                 _db.ADUsers.AddRange(adUser);
                 _db.SaveChanges();
             }
@@ -136,7 +136,7 @@ namespace davproj.Controllers
         [HttpGet]
         public IActionResult UserSettings()
         {
-            string shortName = User.Identity.Name.Split('\\').Last();
+            string shortName = (User?.Identity?.Name?.Split('\\').Last() ?? string.Empty);
             var adUser = _db.ADUsers.FirstOrDefault(u => u.Cn == shortName);
             return PartialView(adUser?.Settings ?? new UserSettings());
         }
@@ -146,7 +146,7 @@ namespace davproj.Controllers
         {
             if (ModelState.IsValid)
             {
-                string? fullWinName = User.Identity.Name;
+                string? fullWinName = (User?.Identity?.Name ?? string.Empty);
                 if (string.IsNullOrEmpty(fullWinName))
                 {
                     return Json(new { success = false, message = "Пользователь Windows не определен." });

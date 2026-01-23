@@ -9,7 +9,7 @@ namespace davproj.Models
         [Required(ErrorMessage = "Введите название кабинета")]
         [StringLength(20, MinimumLength = 3, ErrorMessage = "Длина от 3 до 20 символов")]
         [DisplayName("Название")]
-        public string Name { get; set; }
+        public string Name { get; set; } = String.Empty;
         public List<Workplace>? Workplaces { get; set; }
         public Floor? Floor { get; set; }
         [DisplayName("ID этажа")]

@@ -10,7 +10,7 @@ namespace davproj.Models
         [Required(ErrorMessage = "Введите название модели")]
         [StringLength(15, MinimumLength = 3, ErrorMessage = "Длина от 3 до 15 символов")]
         [DisplayName("Название")]
-        public string Model { get; set; }
+        public string Model { get; set; } = String.Empty;
         public Manufactor? Manufactor { get; set; }
         [DisplayName("ID производителя")]
         public int? ManufactorId { get; set; }

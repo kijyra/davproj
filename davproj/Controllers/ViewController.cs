@@ -17,68 +17,70 @@ namespace davproj.Controllers
         {
             var allBuildings = _db.Buildings
                 .Include(l => l.Location)
-                .Include(b => b.Floors)
-                    .ThenInclude(f => f.Offices)
-                        .ThenInclude(o => o.Workplaces)
-                            .ThenInclude(w => w.User)
-                                .ThenInclude(u => u.ADUser)
-                .Include(b => b.Floors)
-                    .ThenInclude(f => f.Offices)
-                        .ThenInclude(o => o.Workplaces)
-                            .ThenInclude(w => w.User)
-                .Include(b => b.Floors)
-                    .ThenInclude(f => f.Offices)
-                        .ThenInclude(o => o.Workplaces)
-                            .ThenInclude(w => w.PC)
-                .Include(b => b.Floors)
-                    .ThenInclude(f => f.Offices)
-                        .ThenInclude(o => o.Workplaces)
-                            .ThenInclude(w => w.Phone)
-                .Include(b => b.Floors)
-                    .ThenInclude(f => f.Offices)
-                        .ThenInclude(o => o.Workplaces)
+                .Include(b => b.Floors!)
+                    .ThenInclude(f => f.Offices!)
+                        .ThenInclude(o => o.Workplaces!)
+                            .ThenInclude(w => w.User!)
+                                .ThenInclude(u => u.ADUser!)
+                .Include(b => b.Floors!)
+                    .ThenInclude(f => f.Offices!)
+                        .ThenInclude(o => o.Workplaces!)
+                            .ThenInclude(w => w.User!)
+                .Include(b => b.Floors!)
+                    .ThenInclude(f => f.Offices!)
+                        .ThenInclude(o => o.Workplaces!)
+                            .ThenInclude(w => w.PC!)
+                                .ThenInclude(p => p.CurrentHardwareInfo)
+                .Include(b => b.Floors!)
+                    .ThenInclude(f => f.Offices!)
+                        .ThenInclude(o => o.Workplaces!)
+                            .ThenInclude(w => w.Phone!)
+                .Include(b => b.Floors!)
+                    .ThenInclude(f => f.Offices!)
+                        .ThenInclude(o => o.Workplaces!)
                             .ThenInclude(w => w.Printer)
-                                .ThenInclude(p => p.PrinterModel)
-                                    .ThenInclude(pm => pm.Cartridge)
+                                .ThenInclude(p => p!.PrinterModel)
+                                    .ThenInclude(pm => pm!.Cartridge)
                                         .ThenInclude(c => c.Manufactor)
                 .ToList();
             if (!allBuildings.Any())
             {
                 return View();
             }
-            Building selectedBuilding;
+            Building? selectedBuilding;
             if (buildingId.HasValue)
             {
                 selectedBuilding = _db.Buildings
                 .Include(l => l.Location)
-                .Include(b => b.Floors)
-                    .ThenInclude(f => f.Offices)
-                        .ThenInclude(o => o.Workplaces)
-                            .ThenInclude(w => w.User)
-                                .ThenInclude(u => u.ADUser)
-                .Include(b => b.Floors)
-                    .ThenInclude(f => f.Offices)
-                        .ThenInclude(o => o.Workplaces)
-                            .ThenInclude(w => w.User)
-                .Include(b => b.Floors)
-                    .ThenInclude(f => f.Offices)
-                        .ThenInclude(o => o.Workplaces)
-                            .ThenInclude(w => w.PC)
-                .Include(b => b.Floors)
-                    .ThenInclude(f => f.Offices)
-                        .ThenInclude(o => o.Workplaces)
-                            .ThenInclude(w => w.Phone)
-                .Include(b => b.Floors)
-                    .ThenInclude(f => f.Offices)
-                        .ThenInclude(o => o.Workplaces)
-                            .ThenInclude(w => w.Printer)
-                                .ThenInclude(p => p.PrinterModel)
-                                    .ThenInclude(pm => pm.Cartridge)
-                                        .ThenInclude(c => c.Manufactor)
+                .Include(b => b.Floors!)
+                    .ThenInclude(f => f.Offices!)
+                        .ThenInclude(o => o.Workplaces!)
+                            .ThenInclude(w => w.User!)
+                                .ThenInclude(u => u.ADUser!)
+                .Include(b => b.Floors!)
+                    .ThenInclude(f => f.Offices!)
+                        .ThenInclude(o => o.Workplaces!)
+                            .ThenInclude(w => w.User!)
+                .Include(b => b.Floors!)
+                    .ThenInclude(f => f.Offices!)
+                        .ThenInclude(o => o.Workplaces!)
+                            .ThenInclude(w => w.PC!)
+                                .ThenInclude(p => p.CurrentHardwareInfo)
+                .Include(b => b.Floors!)
+                    .ThenInclude(f => f.Offices!)
+                        .ThenInclude(o => o.Workplaces!)
+                            .ThenInclude(w => w.Phone!)
+                .Include(b => b.Floors!)
+                    .ThenInclude(f => f.Offices!)
+                        .ThenInclude(o => o.Workplaces!)
+                            .ThenInclude(w => w.Printer!)
+                                .ThenInclude(p => p.PrinterModel!)
+                                    .ThenInclude(pm => pm.Cartridge!)
+                                        .ThenInclude(c => c.Manufactor!)
                                        .FirstOrDefault(b => b.Id == buildingId.Value);
                 if (selectedBuilding == null)
                 {
-                    selectedBuilding = allBuildings.FirstOrDefault();
+                    selectedBuilding = allBuildings.FirstOrDefault()!;
                 }
             }
             else
@@ -87,34 +89,35 @@ namespace davproj.Controllers
             }
             if (selectedBuilding != null && selectedBuilding.Floors == null)
             {
-                _db.Entry(selectedBuilding).Collection(b => b.Floors).Load();
+                _db.Entry(selectedBuilding).Collection(b => b.Floors!).Load();
             }
-            Floor selectedFloor;
+            Floor? selectedFloor;
             IEnumerable<Floor> availableFloors = selectedBuilding?.Floors ?? Enumerable.Empty<Floor>();
             if (floorId.HasValue)
             {
                 selectedFloor = _db.Floors
-                                   .Include(f => f.Offices)
-                                   .ThenInclude(f => f.Workplaces)
-                                        .ThenInclude(w => w.User)
-                                            .ThenInclude(u => u.ADUser)
-                                   .Include(f => f.Offices)
-                                        .ThenInclude(o => o.Workplaces)
-                                            .ThenInclude(w => w.User)
-                                    .Include(f => f.Offices)
-                                        .ThenInclude(o => o.Workplaces)
-                                            .ThenInclude(w => w.PC)
-                                    .Include(f => f.Offices)
-                                        .ThenInclude(o => o.Workplaces)
-                                            .ThenInclude(w => w.Phone)
-                                    .Include(f => f.Offices)
-                                        .ThenInclude(o => o.Workplaces)
+                                   .Include(f => f.Offices!)
+                                   .ThenInclude(f => f.Workplaces!)
+                                        .ThenInclude(w => w.User!)
+                                            .ThenInclude(u => u.ADUser!)
+                                   .Include(f => f.Offices!)
+                                        .ThenInclude(o => o.Workplaces!)
+                                            .ThenInclude(w => w.User!)
+                                    .Include(f => f.Offices!)
+                                        .ThenInclude(o => o.Workplaces!)
+                                            .ThenInclude(w => w.PC!)
+                                                .ThenInclude(p => p.CurrentHardwareInfo)
+                                    .Include(f => f.Offices!)
+                                        .ThenInclude(o => o.Workplaces!)
+                                            .ThenInclude(w => w.Phone!)
+                                    .Include(f => f.Offices!)
+                                        .ThenInclude(o => o.Workplaces!)
                             .ThenInclude(w => w.Printer)
-                                .ThenInclude(p => p.PrinterModel)
-                                    .ThenInclude(pm => pm.Cartridge)
+                                .ThenInclude(p => p!.PrinterModel)
+                                    .ThenInclude(pm => pm!.Cartridge)
                                         .ThenInclude(c => c.Manufactor)
                                    .FirstOrDefault(f => f.Id == floorId.Value);
-                if (selectedFloor == null || selectedFloor.BuildingId != selectedBuilding.Id)
+                if (selectedFloor == null || selectedFloor.BuildingId != selectedBuilding!.Id)
                 {
                     selectedFloor = availableFloors.FirstOrDefault();
                 }
@@ -134,15 +137,15 @@ namespace davproj.Controllers
         {
             ViewData["offices"] = _db.Offices
                 .Include(o => o.Floor)
-                    .ThenInclude(f => f.Building)
-                    .ThenInclude(b => b.Location)
+                    .ThenInclude(f => f!.Building)
+                    .ThenInclude(b => b!.Location)
                 .ToList();
             ViewData["users"] = _db.Users.ToList();
             ViewData["pcs"] = _db.PCs.ToList();
             ViewData["phones"] = _db.Phones.ToList();
             ViewData["printers"] = _db.Printers
                 .Include(p => p.PrinterModel)
-                    .ThenInclude(pm => pm.Cartridge)
+                    .ThenInclude(pm => pm!.Cartridge)
                     .ThenInclude(c => c.Manufactor)
                 .ToList();
             ViewData["FormAction"] = "WorkplaceAdd";
@@ -185,15 +188,15 @@ namespace davproj.Controllers
             }
             ViewData["offices"] = _db.Offices
                 .Include(o => o.Floor)
-                    .ThenInclude(f => f.Building)
-                        .ThenInclude(b => b.Location)
+                    .ThenInclude(f => f!.Building)
+                        .ThenInclude(b => b!.Location)
                 .ToList();
             ViewData["users"] = _db.Users.ToList();
             ViewData["pcs"] = _db.PCs.ToList();
             ViewData["phones"] = _db.Phones.ToList();
             ViewData["printers"] = _db.Printers
                 .Include(p => p.PrinterModel)
-                    .ThenInclude(pm => pm.Cartridge)
+                    .ThenInclude(pm => pm!.Cartridge)
                     .ThenInclude(c => c.Manufactor)
                 .ToList();
             ViewData["FormAction"] = "WorkplaceAdd";
@@ -207,20 +210,20 @@ namespace davproj.Controllers
             {
                 return NotFound();
             }
-            Workplace workplace = _db.Workplaces.Find(id);
+            Workplace? workplace = _db.Workplaces.Find(id);
             if (workplace != null)
             {
                 ViewData["offices"] = _db.Offices
                     .Include(o => o.Floor)
-                        .ThenInclude(f => f.Building)
-                        .ThenInclude(b => b.Location)
+                        .ThenInclude(f => f!.Building)
+                        .ThenInclude(b => b!.Location)
                     .ToList();
                 ViewData["users"] = _db.Users.ToList();
                 ViewData["pcs"] = _db.PCs.ToList();
                 ViewData["phones"] = _db.Phones.ToList();
                 ViewData["printers"] = _db.Printers
                     .Include(p => p.PrinterModel)
-                        .ThenInclude(pm => pm.Cartridge)
+                        .ThenInclude(pm => pm!.Cartridge)
                         .ThenInclude(c => c.Manufactor)
                     .ToList();
                 ViewData["FormAction"] = "WorkplaceEdit";
@@ -265,15 +268,15 @@ namespace davproj.Controllers
             }
             ViewData["offices"] = _db.Offices
                 .Include(o => o.Floor)
-                    .ThenInclude(f => f.Building)
-                        .ThenInclude(b => b.Location)
+                    .ThenInclude(f => f!.Building)
+                        .ThenInclude(b => b!.Location)
                 .ToList();
             ViewData["users"] = _db.Users.ToList();
             ViewData["pcs"] = _db.PCs.ToList();
             ViewData["phones"] = _db.Phones.ToList();
             ViewData["printers"] = _db.Printers
                 .Include(p => p.PrinterModel)
-                    .ThenInclude(pm => pm.Cartridge)
+                    .ThenInclude(pm => pm!.Cartridge)
                     .ThenInclude(c => c.Manufactor)
                 .ToList();
             ViewData["FormAction"] = "WorkplaceEdit";
@@ -283,7 +286,7 @@ namespace davproj.Controllers
         [HttpPost]
         public ActionResult WorkplaceDelete(int id)
         {
-            if (id == null) { return NotFound(); }
+            if (id == 0) { return NotFound(); }
             var workplace = _db.Workplaces
                     .Include(w => w.Phone)
                     .Include(w => w.Printer)
