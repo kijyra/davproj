@@ -1,5 +1,4 @@
 ﻿@model FileSystemItemViewModel
-
 <li class="list-group-item">
     @if (Model.Type == "Directory")
     {
@@ -14,7 +13,7 @@
             </ul>
         }
     }
-    else // Type == "File"
+    else
     {
         <div class="d-flex justify-content-between align-items-center">
             @{

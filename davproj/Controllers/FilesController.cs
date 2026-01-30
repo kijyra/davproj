@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
 using Microsoft.AspNetCore.Authorization;
 
 public class FilesController : Controller

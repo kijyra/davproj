@@ -13,14 +13,12 @@ namespace ClientAPI
         {
             _logger = logger;
             _baseUrl = options.Value.BaseUrl;
-
             if (string.IsNullOrWhiteSpace(_baseUrl))
             {
                 _logger.LogCritical("BaseUrl не задан в конфигурации! Проверьте appsettings.json.");
                 throw new ArgumentException("BaseUrl cannot be null or empty");
             }
         }
-
         public async Task SendHardwareInfo(HardwareInfo info)
         {
             try
@@ -32,7 +30,6 @@ namespace ClientAPI
                 };
                 string json = System.Text.Json.JsonSerializer.Serialize(info, options);
                 _logger.LogInformation("Отправка данных на {Url}", _baseUrl);
-                // _logger.LogInformation("Тело запроса (JSON): {Payload}", json);
                 using StringContent content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
                 using HttpResponseMessage response = await client.PostAsync(_baseUrl, content);
                 if (!response.IsSuccessStatusCode)
@@ -42,7 +39,6 @@ namespace ClientAPI
                         (int)response.StatusCode, errorResponse);
                     response.EnsureSuccessStatusCode();
                 }
-
                 _logger.LogInformation("Данные успешно отправлены на сервер.");
             }
             catch (HttpRequestException e)
@@ -54,6 +50,5 @@ namespace ClientAPI
                 _logger.LogError(e, "Непредвиденная ошибка в ApiClient");
             }
         }
-
     }
 }

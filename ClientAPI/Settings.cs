@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace HardwareAgent
+﻿namespace HardwareAgent
 {
     public class Settings
     {

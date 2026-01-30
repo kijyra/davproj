@@ -5,13 +5,12 @@
 
 	<Package Name="HardwareAgentService"
              Manufacturer="Dallari"
-             Version="1.2.9"
+             Version="1.2.96"
              UpgradeCode="550e8400-e29b-41d4-a716-446655440000"
              Language="1049">
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
 		<MediaTemplate EmbedCab="yes" />
-
 
 		<StandardDirectory Id="ProgramFiles64Folder">
 			<Directory Id="CompanyFolder" Name="Dallari">
@@ -28,29 +27,13 @@
 		<ComponentGroup Id="ServiceComponents" Directory="INSTALLFOLDER">
 			<Component Id="Cmp_HardwareAgentExe" Guid="*">
 				<File Id="File_Exe" Source="C:\proj\davproj\ClientAPI\bin\Release\publish\HardwareAgent.exe" KeyPath="yes">
-					<firewall:FirewallException Id="FW_ApiPort"
-                                                Name="Hardware Agent API"
-                                                Port="5005"
-                                                Protocol="tcp"
-                                                Scope="any" />
+					<firewall:FirewallException Id="FW_ApiPort" Name="Hardware Agent API" Port="5005" Protocol="tcp" Scope="any" />
 				</File>
 				<ServiceInstall Id="ServiceInstaller" Type="ownProcess" Name="HardwareAgentService" DisplayName="Hardware Agent Service" Start="auto" Account="LocalSystem" ErrorControl="normal" />
 				<ServiceControl Id="StartService" Name="HardwareAgentService" Start="install" Stop="both" Remove="uninstall" Wait="yes" />
 			</Component>
 			<Component Id="Cmp_AppSettingsJson" Guid="*">
 				<File Id="File_Config" Source="C:\proj\davproj\ClientAPI\bin\Release\publish\appsettings.json" KeyPath="yes" />
-			</Component>
-		</ComponentGroup>
-
-		<ComponentGroup Id="VncSettings" Directory="INSTALLFOLDER">
-			<Component Id="Cmp_VncRegistry" Guid="a1b2c3d4-e5f6-4789-8000-112233445566">
-				<RegistryKey Root="HKLM" Key="Software\TightVNC\Server">
-					<RegistryValue Name="ControlPassword" Value="00" Type="binary" />
-					<RegistryValue Name="Password" Value="00" Type="binary" />
-					<RegistryValue Name="PasswordViewOnly" Value="00" Type="binary" />
-					<RegistryValue Name="CaptureMethod" Value="1" Type="integer" />
-					<RegistryValue Name="ControlLevel" Value="0" Type="integer" KeyPath="yes" />
-				</RegistryKey>
 			</Component>
 		</ComponentGroup>
 
@@ -70,10 +53,19 @@
 
 			<Component Id="Cmp_AutoRunRegistry" Guid="*">
 				<RegistryKey Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run">
-					<RegistryValue Name="VncTrayAppDallari"
-                                   Value="[INSTALLFOLDER]VncTrayApp.exe"
-                                   Type="string"
-                                   KeyPath="yes" />
+					<RegistryValue Name="VncTrayAppDallari" Value="[INSTALLFOLDER]VncTrayApp.exe" Type="string" KeyPath="yes" />
+				</RegistryKey>
+			</Component>
+		</ComponentGroup>
+
+		<ComponentGroup Id="VncSettings" Directory="INSTALLFOLDER">
+			<Component Id="Cmp_VncRegistry" Guid="a1b2c3d4-e5f6-4789-8000-112233445566">
+				<RegistryKey Root="HKLM" Key="Software\TightVNC\Server">
+					<RegistryValue Name="ControlPassword" Value="858813993dfda0a6" Type="binary" />
+					<RegistryValue Name="Password" Value="3f2f2ef672ae0436" Type="binary" />
+					<RegistryValue Name="PasswordViewOnly" Value="824ae1da2bdded75" Type="binary" />
+					<RegistryValue Name="CaptureMethod" Value="1" Type="integer" />
+					<RegistryValue Name="ControlLevel" Value="0" Type="integer" KeyPath="yes" />
 				</RegistryKey>
 			</Component>
 		</ComponentGroup>
@@ -92,16 +84,11 @@
 			<ComponentGroupRef Id="TrayAppComponents" />
 		</Feature>
 
-		<CustomAction Id="SetVncManual"
-					  Directory="TARGETDIR"
-					  ExeCommand="cmd.exe /c sc config tvnserver start= demand"
-					  Execute="deferred"
-					  Return="ignore"
-					  Impersonate="no" />
+		<CustomAction Id="SetVncManual" Directory="TARGETDIR" ExeCommand="cmd.exe /c sc config tvnserver start= demand" Execute="deferred" Return="ignore" Impersonate="no" />
 
 		<InstallExecuteSequence>
 			<Custom Action="SetVncManual" After="InstallExecute" Condition="NOT Installed" />
 		</InstallExecuteSequence>
-		
+
 	</Package>
 </Wix>

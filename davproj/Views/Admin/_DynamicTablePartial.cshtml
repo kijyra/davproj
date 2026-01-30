@@ -84,7 +84,8 @@
                                 var idValue = idProperty.GetValue(item);
                                 var editUrl = Url.Action(editActionName, controllerName, new { id = idValue });
                                 var deleteUrl = Url.Action(deleteActionName, controllerName, new { id = idValue });
-
+                                var deleteUrlWithId = Url.Action(deleteActionName, controllerName, new { id = idValue });
+                                var deleteUrlTemplate = Url.Action(deleteActionName, controllerName) + "/0"; // Шаблон
                                 <div class="btn-group btn-group-sm">
                                     <button type="button"
                                             class="btn btn-outline-warning d-flex align-items-center btn-open-child-modal"
@@ -93,8 +94,9 @@
                                     </button>
                                     <button type="button"
                                             class="btn btn-outline-danger d-flex align-items-center btn-trigger-delete"
-                                            data-url="@deleteUrl"
-                                            data-url-template="@deleteUrl">
+                                            data-url="@deleteUrlWithId"
+                                            data-url-template="@deleteUrlTemplate"
+                                            data-modal-id="deleteConfirmationModal">
                                         Удалить
                                     </button>
                                 </div>

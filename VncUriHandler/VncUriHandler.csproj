@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+	  <Version>1.0.5</Version>
+	  <AssemblyVersion>1.0.5</AssemblyVersion>
+	  <FileVersion>1.0.5</FileVersion>
+	  <OutputType>WinExe</OutputType>
+	  <PublishSingleFile>true</PublishSingleFile>
+	  <SelfContained>true</SelfContained>
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	  <PublishReadyToRun>false</PublishReadyToRun>
+	  <PublishTrimmed>true</PublishTrimmed>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <Content Update="*.pdb">
+		  <ExcludeFromPublish>true</ExcludeFromPublish>
+	  </Content>
+	  <Content Update="web.config;aspnetcorev2_inprocess.dll">
+		  <ExcludeFromPublish>true</ExcludeFromPublish>
+	  </Content>
+	  <Content Update="*.staticwebassets.endpoints.json">
+		  <ExcludeFromPublish>true</ExcludeFromPublish>
+	  </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+	  <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.2" />
+  </ItemGroup>
+
+</Project>

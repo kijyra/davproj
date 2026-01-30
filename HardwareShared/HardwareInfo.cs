@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 namespace HardwareShared
 {
     public class HardwareInfo
     {
         [Key]
         public int Id { get; set; }
+        public int? PCId { get; set; }
         public string ComputerName { get; set; } = string.Empty;
         public string ProcessorName { get; set; } = string.Empty;
         public string MonitorInfo { get; set; } = string.Empty;
@@ -22,8 +22,6 @@ namespace HardwareShared
         public bool IsDomainJoined {  get; set; } = false;
         public string IpAddress {  get; set; } = string.Empty;
         public DateTime CollectedAtUtc { get; set; } = DateTime.UtcNow;
-        
-
 public HardwareInfo CollectHardwareInfo()
         {
             throw new NotImplementedException();

@@ -1,14 +1,10 @@
-﻿using ClientAPI;
-using Microsoft.Extensions.Options;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using Serilog;
-using System;
 using System.IO.Pipes;
 using System.Net.NetworkInformation;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.ServiceProcess;
-
 namespace HardwareAgent
 {
     internal class VNCServiceManager
@@ -31,11 +27,9 @@ namespace HardwareAgent
                 return false;
             }
         }
-
         public void SetupAndStart(bool fullControl)
         {
             Log.Information("Настройка TightVNC. Полный контроль: {FullControl}", fullControl);
-
             try
             {
                 UpdateRegistrySettings(fullControl);
@@ -82,7 +76,6 @@ namespace HardwareAgent
                 Log.Error(ex, "Не удалось записать настройки в реестр. Проверьте права службы (SYSTEM).");
             }
         }
-
         public void StopVncService()
         {
             try
@@ -109,30 +102,30 @@ namespace HardwareAgent
             {
                 var pipeSecurity = new PipeSecurity();
                 pipeSecurity.AddAccessRule(new PipeAccessRule(
-                    new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null),
+                    new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null),
                     PipeAccessRights.ReadWrite,
                     AccessControlType.Allow));
-
                 pipeServer = NamedPipeServerStreamAcl.Create(
-                    "VncControlPipe", PipeDirection.InOut, 1,
-                    PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
-
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                    "VncControlPipe",
+                    PipeDirection.InOut,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    PipeTransmissionMode.Byte,
+                    PipeOptions.Asynchronous,
+                    0,
+                    0,
+                    pipeSecurity);
                 Log.Information("Ожидание подключения Tray App...");
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 await pipeServer.WaitForConnectionAsync(cts.Token);
-
                 var writer = new StreamWriter(pipeServer, leaveOpen: true) { AutoFlush = true };
                 var reader = new StreamReader(pipeServer, leaveOpen: true);
-
                 await writer.WriteLineAsync($"{request.AdminName}|{request.IsFullControl}");
                 var response = await reader.ReadLineAsync();
-
                 if (response == "ALLOW")
                 {
                     this.SetupAndStart(true);
                     await writer.WriteLineAsync("SESSION_STARTED");
                     _ = Task.Run(() => MonitorVncSession(pipeServer, writer, reader));
-
                     return "ALLOW";
                 }
                 writer.Dispose();
@@ -147,7 +140,6 @@ namespace HardwareAgent
                 return "ERROR";
             }
         }
-
         public async Task MonitorVncSession(NamedPipeServerStream pipe, StreamWriter writer, StreamReader reader)
         {
             try
@@ -167,16 +159,14 @@ namespace HardwareAgent
             }
             catch (Exception ex)
             {
-                Log.Warning("Pipe мониторинг завершен с ошибкой: {Msg}", ex.Message);
+                Log.Warning("Pipe мониторинг завершён с ошибкой: {Msg}", ex.Message);
             }
             finally
             {
-                this.StopVncService(); 
                 writer.Dispose();
                 reader.Dispose();
                 pipe.Dispose();
             }
         }
-
     }
 }

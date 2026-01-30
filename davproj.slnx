@@ -6,6 +6,7 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="ClientAPI/HardwareAgent.csproj" Id="821f7620-72b3-48d9-afd6-dbbb63193117" />
+  <Project Path="ControlManager/ControlManager.csproj" Id="51c997eb-18a9-4bc2-949d-2bbcb0f7182d" />
   <Project Path="davproj/davproj.csproj" />
   <Project Path="HardwareShared/HardwareShared.csproj" Id="5137aa37-050e-4dff-bcf5-859b97029982" />
   <Project Path="InstallerService/InstallerService.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0" Id="b41556ca-9910-4151-9984-5f64ab494156">
@@ -15,4 +16,8 @@
     <Platform Solution="*|Any CPU" Project="x64" />
   </Project>
   <Project Path="VncTrayApp/VncTrayApp.csproj" Id="a507bcf1-2015-49bf-98ec-cca8346a1c2c" />
+  <Project Path="VncUriHandler/VncUriHandler.csproj" Id="6ebd54e6-5d99-4d48-8b6f-b07b9da0425b" />
+  <Project Path="VncUriHandlerInstall/VncUriHandlerInstall.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0" Id="e4f0d63d-f835-44d3-82ad-09352d44f15c">
+    <Platform Solution="*|Any CPU" Project="x64" />
+  </Project>
 </Solution>

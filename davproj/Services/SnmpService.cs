@@ -8,7 +8,6 @@ namespace davproj.Services
     public class KyoceraSnmpService : IKyoceraSnmpService
     {
         private readonly int _port = 161;
-
         public async Task<KyoceraCounters> GetCountersAsync(string ipAddress, string community = "public")
         {
             var oidPrint = new ObjectIdentifier("1.3.6.1.4.1.1347.42.3.1.1.1.1.1");

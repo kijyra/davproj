@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using davproj.Models;
-using System.Text.Json;
 using HardwareShared;
 
 namespace davproj.Models
@@ -81,16 +79,16 @@ namespace davproj.Models
                 .OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<HardwareInfo>(entity =>
             {
-                entity.Property<int>("PCId");
                 entity.HasOne<PC>()
-                      .WithMany(p => p.HardwareHistory)
-                      .HasForeignKey("PCId")
-                      .OnDelete(DeleteBehavior.Cascade);
+                  .WithMany(p => p.HardwareHistory)
+                  .HasForeignKey(h => h.PCId)
+                  .OnDelete(DeleteBehavior.Cascade);
             });
             modelBuilder.Entity<PC>()
                 .HasOne(p => p.CurrentHardwareInfo)
                 .WithOne()
                 .HasForeignKey<PC>(p => p.CurrentHardwareInfoId);
+
         }
     }
 }

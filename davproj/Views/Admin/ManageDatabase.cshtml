@@ -2,11 +2,9 @@
     ViewData["Title"] = "Управление БД";
     ViewData["ActivePage"] = "Settings";
 }
-
 @section Styles{
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.bootstrap5.min.css">
 }
-
 <h1>Управление Базой Данных</h1>
 <ul class="nav nav-tabs mb-4" id="tableTabs" role="tablist">
     <li class="nav-item dropdown">
@@ -47,15 +45,12 @@
         <a class="nav-link" onclick="loadTable('HardwareInfo', this)">Hardware</a>
     </li>
 </ul>
-
 <div id="table-container">
     <p class="text-muted">Выберите таблицу для загрузки данных.</p>
 </div>
-
 @section Scripts {
     <script src="https://cdn.datatables.net/2.3.6/js/dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/2.3.6/js/dataTables.bootstrap5.min.js"></script>
-
     <script>
         function loadTable(tableName, element) {
             var targetElement = element || $('#tableTabs a[onclick*="' + tableName + '"]');

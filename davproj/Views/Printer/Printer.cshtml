@@ -3,7 +3,6 @@
     var workplacelist = ViewData["workplaces"] as List<Workplace>;
     var models = ViewData["models"] as List<PrinterModel>;
 }
-
 <form method="post" asp-controller="Printer" asp-action="@ViewData["FormAction"]">
     <div class="modal-header">
         <h5 class="modal-title">Редактирование принтера</h5>

@@ -6,7 +6,6 @@
     var pcs = ViewData["pcs"] as List<PC> ?? new List<PC>();
     var phones = ViewData["phones"] as List<Phone> ?? new List<Phone>();
 }
-
 <form method="post" asp-controller="View" asp-action="@ViewData["FormAction"]">
     <div class="modal-header">
         <h5 class="modal-title">Изменение рабочего места</h5>
@@ -176,7 +175,6 @@
         <button type="submit" class="btn btn-primary">Сохранить изменения</button>
     </div>
 </form>
-
 <style>
     .input-group > .form-floating {
         flex: 1 1 auto;

@@ -2,14 +2,14 @@
 @model UserSettings
 @{
     var mySettings = Settings.GetFor(User?.Identity.Name);
-    var pcKeys = new[] { "Any", "VNC"};
-    var domainKeys = new[] { "Any", "VNC", "RDPc", "RDPs" };
-    var thinkKeys = new[] { "VNC", "WTRC", "WEB" };
-}
 
+    var pcKeys = new[] { "Any", "VNC00", "VNC01", "VNC10", "VNC11" };
+    var domainKeys = new[] { "Any", "VNC00", "VNC01", "VNC10", "VNC11" };
+    var thinkKeys = new[] { "VNC00", "VNC10", "WTRC", "WEB" };
+}
 <form method="post" asp-controller="Home" asp-action="UserSettings">
     <div class="modal-header">
-        <h5 class="modal-title">Изменение настроек @User?.Identity.Name.Split('\\')[1]</h5>
+        <h5 class="modal-title">Изменение настроек @User?.Identity.Name?.Split('\\').LastOrDefault()</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
     </div>
     <div class="modal-body">
@@ -20,7 +20,7 @@
                     <option value="@item.Key">@item.Value</option>
                 }
             </select>
-            <label asp-for="DefaultConnection">Подключение к компьютерам вне домена</label>
+            <label asp-for="DefaultConnection">Вне домена</label>
         </div>
         <div class="form-floating mb-3">
             <select class="form-select" asp-for="DomainConnection">
@@ -29,16 +29,23 @@
                     <option value="@item.Key">@item.Value</option>
                 }
             </select>
-            <label asp-for="DomainConnection">Подключение к доменным компьютерам</label>
+            <label asp-for="DomainConnection">Доменные ПК</label>
         </div>
         <div class="form-floating mb-3">
             <select class="form-select" asp-for="ThinkConnection">
                 @foreach (var item in UserSettings.Connections.Where(x => thinkKeys.Contains(x.Key)))
                 {
-                    <option value="@item.Key">@item.Value</option>
+                    var displayValue = item.Key switch
+                    {
+                        "VNC00" => "VNC: Только просмотр с запросом",
+                        "VNC10" => "VNC: Полный доступ с запросом",
+                        "WEB" => "Открыть Web-панель",
+                        _ => item.Value
+                    };
+                    <option value="@item.Key">@displayValue</option>
                 }
             </select>
-            <label asp-for="ThinkConnection">Подключение к тонким клиентам</label>
+            <label asp-for="ThinkConnection">Тонкие клиенты</label>
         </div>
     </div>
     <div class="modal-footer">

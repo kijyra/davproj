@@ -1,18 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>net10.0-windows10.0.17763.0</TargetFramework>
-	<Version>1.2.9</Version>
-	<AssemblyVersion>1.2.9</AssemblyVersion>
-	<FileVersion>1.2.9</FileVersion>
+	<Version>1.2.96</Version>
+	<AssemblyVersion>1.2.96</AssemblyVersion>
+	<FileVersion>1.2.96</FileVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <UserSecretsId>dotnet-ClientAPI-a9c79631-c8aa-454b-8ee7-fd1faf277f83</UserSecretsId>
 	<OutputType>WinExe</OutputType>
+	  <Description>Hardware agent collector</Description>
+	  <Authors>Chernev Maksim</Authors>
+	  <Company>Dallari</Company>
 	<StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
-
 	<ItemGroup>
 		<Content Update="appsettings.json">
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -25,7 +26,6 @@
 		<Content Remove="web.config" />
 		<None Include="web.config" />
 	</ItemGroup>
-	
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
@@ -36,7 +36,6 @@
     <PackageReference Include="System.Management" Version="10.0.2" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.2" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\HardwareShared\HardwareShared.csproj" />
   </ItemGroup>

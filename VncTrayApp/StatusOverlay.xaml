@@ -4,8 +4,8 @@
         xmlns:local="clr-namespace:VncTrayApp"
          Title="VNC Status" Height="40" Width="200"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
-        Topmost="True" Left="10" Top="10" ShowInTaskbar="False">
-    <Border Background="#CCFF0000" CornerRadius="5">
+        Topmost="True" Left="12" Top="12" ShowInTaskbar="False">
+    <Border Background="#80FF0000" CornerRadius="5">
         <TextBlock Text="Удалённое подключение" Foreground="White" 
                    VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"/>
     </Border>

@@ -40,7 +40,6 @@
             padding-top: 56px;
         }
     </style>
-
 </head>
 <body>
     <header class="fixed-top">
@@ -71,7 +70,6 @@
                                 string userName = User.Identity?.IsAuthenticated == true 
                                     ? User.Identity.Name?.Split('\\').ElementAtOrDefault(1) ?? "Пользователь"
                                     : "Войти";
-
                                 string settingsClass = Context!.User.Identity?.IsAuthenticated == true 
                                     && ViewData["ActivePage"]?.ToString() == "Settings" 
                                     ? "active" 
@@ -95,7 +93,6 @@
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
-            
             <div id="modal-container" class="modal fade" role="dialog">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -110,7 +107,6 @@
                     </div>
                 </div>
             </div>
-            
             <div class="modal fade" id="deleteConfirmationModal" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -141,11 +137,10 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
     <script type="text/javascript">
         $(function () {
-            // --- 1. ОТКРЫТИЕ ДИНАМИЧЕСКИХ ОКОН ---
-            $(document).on('click', '.btn-open-modal, .btn-open-child-modal', function (e) {
+            // 1. ОТКРЫТИЕ ДИНАМИЧЕСКИХ ОКОН
+            $('body').on('click', '.btn-open-modal, .btn-open-child-modal', function (e) {
                 e.preventDefault();
                 var url = $(this).attr('href') || $(this).data('url');
                 if (!url || url === '#') return;
@@ -160,78 +155,65 @@
                     alert("Не удалось загрузить форму.");
                 });
             });
-                    // --- 2. САБМИТ ФОРМЫ ДОЧЕРНЕГО ОКНА (Второе окно) ---
-        $(document).on('submit', '#modal-container-child form', function (e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            var form = $(this);
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: form.serialize(),
-                success: function(data) {
-                    if (data.success) {
-                        if (data.item) {
-                            var $targetSelect = $('.js-action-select.last-active-select');
-                            if ($targetSelect.length) {
-                                var newOption = new Option(data.item.title, data.item.id, true, true);
-                                $targetSelect.append(newOption).trigger('change');
-                                $targetSelect.removeClass('last-active-select');
-                                $('#modal-container-child').modal('hide');
-                            } else {
-                                $('.js-action-select').append(new Option(data.item.title, data.item.id));
-                                $('#modal-container-child').modal('hide');
-                            }
-                        } else {
-                            location.reload();
-                        }
-                    } else {
-                        $('#modal-container-child').find('.modal-content').html(data);
-                    }
-                },
-                error: function(xhr) {
-                    console.error("AJAX Error in child modal submission");
-                    $('#modal-container-child').find('.modal-content').html(xhr.responseText);
-                }
-            });
-        });
-            // --- 3. САБМИТ ФОРМЫ РОДИТЕЛЬСКОГО ОКНА (Первое окно) ---
-            $(document).on('submit', '#modal-container form', function (e) {
-                var form = $(this);
-                if (form.closest('#modal-container-child').length > 0) return;
-                e.preventDefault();
+
+            // 2. САБМИТ ФОРМЫ (ОБЩАЯ ФУНКЦИЯ)
+            function submitModalForm(form, targetModalId) {
                 $.ajax({
                     url: form.attr('action'),
                     type: 'POST',
                     data: form.serialize(),
                     success: function(data) {
                         if (data.success) {
-                            $('#modal-container').modal('hide');
-                            location.reload();
+                            $(`#${targetModalId}`).modal('hide');
+                            if (targetModalId === 'modal-container') {
+                                location.reload();
+                            } else if (targetModalId === 'modal-container-child' && data.item) {
+                                var $targetSelect = $('.js-action-select.last-active-select');
+                                if ($targetSelect.length) {
+                                    var newOption = new Option(data.item.title, data.item.id, true, true);
+                                    $targetSelect.append(newOption).trigger('change');
+                                    $targetSelect.removeClass('last-active-select');
+                                }
+                            }
                         } else {
-                            $('#modal-container').find('.modal-content').html(data);
+                            $(`#${targetModalId} .modal-content`).html(data);
                         }
                     },
                     error: function(xhr) {
-                        console.error("AJAX Error in main modal submission");
-                        $('#modal-container').find('.modal-content').html(xhr.responseText);
+                        console.error(`AJAX Error in ${targetModalId}`);
+                        $(`#${targetModalId} .modal-content`).html(xhr.responseText);
                     }
                 });
+            }
+
+            // САБМИТ РОДИТЕЛЬСКОГО ОКНА
+            $(document).on('submit', '#modal-container form', function(e) {
+                e.preventDefault();
+                submitModalForm($(this), 'modal-container');
             });
-            // --- 4. УДАЛЕНИЕ (Открытие модалки) ---
-            $(document).on('click', '.btn-trigger-delete', function (e) {
+
+            // САБМИТ ДОЧЕРНЕГО ОКНА
+            $(document).on('submit', '#modal-container-child form', function(e) {
+                e.preventDefault();
+                submitModalForm($(this), 'modal-container-child');
+            });
+
+            // 3. УДАЛЕНИЕ (Открытие модалки)
+            $(document).on('click', '.btn-trigger-delete', function(e) {
                 e.preventDefault();
                 var actionUrl = $(this).attr('data-url');
-                var $confirmModal = $('#deleteConfirmationModal');
+                var modalId = $(this).attr('data-modal-id') || 'deleteConfirmationModal';
+                var $confirmModal = $('#' + modalId);
                 if (actionUrl && actionUrl !== "0") {
-                    var selectedId = actionUrl.split('/').pop();
+                    var selectedId = /\d+$/.exec(actionUrl)?.[0] || '';
                     $('#deleteObjectId').val(selectedId);
-                    $('#deleteForm').attr('action', $(this).attr('data-url-template').replace('/0', ''));
+                    $('#deleteForm').attr('action', actionUrl);
                     $confirmModal.modal('show');
                 }
             });
-            // --- 5. Сабмит формы удаления (POST) ---
-            $(document).on('submit', '#deleteForm', function (e) {
+
+            // САБМИТ ФОРМЫ УДАЛЕНИЯ
+            $(document).on('submit', '#deleteForm', function(e) {
                 e.preventDefault();
                 var form = $(this);
                 $.ajax({
@@ -241,24 +223,24 @@
                     dataType: 'json',
                     success: function(data) {
                         if (data.success) {
-                            $('#deleteConfirmationModal').modal('hide');
                             var $confirmModal = $('#deleteConfirmationModal');
+                            $confirmModal.modal('hide');
                             var urlToRefresh = $confirmModal.data('url-source');
-
-                              if (urlToRefresh) {
-                                   $.get(urlToRefresh).done(function(newData) {
-                                   $('#modal-container').find('.modal-content').html(newData);
-                               });
-                                } else {
-                               location.reload();
-                       }
+                            if (urlToRefresh) {
+                                $.get(urlToRefresh).done(function(newData) {
+                                    $('#modal-container').find('.modal-content').html(newData);
+                                });
+                            } else {
+                                location.reload();
+                            }
                         } else {
                             alert("Ошибка при удалении");
                         }
                     }
                 });
             });
-            // --- 6. ЛОГИКА АКТИВАЦИИ КНОПОК EDIT/DELETE ---
+
+            // 4. ЛОГИКА АКТИВАЦИИ КНОПОК EDIT/DELETE
             $(document).on('change', '.js-action-select', function () {
                 var selectedId = $(this).val();
                 var $container = $(this).closest('.input-group');
@@ -279,8 +261,9 @@
                 }
             });
         });
-        // Смена темы
-                (function () {
+
+        // 5. СМЕНА ТЕМЫ
+        (function () {
             'use strict';
             const getStoredTheme = () => localStorage.getItem('theme');
             const setStoredTheme = theme => localStorage.setItem('theme', theme);
@@ -305,12 +288,14 @@
                 if (!themeToggle || !themeIcon) return;
                 themeIcon.classList.add('rotate-icon');
                 const themeText = document.getElementById('theme-text');
-                const isDarkMode = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                const isDarkMode = theme === 'dark' ||
+                    (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
                 setTimeout(() => {
                     themeIcon.classList.remove('bi-moon-fill', 'bi-sun-fill');
                     themeIcon.classList.add(isDarkMode ? 'bi-sun-fill' : 'bi-moon-fill');
                     themeIcon.classList.remove('rotate-icon');
                 }, 200);
+
                 if (focus) {
                     themeToggle.focus();
                 }
@@ -334,6 +319,7 @@
             });
         })();
 
+        // 6. НАСТРОЙКИ TOASTR
         toastr.options = {
             "closeButton": true,
             "progressBar": true,
@@ -341,52 +327,30 @@
             "timeOut": "5000"
         };
 
-        async function connectVnc(pcId, ip, fullControl) {
-            const btn = document.getElementById(`vnc-btn-${pcId}`);
+        // 7. ФУНКЦИЯ ПОДКЛЮЧЕНИЯ VNC
+        async function connectVnc(pcId, ip, fullControl, requestUser, btn) {
+            if (!btn) return;
             const originalText = btn.innerHTML;
-
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-            toastr.info("Запрос отправлен пользователю. Ожидайте...", "VNC");
-
+            toastr.info("Проверка доступа...", "VNC");
             try {
-                const url = `/VNC/Connect?pcId=${pcId}&fullControl=${fullControl}`;
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-
-                // Обработка ответа
-                let result;
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                    result = await response.json();
-                } else {
-                    result = await response.text();
-                }
-
+                const url = `/VNC/Connect?pcId=${pcId}&fullControl=${fullControl}&requestUser=${!!requestUser}`;
+                const response = await fetch(url, { method: 'POST', headers: { 'Accept': 'application/json' } });
+                const result = await response.json();
                 if (response.ok) {
-                    toastr.success(result.message || "Пользователь разрешил подключение", "Успех");
-                    setTimeout(() => {
-                        window.location.href = `vnc://${ip}`;
-                    }, 500);
-                } else {
-                    const message = result.message || (typeof result === 'string' ? result : "Ошибка агента");
-
-                    if (response.status === 400) {
-                        toastr.warning(message, "Отказ");
-                    } else if (response.status === 504) {
-                        toastr.error("ПК выключен или агент не запущен (Timeout)", "Ошибка связи");
-                    } else {
-                        toastr.error(message, `Ошибка ${response.status}`);
+                    toastr.success(result.message || "Успешно", "VNC");
+                    if (result.uri) {
+                        window.location.href = result.uri;
                     }
+                } else {
+                    toastr.error(result.message || "Ошибка сервера", `Статус: ${response.status}`);
+                    if (launchWindow) launchWindow.close();
                 }
             } catch (error) {
-                toastr.error("Не удалось связаться с сервером", "Ошибка");
-                console.error("VNC Error:", error);
+                console.error("VNC JS Error:", error);
+                toastr.error("Сетевая ошибка: проверьте соединение с сервером", "Критическая ошибка");
+                if (launchWindow) launchWindow.close();
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalText;

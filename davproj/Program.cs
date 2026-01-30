@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.Text.Json;
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(options => {
@@ -22,10 +21,7 @@ builder.Services.AddDbContext<DBContext>(options =>
 builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
    .AddNegotiate();
 builder.Services.AddScoped<UserSettingsService>();
-builder.Services.AddAuthorization(options =>
-{
-
-});
+builder.Services.AddAuthorization(options => { });
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IKyoceraSnmpService, KyoceraSnmpService>();
 builder.Services.AddHttpClient();
@@ -35,7 +31,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-//app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

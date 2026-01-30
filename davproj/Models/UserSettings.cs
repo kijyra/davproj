@@ -4,19 +4,18 @@
     {
         public static Dictionary<string, string> Connections { get; set; } = new ()
         {
-            { "Any", "Anydesk Remote" },
-            { "VNC",     "VNC Viewer" },
-            { "RDPc",    "RDP с запросом" },
-            { "RDPs",    "RDP без запроса" },
-            { "WTRC",    "WTRC без запроса" },
-            { "WEB",     "Web Интерфейс" }
+            { "Any",        "Anydesk Remote" },
+            { "VNC00",      "VNC просмотр без запроса" },
+            { "VNC01",      "VNC просмотр с запросом" },
+            { "VNC10",      "VNC управление без запроса" },
+            { "VNC11",      "VNC управление с запросом" },
+            { "WTRC",       "WTRC без запроса" },
+            { "WEB",        "Web Интерфейс" }
         };
         public static Dictionary<string, string> ConnectString { get; set; } = new()
         {
-            { "Any", "anydesk://" },
+            { "Any",     "anydesk://" },
             { "VNC",     "vnc://" },
-            { "RDPc",    "rdpc://" },
-            { "RDPs",    "rdps://" },
             { "WTRC",    "wtrc://" },
             { "WEB",     "http://" }
         };

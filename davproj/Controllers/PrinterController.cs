@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
-using System.Reflection;
 
 namespace davproj.Controllers
 {
@@ -97,7 +96,6 @@ namespace davproj.Controllers
             }
             return View(printer);
         }
-
         [Authorize(Roles = "IT_Full")]
         [HttpGet]
         public IActionResult PrinterAdd()

@@ -1,0 +1,258 @@
+﻿@model Workplace
+@inject davproj.Services.UserSettingsService Settings
+@{
+    var currentSettings = Settings.GetFor(User.Identity?.Name ?? string.Empty);
+    var userSettings = Settings.GetFor(User!.Identity.Name);
+    Func<dynamic, object> link = @<a href="@item.Url" class="btn btn-sm btn-outline-secondary" target="_blank">@item.Text</a>;
+}
+<div class="accordion-body bg-body-tertiary">
+    <div class="row">
+        <div class="col-md-4 d-flex flex-column">
+            <!-- Карточка 1: Пользователь -->
+            <div class="card flex-grow-1 border-0 shadow-sm bg-body mb-3">
+                <div class="card-body">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-primary fw-bold mb-0">
+                                <i class="bi bi-person me-1"></i> Пользователь
+                            </h6>
+                            @if (Model.User != null)
+                            {
+                                <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                                    asp-controller="User" asp-action="UserEdit" asp-route-id="@Model.User.Id">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            }
+                        </div>
+                        <div class="mb-3">
+                            <div class="fw-bold text-truncate">
+                                @(Model.User?.FullName ?? "Нет данных")
+                            </div>
+                            <div class="text-body-secondary small mb-2">
+                                @(Model.User?.Position ?? "Нет данных")
+                            </div>
+                            <div class="row small">
+                                <div class="col-5 text-body-secondary small">
+                                    <i class="bi bi-person-badge me-1"></i>DALLARI\
+                                </div>
+                                <div class="col-7 fw-bold text-end small">
+                                    @((Model.User?.ADUser?.Cn ?? "Нет данных").ToLower())
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            @if (Model.User != null && Model.User.Bitrix != null)
+                            {
+                                @link(new { Url = Model.User.BitrixPath, Text = "Профиль", Class = "btn btn-sm btn-outline-primary" })
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карточка 2: Телефон (под пользователем) -->
+            <div class="card flex-grow-1 border-0 shadow-sm bg-body">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-primary fw-bold mb-0">
+                            <i class="bi bi-telephone me-1"></i> Телефон
+                        </h6>
+                        @if (Model.Phone != null)
+                        {
+                            <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                                asp-controller="PP" asp-action="PhoneEdit" asp-route-id="@Model.Phone.Id">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                        }
+                    </div>
+                    <div class="mb-3">
+                        <div class="fw-bold text-body">
+                            @(Model.Phone?.Model ?? "Нет данных")
+                        </div>
+                        <div class="text-body-secondary small">
+                            <i class="bi bi-globe me-1"></i> IP:
+                            <span class="text-body">@(Model.Phone?.Ip ?? "—")</span>
+                        </div>
+                    </div>
+                    @if (Model.Phone?.Handset == true)
+                    {
+                        <div class="bg-body-tertiary rounded p-2 mb-3 small text-body-secondary">
+                            <i class="bi bi-headset me-1"></i> Имя трубки в базе: @Model.Phone?.NameInBase
+                        </div>
+                    }
+                    <div class="d-grid gap-2">
+                        @if (Model.Phone != null)
+                        {
+                            <a href="http://@Model.Phone.Ip" target="_blank" class="btn btn-sm btn-outline-secondary">WEB</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="row d-flex">
+                <!-- Карточка 3: Компьютер -->
+                <div class="col-md-6 mb-3 card flex-grow-1 border-0 shadow-sm bg-body">
+                    <div class="card-body h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="text-primary fw-bold mb-0">
+                                <i class="bi bi-laptop me-1"></i> Компьютер
+                            </h6>
+                            @if (Model.PC != null)
+                            {
+                                <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                                    asp-controller="PP" asp-action="PCEdit" asp-route-id="@Model.PC.Id">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            }
+                        </div>
+                        <div class="mb-3 text-white">
+                            <div class="small">
+                                <span class="text-body-secondary">Hostname:</span>
+                                <span class="fw-bold">@(Model.PC?.Hostname ?? "Нет данных")</span>
+                            </div>
+                            <div class="small">
+                                <span class="text-body-secondary">IP:</span>
+                                <span class="fw-bold">@(Model.PC?.IP ?? "—")</span>
+                            </div>
+                        </div>
+                        <div class="bg-body-tertiary rounded p-2 mb-3 text-white">
+                            <div class="row small mb-1">
+                                <div class="col-6 text-body-secondary">Процессор:</div>
+                                <div class="col-6 text-end fw-bold">@(Model.PC?.CurrentHardwareInfo?.ProcessorName ?? "—")</div>
+                            </div>
+                            <div class="row small mb-1">
+                                <div class="col-6 text-body-secondary">Объем ОЗУ:</div>
+                                <div class="col-6 text-end fw-bold">
+                                    @(Model.PC?.CurrentHardwareInfo?.TotalMemoryGB != null
+                                                                        ? $"{Model.PC.CurrentHardwareInfo.TotalMemoryGB} GB {Model.PC.CurrentHardwareInfo.RamType}"
+                                                                        : "—")
+                                </div>
+                            </div>
+                            <div class="row small mb-1">
+                                <div class="col-6 text-body-secondary">Слоты ОЗУ:</div>
+                                <div class="col-6 text-end fw-bold small">@($"{Model.PC?.CurrentHardwareInfo?.UsedRamSlots} / {Model.PC?.CurrentHardwareInfo?.TotalRamSlots}" ?? "—")</div>
+                            </div>
+                            <div class="row small mb-1">
+                                <div class="col-6 text-body-secondary">Тип HDD:</div>
+                                <div class="col-6 text-end fw-bold small">@(Model.PC?.CurrentHardwareInfo?.DiskType ?? "—")</div>
+                            </div>
+                            <div class="row small">
+                                <div class="col-6 text-body-secondary">Занято HDD:</div>
+                                <div class="col-6 text-end fw-bold small">@(Model.PC?.CurrentHardwareInfo?.DiskInfo ?? "—")</div>
+                            </div>
+                        </div>
+                        <div class="bg-body-tertiary rounded p-2 mb-3">
+                            <div class="small fw-bold @(Model.PC?.Domain == true ? "text-success" : "text-danger")">
+                                <i class="bi bi-circle-fill" style="font-size: 0.5rem; vertical-align: middle;"></i>
+                                @(Model.PC?.Domain == true ? "В домене" : Model.PC?.Think == true ? "Тонкий клиент" : "Не в домене")
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            @if (Model.PC != null)
+                            {
+                                var defaultConnectionType = "";
+                                if (Model.PC.Domain)
+                                {
+                                    defaultConnectionType = currentSettings!.DomainConnection;
+                                }
+                                else if (Model.PC.Think)
+                                {
+                                    defaultConnectionType = currentSettings!.ThinkConnection;
+                                }
+                                else
+                                {
+                                    defaultConnectionType = currentSettings!.DefaultConnection;
+                                }
+                                var defaultConnectionUrl = UserSettings.ConnectString[defaultConnectionType] + Model.PC.IP;
+                                <div class="dropdown-menu">
+                                    @foreach (var conn in UserSettings.Connections)
+                                    {
+                                        if (conn.Key == defaultConnectionType) continue;
+                                        if (Model.PC.Think && conn.Key.StartsWith("VNC") && conn.Key.EndsWith("1")) continue;
+                                        string href = "#";
+                                        string onClick = null;
+                                        if (conn.Key.StartsWith("VNC"))
+                                        {
+                                            bool control = conn.Key[3] == '1';
+                                            bool prompt = conn.Key[4] == '1';
+                                            href = $"{UserSettings.ConnectString["VNC"]}{Model.PC.IP}?mode={(control ? "control" : "view")}&prompt={(prompt ? "yes" : "no")}";
+                                            onClick = $"return connectVnc('{Model.PC.Id}', '{Model.PC.IP}', {control.ToString().ToLower()}, {prompt.ToString().ToLower()}, this)";
+                                        }
+                                        else if (UserSettings.ConnectString.TryGetValue(conn.Key, out var baseUrl))
+                                        {
+                                            href = baseUrl + Model.PC.IP;
+                                        }
+                                        if (href != "#")
+                                        {
+                                            <a class="dropdown-item" href="@href" onclick="@onClick">@conn.Value</a>
+                                        }
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Карточка 4: Принтер -->
+                <div class="col-md-6 mb-3 card flex-grow-1 border-0 shadow-sm bg-body">
+                    <div class="card-body h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="text-primary fw-bold mb-0">
+                                <i class="bi bi-printer me-1"></i> Принтер
+                            </h6>
+                            @if (Model.Printer != null)
+                            {
+                                <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                                    asp-controller="Printer" asp-action="PrinterEdit" asp-route-id="@Model.Printer.Id">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            }
+                        </div>
+                        <div class="mb-3">
+                            <div class="fw-bold small text-truncate text-body">
+                                @(Model.Printer?.PrinterModel?.Cartridge?.Manufactor?.Name + " " + Model.Printer?.PrinterModel?.Name ?? "Нет данных")
+                            </div>
+                            <div class="text-body-secondary small">
+                                Картридж:
+                                <span class="text-body">@(Model.Printer?.PrinterModel?.Cartridge?.Model ?? "—")</span>
+                            </div>
+                        </div>
+                        <div class="bg-body-tertiary rounded p-2 mb-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-body-secondary italic">Печать:</span>
+                                <span class="fw-bold text-body">@(Model.Printer?.PrintCount.ToString() ?? "0")</span>
+                            </div>
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-body-secondary">Сканы:</span>
+                                <span class="fw-bold text-body">@(Model.Printer?.ScanCount.ToString() ?? "0")</span>
+                            </div>
+                            <div class="border-top mt-1 pt-1 text-body-secondary" style="font-size: 0.7rem;">
+                                <i class="bi bi-clock-history"></i> @(Model.Printer?.LastUpdateSNMP ?? "Не обновлялось")
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <div class="d-flex gap-2">
+                                <a class="btn btn-sm btn-outline-primary w-100 py-0" style="font-size: 0.75rem;"
+                                    asp-controller="Printer" asp-action="UpdateCounters" asp-route-id="@Model.Printer?.Id">
+                                    <i class="bi bi-arrow-repeat"></i> Счётчики
+                                </a>
+                                @if (Model.Printer != null)
+                                {
+                                    <a href="https://@Model.Printer.HostName" target="_blank" class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.75rem;">WEB</a>
+                                }
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between border-top pt-2">
+                                <span class="text-body-secondary" style="font-size: 0.7rem;">Печь: @(Model.Printer?.LastFuserRepair?.Last().ToString() ?? "—")</span>
+                                <a class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size: 0.7rem;"
+                                    asp-controller="Printer" asp-action="FuserRepair" asp-route-id="@Model.Printer?.Id">
+                                    Ремонт
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

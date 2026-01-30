@@ -4,7 +4,6 @@ using System.Management;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
-
 namespace ClientAPI
 {
     public class HardwareAgent

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Runtime;
 
 namespace davproj.Models
 {
@@ -17,6 +16,5 @@ namespace davproj.Models
         public List<Printer> Printers { get; set; } = new List<Printer>();
         [DisplayName("МФУ?")]
         public bool MFP {  get; set; }
-
     }
 }
