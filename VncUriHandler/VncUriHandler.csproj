@@ -4,16 +4,21 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-	  <Version>1.0.6</Version>
-	  <AssemblyVersion>1.0.6</AssemblyVersion>
-	  <FileVersion>1.0.6</FileVersion>
+	  <Version>1.0.7</Version>
+	  <AssemblyVersion>1.0.7</AssemblyVersion>
+	  <FileVersion>1.0.7</FileVersion>
 	  <OutputType>WinExe</OutputType>
 	  <PublishSingleFile>true</PublishSingleFile>
 	  <SelfContained>true</SelfContained>
 	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	  <PublishReadyToRun>false</PublishReadyToRun>
 	  <PublishTrimmed>true</PublishTrimmed>
+	  <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="icon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
 	  <Content Update="*.pdb">

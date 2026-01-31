@@ -6,12 +6,17 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-	  <Version>1.1.4</Version>
-	  <AssemblyVersion>1.1.4</AssemblyVersion>
-	  <FileVersion>1.1.4</FileVersion>
+	  <Version>1.1.5</Version>
+	  <AssemblyVersion>1.1.5</AssemblyVersion>
+	  <FileVersion>1.1.5</FileVersion>
 	  <Description>Control Manager for Remote Connections</Description>
 	  <Authors>Chernev Maksim</Authors>
 	  <Company>Dallari</Company>
+	  <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="icon.ico" />
+  </ItemGroup>
 
 </Project>

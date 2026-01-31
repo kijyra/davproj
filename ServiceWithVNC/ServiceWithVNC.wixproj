@@ -1,10 +1,12 @@
 ﻿<Project Sdk="WixToolset.Sdk/6.0.2">
   <PropertyGroup>
     <OutputType>Bundle</OutputType>
-	<OutputName>HardwareAgentInstaller</OutputName>
+    <OutputName>HardwareAgentInstaller</OutputName>
   </PropertyGroup>
-
-	<ItemGroup>
+  <ItemGroup>
+    <Content Include="icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="WixToolset.Bal.wixext" Version="6.0.2" />
   </ItemGroup>
 </Project>

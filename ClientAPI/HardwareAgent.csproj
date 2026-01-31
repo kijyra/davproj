@@ -13,6 +13,7 @@
 	  <Authors>Chernev Maksim</Authors>
 	  <Company>Dallari</Company>
 	<StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+	<ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
 	<ItemGroup>
 		<Content Update="appsettings.json">
@@ -24,6 +25,7 @@
 			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</Content>
 		<Content Remove="web.config" />
+		<Content Include="icon.ico" />
 		<None Include="web.config" />
 	</ItemGroup>
   <ItemGroup>

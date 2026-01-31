@@ -2,11 +2,15 @@
   <Bundle Id="TODO_Manufacturer.ServiceWithVNC" 
 		  Name="Hardware Agent Service" 
 		  Manufacturer="Dallari" 
-		  Version="1.2.968"
-		  UpgradeCode="49F2BAF0-D39C-47A6-9791-A1E4A35B108B">
+		  Version="1.2.97"
+		  UpgradeCode="49F2BAF0-D39C-47A6-9791-A1E4A35B108B"
+		  IconSourceFile="icon.ico">
         
     <BootstrapperApplication>
-      <bal:WixStandardBootstrapperApplication LicenseUrl="" Theme="hyperlinkLicense" />
+      <bal:WixStandardBootstrapperApplication 
+		  LicenseUrl="" 
+		  Theme="hyperlinkLicense" 
+		  LogoFile="icon.ico" />
     </BootstrapperApplication>
 
     <Chain>

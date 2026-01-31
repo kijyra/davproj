@@ -5,10 +5,10 @@
 
 	<Package Name="HardwareAgentService"
              Manufacturer="Dallari"
-             Version="1.2.98"
+             Version="1.2.99"
              UpgradeCode="550e8400-e29b-41d4-a716-446655440000"
              Language="1049">
-
+		
 		<MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
 		<MediaTemplate EmbedCab="yes" />
 
@@ -20,6 +20,9 @@
                       DllEntry="WixShellExec"
                       Impersonate="yes" />
 
+		<Icon Id="AppIcon.ico" SourceFile="C:\proj\davproj\ClientApi\icon.ico" />
+		<Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
+		
 		<StandardDirectory Id="ProgramFiles64Folder">
 			<Directory Id="CompanyFolder" Name="Dallari">
 				<Directory Id="INSTALLFOLDER" Name="HardwareAgent" />
