@@ -2,7 +2,7 @@
   <Bundle Id="TODO_Manufacturer.ServiceWithVNC" 
 		  Name="Hardware Agent Service" 
 		  Manufacturer="Dallari" 
-		  Version="1.2.96"
+		  Version="1.2.968"
 		  UpgradeCode="49F2BAF0-D39C-47A6-9791-A1E4A35B108B">
         
     <BootstrapperApplication>

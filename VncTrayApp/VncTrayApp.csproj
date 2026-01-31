@@ -6,9 +6,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-	  <Version>1.1.3</Version>
-	  <AssemblyVersion>1.1.3</AssemblyVersion>
-	  <FileVersion>1.1.3</FileVersion>
+	  <Version>1.1.4</Version>
+	  <AssemblyVersion>1.1.4</AssemblyVersion>
+	  <FileVersion>1.1.4</FileVersion>
 	  <Description>Control Manager for Remote Connections</Description>
 	  <Authors>Chernev Maksim</Authors>
 	  <Company>Dallari</Company>

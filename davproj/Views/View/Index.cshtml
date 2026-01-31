@@ -5,7 +5,6 @@
     var buildings = ViewBag.Buildings as List<Building>;
     var selectedBuilding = ViewBag.SelectedBuilding as Building;
     var selectedFloor = ViewBag.SelectedFloor as Floor;
-    Func<dynamic, object> link = @<a href="@item.Url" class="btn btn-sm btn-outline-secondary" target="_blank">@item.Text</a>;
 }
 @section Styles {
     <style>
@@ -100,21 +99,33 @@
                                             <i class="bi bi-building text-primary fs-6"></i>
                                         </div>
                                         <h6 class="mb-0 fw-semibold text-body">@(office.Name ?? "Офис")</h6>
+                                        @if (office != null)
+                                        {
+                                            <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal ms-2"
+                                               asp-controller="Geo" asp-action="OfficeEdit" asp-route-id="@office.Id">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                        }
                                     </div>
                                 </div>
                                 <div class="accordion accordion-flush" id="accordion-office-@office.Id">
                                     @foreach (var wp in office.Workplaces)
                                     {
                                         <div class="accordion-item">
-                                            <h2 class="accordion-header">
+                                            <h2 class="accordion-header d-flex justify-content-between align-items-center pe-3">
                                                 <button class="accordion-button collapsed text-body" type="button" data-bs-toggle="collapse" data-bs-target="#wp-@wp.Id">
                                                     <strong>@wp.Name</strong> &nbsp;
                                                     <span class="text-body-secondary">(@(wp.User?.FullName ?? "Свободно"))</span>
                                                 </button>
+                                                <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal ms-2"
+                                                   asp-controller="View" asp-action="WorkplaceEdit" asp-route-id="@wp.Id">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
                                             </h2>
                                             <div id="wp-@wp.Id" 
                                                 class="accordion-collapse collapse" 
                                                 data-bs-parent="#accordion-office-@office.Id">
+                                                <partial name="_WorkplaceDetails" model="wp" />
                                             </div>
                                         </div>
                                     }

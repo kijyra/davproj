@@ -5,12 +5,20 @@
 
 	<Package Name="HardwareAgentService"
              Manufacturer="Dallari"
-             Version="1.2.96"
+             Version="1.2.98"
              UpgradeCode="550e8400-e29b-41d4-a716-446655440000"
              Language="1049">
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
 		<MediaTemplate EmbedCab="yes" />
+
+		<SetProperty Id="VncTrayAppPath" Value="[#File_TrayAppExe]" After="CostFinalize" />
+
+		<Property Id="WixShellExecTarget" Value="[VncTrayAppPath]" />
+		<CustomAction Id="LaunchTrayApp"
+                      BinaryRef="Wix4UtilCA_X86"
+                      DllEntry="WixShellExec"
+                      Impersonate="yes" />
 
 		<StandardDirectory Id="ProgramFiles64Folder">
 			<Directory Id="CompanyFolder" Name="Dallari">
@@ -51,9 +59,18 @@
 				<File Id="File_RuntimeConfig" Source="C:\proj\davproj\VncTrayApp\bin\Release\net10.0-windows\VncTrayApp.runtimeconfig.json" />
 			</Component>
 
+			<Component Id="Cmp_TrayActiveSetup" Guid="*">
+				<RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Active Setup\Installed Components\VncTrayApp_Config">
+					<RegistryValue Type="string" Value="VNC Tray App User Config" />
+					<RegistryValue Name="StubPath" Type="string"
+                                   Value="reg.exe add &quot;HKCU\Software\Microsoft\Windows\CurrentVersion\Run&quot; /v &quot;VncTrayAppDallari&quot; /t REG_SZ /d &quot;\&quot;[VncTrayAppPath]\&quot;&quot; /f" />
+					<RegistryValue Name="Version" Type="string" Value="1" />
+				</RegistryKey>
+			</Component>
+
 			<Component Id="Cmp_AutoRunRegistry" Guid="*">
-				<RegistryKey Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run">
-					<RegistryValue Name="VncTrayAppDallari" Value="[INSTALLFOLDER]VncTrayApp.exe" Type="string" KeyPath="yes" />
+				<RegistryKey Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run">
+					<RegistryValue Name="VncTrayAppDallari" Value="&quot;[VncTrayAppPath]&quot;" Type="string" KeyPath="yes" />
 				</RegistryKey>
 			</Component>
 		</ComponentGroup>
@@ -88,6 +105,7 @@
 
 		<InstallExecuteSequence>
 			<Custom Action="SetVncManual" After="InstallExecute" Condition="NOT Installed" />
+			<Custom Action="LaunchTrayApp" After="InstallFinalize" Condition="NOT Installed" />
 		</InstallExecuteSequence>
 
 	</Package>

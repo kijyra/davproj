@@ -1,5 +1,6 @@
 ﻿@model Workplace
 @inject davproj.Services.UserSettingsService Settings
+
 @{
     var currentSettings = Settings.GetFor(User.Identity?.Name ?? string.Empty);
     var userSettings = Settings.GetFor(User!.Identity.Name);
@@ -165,29 +166,43 @@
                                     defaultConnectionType = currentSettings!.DefaultConnection;
                                 }
                                 var defaultConnectionUrl = UserSettings.ConnectString[defaultConnectionType] + Model.PC.IP;
-                                <div class="dropdown-menu">
-                                    @foreach (var conn in UserSettings.Connections)
-                                    {
-                                        if (conn.Key == defaultConnectionType) continue;
-                                        if (Model.PC.Think && conn.Key.StartsWith("VNC") && conn.Key.EndsWith("1")) continue;
-                                        string href = "#";
-                                        string onClick = null;
-                                        if (conn.Key.StartsWith("VNC"))
+                                <div class="btn-group">
+                                    <a href="@defaultConnectionUrl"
+                                       class="btn btn-sm btn-outline-primary">
+                                        @defaultConnectionType
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary
+                                                    dropdown-toggle
+                                                    dropdown-toggle-split"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                        <span class="visually-hidden">Переключить меню</span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        @foreach (var conn in UserSettings.Connections)
                                         {
-                                            bool control = conn.Key[3] == '1';
-                                            bool prompt = conn.Key[4] == '1';
-                                            href = $"{UserSettings.ConnectString["VNC"]}{Model.PC.IP}?mode={(control ? "control" : "view")}&prompt={(prompt ? "yes" : "no")}";
-                                            onClick = $"return connectVnc('{Model.PC.Id}', '{Model.PC.IP}', {control.ToString().ToLower()}, {prompt.ToString().ToLower()}, this)";
+                                            if (conn.Key == defaultConnectionType) continue;
+                                            if (Model.PC.Think && conn.Key.StartsWith("VNC") && conn.Key.EndsWith("1")) continue;
+                                            string href = "#";
+                                            string onClick = null;
+                                            if (conn.Key.StartsWith("VNC"))
+                                            {
+                                                bool control = conn.Key[3] == '1';
+                                                bool prompt = conn.Key[4] == '1';
+                                                href = $"{UserSettings.ConnectString["VNC"]}{Model.PC.IP}?mode={(control ? "control" : "view")}&prompt={(prompt ? "yes" : "no")}";
+                                                onClick = $"return connectVnc('{Model.PC.Id}', '{Model.PC.IP}', {control.ToString().ToLower()}, {prompt.ToString().ToLower()}, this)";
+                                            }
+                                            else if (UserSettings.ConnectString.TryGetValue(conn.Key, out var baseUrl))
+                                            {
+                                                href = baseUrl + Model.PC.IP;
+                                            }
+                                            if (href != "#")
+                                            {
+                                                <a class="dropdown-item" href="@href" onclick="@onClick">@conn.Value</a>
+                                            }
                                         }
-                                        else if (UserSettings.ConnectString.TryGetValue(conn.Key, out var baseUrl))
-                                        {
-                                            href = baseUrl + Model.PC.IP;
-                                        }
-                                        if (href != "#")
-                                        {
-                                            <a class="dropdown-item" href="@href" onclick="@onClick">@conn.Value</a>
-                                        }
-                                    }
+                                    </div>
                                 </div>
                             }
                         </div>

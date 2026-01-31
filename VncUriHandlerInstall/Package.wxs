@@ -1,51 +1,74 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
-	xmlns:firewall="http://wixtoolset.org/schemas/v4/wxs/firewall">
+	xmlns:firewall="http://wixtoolset.org/schemas/v4/wxs/firewall"
+	xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
 	<Package Name="VNC URI Handler"
              Language="1033"
-             Version="1.0.2.2"
+             Version="1.0.3"
              Manufacturer="Dallari"
              UpgradeCode="7905860E-A89B-4D3E-9B2D-E8B11D34053A"
              InstallerVersion="500"
-			 Scope="perMachine">
-			<MediaTemplate EmbedCab="yes" />
-			<MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
+             Scope="perMachine">
 
-			<StandardDirectory Id="ProgramFiles64Folder">
-				<Directory Id="CompanyFolder" Name="Dallari">
-					<Directory Id="INSTALLFOLDER" Name="VncUriHandler" />
-				</Directory>
-			</StandardDirectory>
+		<MediaTemplate EmbedCab="yes" />
+		<MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
 
-			<ComponentGroup Id="MainComponents" Directory="INSTALLFOLDER">
-				<Component Id="Cmp_PerMachine_FilesAndFirewall" Guid="*">
-					<File Id="VncHandlerExe"
-						  Source="C:\proj\davproj\VncUriHandler\bin\publish\VncUriHandler.exe"
-						  KeyPath="yes">
-						<firewall:FirewallException Id="FW_ApiPort" Name="Hardware Agent API" Port="5004" Protocol="tcp" Scope="any" />
-					</File>
-					<RegistryKey Root="HKCR" Key="vnc">
-						<RegistryValue Type="string" Value="URL:VNC Protocol" />
-						<RegistryValue Name="URL Protocol" Type="string" Value="" />
-						<RegistryKey Key="shell\open\command">
-							<RegistryValue Type="string" Value="&quot;[#VncHandlerExe]&quot; &quot;%1&quot;" />
-						</RegistryKey>
+		<Property Id="WixShellExecTarget" Value="[#VncHandlerExe]" />
+		<CustomAction Id="LaunchApplication"
+                      BinaryRef="Wix4UtilCA_X86"
+                      DllEntry="WixShellExec"
+                      Impersonate="yes" />
+
+		<StandardDirectory Id="ProgramFiles64Folder">
+			<Directory Id="CompanyFolder" Name="Dallari">
+				<Directory Id="INSTALLFOLDER" Name="VncUriHandler" />
+			</Directory>
+		</StandardDirectory>
+
+		<ComponentGroup Id="MainComponents" Directory="INSTALLFOLDER">
+			<Component Id="Cmp_PerMachine_FilesAndFirewall" Guid="*">
+				<File Id="VncHandlerExe"
+                      Source="C:\proj\davproj\VncUriHandler\bin\publish\VncUriHandler.exe"
+                      KeyPath="yes">
+					<firewall:FirewallException Id="FW_ApiPort" Name="Hardware Agent API" Port="5004" Protocol="tcp" Scope="any" />
+				</File>
+				<RegistryKey Root="HKCR" Key="vnc">
+					<RegistryValue Type="string" Value="URL:VNC Protocol" />
+					<RegistryValue Name="URL Protocol" Type="string" Value="" />
+					<RegistryKey Key="shell\open\command">
+						<RegistryValue Type="string" Value="&quot;[#VncHandlerExe]&quot; &quot;%1&quot;" />
 					</RegistryKey>
-				</Component>
-				<Component Id="Cmp_PerUser_Autostart" Guid="*">
-					<RegistryKey Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run">
-						<RegistryValue Name="DallariVncHandler" Type="string" Value="&quot;[#VncHandlerExe]&quot;" KeyPath="yes" />
-					</RegistryKey>
-				</Component>
-				<Component Id="AppSettings" Guid="*">
-					<File Source="C:\proj\davproj\VncUriHandler\bin\publish\appsettings.json" KeyPath="yes" />
-				</Component>
-			</ComponentGroup>
+				</RegistryKey>
+			</Component>
 
-			<Feature Id="Main">
-				<ComponentRef Id="Cmp_PerMachine_FilesAndFirewall" />
-				<ComponentRef Id="Cmp_PerUser_Autostart" />
-				<ComponentRef Id="AppSettings" />
-			</Feature>
-		</Package>
+			<Component Id="AppSettings" Guid="*">
+				<File Source="C:\proj\davproj\VncUriHandler\bin\publish\appsettings.json" KeyPath="yes" />
+			</Component>
+
+			<Component Id="Cmp_ActiveSetup" Guid="*">
+				<RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Active Setup\Installed Components\VncUriHandler_Config">
+					<RegistryValue Type="string" Value="VNC URI Handler User Configuration" />
+					<RegistryValue Name="StubPath" Type="string"
+                                   Value="reg.exe add &quot;HKCU\Software\Microsoft\Windows\CurrentVersion\Run&quot; /v &quot;DallariVncHandler&quot; /t REG_SZ /d &quot;\&quot;[#VncHandlerExe]\&quot;&quot; /f" />
+					<RegistryValue Name="Version" Type="string" Value="1" />
+				</RegistryKey>
+			</Component>
+
+			<Component Id="Cmp_PerUser_Autostart" Guid="*">
+				<RegistryKey Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run">
+					<RegistryValue Name="DallariVncHandler" Type="string" Value="&quot;[#VncHandlerExe]&quot;" KeyPath="yes" />
+				</RegistryKey>
+			</Component>
+		</ComponentGroup>
+
+		<Feature Id="Main">
+			<ComponentGroupRef Id="MainComponents" />
+		</Feature>
+
+		<InstallExecuteSequence>
+			<Custom Action="LaunchApplication" After="InstallFinalize" Condition="NOT Installed" />
+		</InstallExecuteSequence>
+
+	</Package>
 </Wix>

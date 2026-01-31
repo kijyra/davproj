@@ -1,0 +1,47 @@
+﻿<div class="stepper">
+    <h5>Зачем?</h5>
+    <p class="text-muted small">
+        На странице <b>Рабочие места</b> есть ссылки для подключения к компьютерам пользователей,
+        чтобы эти ссылки правильно отрабатывали и выполняли подключение в один клик
+        необходим msi-пакет для обработки ссылок (для подключения через WTRC - сам WTRC).
+    </p>
+    <h5>Типы подключений</h5>
+    <p class="text-muted small">
+        <dl>
+            <dt class="small text-muted">VNC</dt>
+            <dd class="small text-muted">
+                На удалённом компьютере должен быть установлен агент для сбора информации о железе,
+                вместе с ним ставится VncTrayApp (необходим для показа окна запроса на подключение),<a href="#"></a>
+                сервер TightVNC с нужными настройками.<br />
+                Подключение происходит по ссылкам типа <code>vnc://</code>, можно подключаться вручную
+                через любой VNC Viewer (паролья для просмотра - <i>555666</i>, пароль для управления - <i>233566</i>).<br />
+                По идее ссылки-кнопки VNC работать не должны (без установки VncHandler), только вручную писать IP в вашем VNC Viewer<br />
+                Чтобы всё работало так, как и задумано нужно установить 
+                <b>
+                    <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="VncUriHandlerInstall.msi">
+                        VncUriHandlerInstall.msi
+                    </a>
+                </b>
+            </dd>
+            <dt class="small text-muted">Anydesk</dt>
+            <dd class="small text-muted">
+                Обычное подключение через Anydesk, на удалённом компьютере должен быть установлен (либо запущен).
+                Подключение происходит через ссылку <code>anydesk://ip</code>, которая открывает Anydesk.<br />
+                <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="anydesk-5-4-2.exe">
+                    Скачать старую версию Anydesk
+                </a>
+                без ограничения на количество и частоту подключений (одновременно может быть активна только одна сессия).
+            </dd>
+            <dt class="small text-muted">WTRC</dt>
+            <dd class="small text-muted">
+                Если компьютер пользователя - тонкий клиент, то к нему возможно подключиться только по VNC и через специальную утилиту
+                <a asp-action="DownloadPrivateFile" asp-controller="Files" asp-route-fileName="setup.wtrc.exe">
+                    wtrc.exe
+                </a>
+                . Пароль при подключениее - <i>233566</i>.<br />
+                Важно! Для успешного управления тонкими клиентами IP-адрес вашего устройства должен находиться в конфигурационном файле
+                самого тонкого клиента. Управление всем этим происходит из интерфейса сервера WTware.
+            </dd>
+        </dl>
+    </p>
+</div>
