@@ -1,4 +1,6 @@
 ﻿using HardwareShared;
+using Microsoft.Win32;
+using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Management;
 using System.Net.NetworkInformation;
@@ -19,6 +21,8 @@ namespace ClientAPI
             }
             return sb.ToString().Trim();
         }
+
+        // Словарь для определения производителя ОЗУ
         private static readonly Dictionary<string, string> Manufacturers = new()
             {
                 { "0080", "Samsung" },
@@ -42,6 +46,7 @@ namespace ClientAPI
         public HardwareInfo CollectHardwareInfo()
         {
             HardwareInfo info = new HardwareInfo();
+
             info.ComputerName = Environment.MachineName;
             info.IpAddress = NetworkInterface.GetAllNetworkInterfaces()
                 .Where(ni => ni.OperationalStatus == OperationalStatus.Up)
@@ -158,20 +163,12 @@ namespace ClientAPI
                     break;
                 }
             }
-            using (var searcher = new ManagementObjectSearcher("SELECT Model, CapabilityDescriptions FROM Win32_DiskDrive"))
+            using (var searcher = new ManagementObjectSearcher(@"root\Microsoft\Windows\Storage", "SELECT MediaType FROM MSFT_PhysicalDisk"))
             {
                 foreach (var obj in searcher.Get())
                 {
-                    string model = obj["Model"]?.ToString()?.ToLower() ?? "";
-                    if (model.Contains("ssd") || model.Contains("nvme") || model.Contains("fixed media"))
-                    {
-                        info.DiskType = "SSD";
-                    }
-                    else
-                    {
-                        info.DiskType = "HDD/Other";
-                    }
-                    break;
+                    int type = Convert.ToInt32(obj["MediaType"]);
+                    info.DiskType = type switch { 3 => "HDD", 4 => "SSD", 5 => "SCM", _ => "Unspecified" };
                 }
             }
             using (var searcher = new ManagementObjectSearcher("SELECT PartOfDomain FROM Win32_ComputerSystem"))
@@ -181,6 +178,130 @@ namespace ClientAPI
                     info.IsDomainJoined = (bool)obj["PartOfDomain"];
                 }
             }
+
+            using (var searcher = new ManagementObjectSearcher("SELECT UserName FROM Win32_ComputerSystem"))
+                foreach (var obj in searcher.Get())
+                    info.CurrentUserName = obj["UserName"]?.ToString() ?? "No interactive user";
+
+            var speeds = new List<string>();
+            using (var searcher = new ManagementObjectSearcher("SELECT ConfiguredClockSpeed FROM Win32_PhysicalMemory"))
+                foreach (var obj in searcher.Get())
+                    speeds.Add($"{obj["ConfiguredClockSpeed"]} MHz");
+            info.RamSpeed = speeds.Count > 0 ? string.Join(", ", speeds.Distinct()) : "Unknown";
+
+            info.DiskHealth = "OK";
+            using (var searcher = new ManagementObjectSearcher(@"root\WMI", "SELECT PredictFailure FROM MSStorageDriver_FailurePredictStatus"))
+                foreach (var obj in searcher.Get())
+                    if ((bool)obj["PredictFailure"]) info.DiskHealth = "ВНИМАНИЕ: Возможен отказ!";
+
+            var software = new List<string>();
+            string[] registryPaths = {
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+                @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+            };
+            foreach (var path in registryPaths)
+            {
+                using (var key = Registry.LocalMachine.OpenSubKey(path))
+                {
+                    if (key == null) continue;
+                    foreach (var subkeyName in key.GetSubKeyNames())
+                    {
+                        using (var subkey = key.OpenSubKey(subkeyName))
+                        {
+                            var name = subkey?.GetValue("DisplayName")?.ToString();
+                            var version = subkey?.GetValue("DisplayVersion")?.ToString();
+                            var installDate = subkey?.GetValue("InstallDate")?.ToString();
+                            var isSystem = subkey?.GetValue("SystemComponent")?.ToString() == "1";
+
+                            if (!string.IsNullOrWhiteSpace(name) && !isSystem && !name.Contains("KB") && !name.Contains("Update for Microsoft"))
+                            {
+                                string dateStr = (installDate?.Length == 8)
+                                    ? $" ({installDate.Substring(6, 2)}.{installDate.Substring(4, 2)}.{installDate.Substring(0, 4)})"
+                                    : string.Empty;
+                                string versionStr = !string.IsNullOrEmpty(version) ? $" [v{version}]" : string.Empty;
+                                software.Add($"{name}{versionStr}{dateStr}");
+                            }
+                        }
+                    }
+                }
+            }
+            info.SoftwareList = software.Distinct().OrderBy(s => s).ToList();
+
+            var avList = new List<string>();
+            using (var searcher = new ManagementObjectSearcher(@"root\SecurityCenter2", "SELECT displayName FROM AntiVirusProduct"))
+                foreach (var obj in searcher.Get())
+                    avList.Add(obj["displayName"]?.ToString());
+            info.Antivirus = avList.Count > 0 ? string.Join(", ", avList) : "Not Found";
+
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher("SELECT LastBootUpTime FROM Win32_OperatingSystem"))
+                    foreach (var obj in searcher.Get())
+                    {
+                        var lastBoot = ManagementDateTimeConverter.ToDateTime(obj["LastBootUpTime"].ToString());
+                        var uptime = DateTime.Now - lastBoot;
+                        info.Uptime = $"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m";
+                    }
+            }
+            catch { info.Uptime = "Unknown"; }
+
+            var usbTmp = new List<string>();
+            using (var searcher = new ManagementObjectSearcher("SELECT Name, DeviceID FROM Win32_PnPEntity WHERE DeviceID LIKE '%USB%' AND Name IS NOT NULL"))
+                foreach (var obj in searcher.Get())
+                    usbTmp.Add($"{obj["Name"]} (ID: {obj["DeviceID"]})");
+            info.UsbDevices = usbTmp.Distinct().ToList();
+
+            using (var searcher = new ManagementObjectSearcher("SELECT Name, PortName FROM Win32_Printer"))
+            {
+                foreach (var obj in searcher.Get())
+                {
+                    string printerName = obj["Name"]?.ToString();
+
+                    if (printerName != "Microsoft XPS Document Writer" &&
+                        printerName != "Microsoft Print to PDF" &&
+                        printerName != "Fax")
+                    {
+                        info.Printers.Add($"{printerName} on {obj["PortName"]}");
+                    }
+                }
+            }
+
+            using (var process = new Process())
+            {
+                process.StartInfo = new ProcessStartInfo
+                {
+                    FileName = "netstat.exe",
+                    Arguments = "-a -n -o",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                };
+                process.Start();
+                if (process.WaitForExit(5000))
+                {
+                    string[] lines = process.StandardOutput.ReadToEnd().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var line in lines)
+                    {
+                        if (line.Contains("LISTENING"))
+                        {
+                            var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                            if (parts.Length >= 5 && int.TryParse(parts[1].Split(':').Last(), out int port) && int.TryParse(parts[4], out int pid))
+                            {
+                                try
+                                {
+                                    using (var p = Process.GetProcessById(pid))
+                                        info.OpenPorts.Add($"{port} [{p.ProcessName}]");
+                                }
+                                catch { info.OpenPorts.Add($"{port} [PID: {pid}]"); }
+                            }
+                        }
+                    }
+                }
+                else { process.Kill(); }
+            }
+            info.OpenPorts = info.OpenPorts.Distinct().OrderBy(x => x).ToList();
+
+
             return info;
         }
     }

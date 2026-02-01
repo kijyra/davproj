@@ -1,0 +1,106 @@
+﻿@model PC
+@{
+    var info = Model.CurrentHardwareInfo;
+} 
+    <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">🖥 Сведения о системе: @Model.Hostname</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <h6 class="border-bottom pb-2">Система</h6>
+            <p class="mb-1 small">OS: <strong class="text-muted">@info.OSVersion</strong></p>
+            <p class="mb-1 small">Пользователь: <strong class="text-muted">@info.CurrentUserName</strong></p>
+            <p class="mb-1 small">IP: <strong class="text-muted">@info.IpAddress</strong> (ID: <span>@info.PCId</span>)</p>
+            <p class="mb-1 small">Uptime: <strong class="text-muted">@info.Uptime</strong></p>
+            </div>
+
+            <!-- Железо -->
+            <div class="col-md-6">
+                <h6 class="border-bottom pb-2">Конфигурация</h6>
+            <p class="mb-1 small">CPU: <strong class="text-muted">@info.ProcessorName</strong></p>
+            <p class="mb-1 small">GPU: <strong class="text-muted">@info.VideoCard</strong></p>
+            <p class="mb-1 small">Monitor: <strong class="text-muted">@(string.IsNullOrEmpty(info.MonitorInfo) ? "Не определен" : info.MonitorInfo)</strong></p>
+            <p class="mb-1 small">RAM: <strong class="text-muted">@info.TotalMemoryGB GB @info.RamType (@info.UsedRamSlots/@info.TotalRamSlots slots)</strong></p>
+            <p class="mb-1 small">Disk: <strong class="text-muted">@info.DiskInfo</strong> (@info.DiskHealth)</p>
+            </div>
+
+            <!-- Безопасность и ПО -->
+            <div class="col-12">
+                <div class="alert alert-info py-2 d-flex justify-content-between align-items-center">
+                <span>🛡 Antivirus: <strong>@info.Antivirus</strong></span>
+                <span>🔄 Обновления: <strong>@info.PendingUpdatesCount</strong> (Last: <span>@info.LastUpdateDate</span>)</span>
+                </div>
+            </div>
+
+            <!-- Списки (Аккордеон для экономии места) -->
+            <div class="col-12 text-small">
+                <div class="accordion accordion-flush shadow-sm border" id="pcLists">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header"><button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#listSoft">ПО и Софт</button></h2>
+                        <div id="listSoft" class="accordion-collapse collapse" data-bs-parent="#pcLists">
+                            <div class="accordion-body small" id="m-SoftwareList">
+                            @if (Model.CurrentHardwareInfo.SoftwareList != null && Model.CurrentHardwareInfo.SoftwareList.Any())
+                                {
+                                    <ul class="list-unstyled">
+                                    @foreach (var soft in Model.CurrentHardwareInfo.SoftwareList)
+                                        {
+                                            <li class="border-bottom py-1">🔹 @soft</li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Список пуст</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header"><button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#listUSB">USB и Принтеры</button></h2>
+                        <div id="listUSB" class="accordion-collapse collapse" data-bs-parent="#pcLists">
+                            <div class="accordion-body small">
+                                <h6>USB:</h6> 
+                                <div id="m-UsbDevices">
+                                @if (Model.CurrentHardwareInfo.UsbDevices != null && Model.CurrentHardwareInfo.UsbDevices.Any())
+                                    {
+                                        <ul class="list-unstyled">
+                                        @foreach (var usb in Model.CurrentHardwareInfo.UsbDevices)
+                                            {
+                                                <li class="border-bottom py-1">🔹 @usb</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Список пуст</span>
+                                    }
+                                </div>
+                                <h6 class="mt-2">Принтеры:</h6> 
+                                <div>
+                                @if (Model.CurrentHardwareInfo.Printers != null && Model.CurrentHardwareInfo.Printers.Any())
+                                    {
+                                        <ul class="list-unstyled">
+                                        @foreach (var printer in Model.CurrentHardwareInfo.Printers)
+                                            {
+                                                <li class="border-bottom py-1">🔹 @printer</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Список пуст</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <small class="text-muted me-auto">Обновлено: <span>@info.CollectedAtUtc</span></small>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+    </div>

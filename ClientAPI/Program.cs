@@ -14,10 +14,12 @@ if (!string.IsNullOrEmpty(exeDir))
 {
     Directory.SetCurrentDirectory(exeDir);
 }
+
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File(@"C:\ProgramData\Dallari\HardwareAgent\agent.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
+
 try
 {
     var builder = WebApplication.CreateBuilder(args);
@@ -25,26 +27,56 @@ try
     builder.WebHost.ConfigureKestrel(options => {
         options.Listen(System.Net.IPAddress.Any, 5005);
     });
+
     builder.Configuration.SetBasePath(exeDir ?? AppDomain.CurrentDomain.BaseDirectory);
     builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
     builder.Logging.ClearProviders();
     builder.Logging.AddSerilog();
+
     builder.Services.Configure<Settings>(builder.Configuration.GetSection("Settings"));
     builder.Services.AddSingleton<ClientAPI.HardwareAgent>();
     builder.Services.AddSingleton<ApiClient>();
     builder.Services.AddSingleton<VNCServiceManager>();
     builder.Services.AddHostedService<Worker>();
+
     builder.Services.AddWindowsService(options =>
     {
         options.ServiceName = "HardwareAgentService";
     });
-    builder.Services.AddAuthentication("FakeScheme")
-        .AddCookie("FakeScheme", options => { });
+
+    builder.Services.AddAuthentication("FakeScheme").AddCookie("FakeScheme", options => { });
     builder.Services.AddAuthorization(options =>
     {
         options.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
     });
+
     var app = builder.Build();
+
+    app.MapPost("/hardware/collect", async (ClientAPI.HardwareAgent agent, ApiClient apiClient) =>
+    {
+        if (!await CollectLock.Semaphore.WaitAsync(0))
+            return Results.Conflict("Сбор уже выполняется.");
+
+        try
+        {
+            Log.Information("Запрос на немедленный сбор данных с сервера...");
+
+            var data = agent.CollectHardwareInfo();
+            await apiClient.SendHardwareInfo(data);
+
+            return Results.Ok("Данные отправлены");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Ошибка при форсированном сборе");
+            return Results.StatusCode(500);
+        }
+        finally
+        {
+            CollectLock.Semaphore.Release();
+        }
+    });
+
     app.MapPost("/vnc/request", async (VncRequest request, VNCServiceManager vncManager) =>
     {
         if (vncManager.IsVncActive())
@@ -62,17 +94,24 @@ try
             _ => Results.StatusCode(500)
         };
     });
-    Log.Information("Служба HardwareAgentService с API запускается...");
+
+    Log.Information("Служба HardwareAgentService запускается...");
     await app.RunAsync();
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Аварийное завершение службы при старте");
+    Log.Fatal(ex, "Аварийное завершение службы");
 }
 finally
 {
     Log.CloseAndFlush();
 }
+
+public static class CollectLock
+{
+    public static readonly SemaphoreSlim Semaphore = new(1, 1);
+}
+
 public class FakeAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public FakeAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
@@ -87,4 +126,5 @@ public class FakeAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 }
+
 public record VncRequest(string AdminName, bool IsFullControl);

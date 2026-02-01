@@ -117,7 +117,7 @@
                                 <span class="fw-bold">@(Model.PC?.IP ?? "—")</span>
                             </div>
                         </div>
-                        <div class="bg-body-tertiary rounded p-2 mb-3 text-white">
+                        <div class="bg-body-tertiary rounded p-2 mb-2 text-white">
                             <div class="row small mb-1">
                                 <div class="col-6 text-body-secondary">Процессор:</div>
                                 <div class="col-6 text-end fw-bold">@(Model.PC?.CurrentHardwareInfo?.ProcessorName ?? "—")</div>
@@ -138,10 +138,21 @@
                                 <div class="col-6 text-body-secondary">Тип HDD:</div>
                                 <div class="col-6 text-end fw-bold small">@(Model.PC?.CurrentHardwareInfo?.DiskType ?? "—")</div>
                             </div>
-                            <div class="row small">
+                            <div class="row small mb-1">
                                 <div class="col-6 text-body-secondary">Занято HDD:</div>
                                 <div class="col-6 text-end fw-bold small">@(Model.PC?.CurrentHardwareInfo?.DiskInfo ?? "—")</div>
                             </div>
+                        </div>
+                        <div class="btn-group w-100 mb-3" role="group">
+                            <a class="btn btn-sm btn-outline-primary w-100 py-0" style="font-size: 0.75rem;"
+                               href="javascript:void(0)"
+                               onclick="requestHardwareUpdate('@Model.PC.Hostname', this)">
+                                <i class="bi bi-arrow-repeat"></i> Обновить
+                            </a>
+                            <a asp-controller="View" asp-action="PcDetails" asp-route-id="@Model.PC.Id"
+                               class="btn btn-sm btn-outline-secondary py-0 btn-open-modal" style="font-size: 0.75rem;">
+                                ИНФО
+                            </a>
                         </div>
                         <div class="bg-body-tertiary rounded p-2 mb-3">
                             <div class="small fw-bold @(Model.PC?.Domain == true ? "text-success" : "text-danger")">

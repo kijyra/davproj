@@ -10,7 +10,6 @@ namespace HardwareAgent
     internal class VNCServiceManager
     {
         private const string VncServiceName = "tvnserver";
-        private const string VncRegistryPath = @"Software\TightVNC\Server";
         public bool IsVncActive()
         {
             try
@@ -32,7 +31,6 @@ namespace HardwareAgent
             Log.Information("Настройка TightVNC. Полный контроль: {FullControl}", fullControl);
             try
             {
-                UpdateRegistrySettings(fullControl);
                 using (var sc = new ServiceController(VncServiceName))
                 {
                     if (sc.Status == ServiceControllerStatus.Running)
@@ -51,50 +49,7 @@ namespace HardwareAgent
                 Log.Error(ex, "Критическая ошибка при настройке или запуске TightVNC.");
             }
         }
-        private void UpdateRegistrySettings(bool fullControl)
-        {
-            try
-            {
-                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(VncRegistryPath))
-                {
-                    if (key != null)
-                    {
-                        int controlLevel = fullControl ? 0 : 1;
-                        key.SetValue("ControlLevel", controlLevel, RegistryValueKind.DWord);
-                        key.SetValue("QuerySetting", 0, RegistryValueKind.DWord);
-                        key.SetValue("AuthRequired", 1, RegistryValueKind.DWord);
-                        byte[] vncPasswordHash = new byte[] { 0x3f, 0x2f, 0x2e, 0xf6, 0x72, 0xae, 0x04, 0x36 };
-                        key.SetValue("Password", vncPasswordHash, RegistryValueKind.Binary);
-                        key.SetValue("PasswordViewOnly", vncPasswordHash, RegistryValueKind.Binary);
 
-                        Log.Information("Реестр TightVNC обновлен: ControlLevel={Level}", controlLevel);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Не удалось записать настройки в реестр. Проверьте права службы (SYSTEM).");
-            }
-        }
-        public void StopVncService()
-        {
-            try
-            {
-                using (var sc = new ServiceController(VncServiceName))
-                {
-                    if (sc.Status != ServiceControllerStatus.Stopped)
-                    {
-                        sc.Stop();
-                        sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
-                        Log.Information("Служба VNC остановлена.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Ошибка при остановке службы VNC.");
-            }
-        }
         public async Task<string> RequestUserPermission(VncRequest request)
         {
             NamedPipeServerStream pipeServer = null;

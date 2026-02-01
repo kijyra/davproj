@@ -62,18 +62,28 @@
                                 {
                                     <span class="text-muted">null</span>
                                 }
-                                else if (value is IEnumerable collection && !(value is string))
+                                else if (value is string stringValue)
                                 {
-                                    <span class="badge bg-info">@Enumerable.Count(collection.Cast<object>())</span>
+                                    @stringValue
+                                }
+                                else if (value is IEnumerable collectionValue)
+                                {
+                                    @if (itemType?.Name == "HardwareInfo")
+                                    {
+                                        @string.Join(", ", collectionValue.Cast<object>())
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info">@Enumerable.Count(collectionValue.Cast<object>())</span>
+                                    }
                                 }
                                 else if (prop.PropertyType.IsClass && prop.PropertyType != typeof(string))
                                 {
-                                    var displayName = value.GetType().GetProperty("Name")?.GetValue(value) ?? value.ToString();
-                                    <i>@displayName</i>
+                                    var displayNameValue = value.GetType().GetProperty("Name")?.GetValue(value) ?? value.ToString();
+                                    <i>@displayNameValue</i>
                                 }
                                 else
                                 {
-
                                     @value
                                 }
                             </td>

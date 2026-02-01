@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
+using System.Net.Sockets;
 
 namespace davproj.Controllers
 {
@@ -316,6 +318,19 @@ namespace davproj.Controllers
             _db.Workplaces.Remove(workplace);
             _db.SaveChanges();
             return Ok();
+        }
+        [Authorize(Roles = "IT_Full")]
+        [HttpGet]
+        public async Task<IActionResult> PcDetails(int id)
+        {
+            var PC = _db.PCs
+                .Include(p => p.CurrentHardwareInfo)
+                .FirstOrDefault(p => p.Id == id);
+            if (PC == null)
+            {
+                return NotFound();
+            }
+            return PartialView("_HardwareDetails", PC);
         }
     }
 }

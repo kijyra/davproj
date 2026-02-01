@@ -357,6 +357,38 @@
                 btn.innerHTML = originalText;
             }
         }
+
+        // Обновление данных о ПК
+            async function requestHardwareUpdate(hostname, btn) {
+            if (!hostname) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            btn.classList.add('disabled');
+
+            try {
+                const response = await fetch(`/api/Hardware/request-update/${hostname}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    toastr.success(`Команда на обновление ${hostname} успешно отправлена.`, 'Агент активен');
+
+                    setTimeout(() => {
+                        location.reload();
+                    }, 5000);
+                } else {
+                    const errorText = await response.text();
+                    toastr.error(`Ошибка: ${errorText}`, 'Ошибка агента');
+                }
+            } catch (e) {
+                toastr.warning('Сервер не отвечает. Проверьте соединение.', 'Связь потеряна');
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.classList.remove('disabled');
+            }
+        }
+
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

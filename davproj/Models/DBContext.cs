@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using HardwareShared;
+﻿using HardwareShared;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Text.Json;
 
 namespace davproj.Models
 {
@@ -84,11 +86,11 @@ namespace davproj.Models
                   .HasForeignKey(h => h.PCId)
                   .OnDelete(DeleteBehavior.Cascade);
             });
+
             modelBuilder.Entity<PC>()
                 .HasOne(p => p.CurrentHardwareInfo)
                 .WithOne()
                 .HasForeignKey<PC>(p => p.CurrentHardwareInfoId);
-
         }
     }
 }
