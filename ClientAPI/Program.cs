@@ -81,17 +81,15 @@ try
     {
         if (vncManager.IsVncActive())
             return Results.Conflict("Сессия уже активна.");
-        if (!request.IsFullControl)
-        {
-            vncManager.SetupAndStart(false);
-            return Results.Ok("View-only mode started.");
-        }
+
         var result = await vncManager.RequestUserPermission(request);
+
         return result switch
         {
             "ALLOW" => Results.Ok("User allowed access."),
-            "DENY" => Results.Forbid(),
-            _ => Results.StatusCode(500)
+            "DENY" => Results.Json(new { message = "User denied access" }, statusCode: 403),
+            "ERROR" => Results.StatusCode(500),
+            _ => Results.StatusCode(408)
         };
     });
 

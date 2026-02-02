@@ -4,7 +4,6 @@
     var mySettings = Settings.GetFor(User?.Identity.Name);
 
     var pcKeys = new[] { "Any", "VNC00", "VNC01", "VNC10", "VNC11" };
-    var domainKeys = new[] { "Any", "VNC00", "VNC01", "VNC10", "VNC11" };
     var thinkKeys = new[] { "VNC00", "VNC10", "WTRC", "WEB" };
 }
 <form method="post" asp-controller="Home" asp-action="UserSettings">
@@ -14,22 +13,13 @@
     </div>
     <div class="modal-body">
         <div class="form-floating mb-3">
-            <select class="form-select" asp-for="DefaultConnection">
+            <select class="form-select" asp-for="DefaultPCConnection">
                 @foreach (var item in UserSettings.Connections.Where(x => pcKeys.Contains(x.Key)))
                 {
                     <option value="@item.Key">@item.Value</option>
                 }
             </select>
-            <label asp-for="DefaultConnection">Вне домена</label>
-        </div>
-        <div class="form-floating mb-3">
-            <select class="form-select" asp-for="DomainConnection">
-                @foreach (var item in UserSettings.Connections.Where(x => domainKeys.Contains(x.Key)))
-                {
-                    <option value="@item.Key">@item.Value</option>
-                }
-            </select>
-            <label asp-for="DomainConnection">Доменные ПК</label>
+            <label asp-for="DefaultPCConnection">Вне домена</label>
         </div>
         <div class="form-floating mb-3">
             <select class="form-select" asp-for="ThinkConnection">

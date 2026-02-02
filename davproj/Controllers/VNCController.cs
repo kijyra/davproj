@@ -25,8 +25,7 @@ namespace davproj.Controllers
             if (string.IsNullOrEmpty(pc.IP)) return BadRequest(new { message = "У ПК нет IP-адреса" });
 
             var mode = fullControl ? "control" : "view";
-            var prompt = requestUser ? "yes" : "no";
-            var vncUri = $"vnc://{pc.IP}/?mode={mode}&prompt={prompt}";
+            var vncUri = $"vnc://{pc.IP}/?mode={mode}";
 
             if (requestUser)
             {
@@ -39,28 +38,29 @@ namespace davproj.Controllers
                     };
 
                     var client = _httpClientFactory.CreateClient();
-                    client.Timeout = TimeSpan.FromSeconds(120);
+                    client.Timeout = TimeSpan.FromSeconds(60);
 
                     var response = await client.PostAsJsonAsync($"http://{pc.IP}:5005/vnc/request", vncRequest);
 
-                    if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                        return BadRequest(new { message = "Пользователь отклонил запрос" });
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return Ok(new { success = true, message = "Доступ разрешен пользователем", uri = vncUri });
+                    }
 
-                    if (!response.IsSuccessStatusCode)
-                        return StatusCode((int)response.StatusCode, new { message = "Агент на удаленном ПК вернул ошибку" });
+                    if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                    {
+                        return BadRequest(new { message = "Пользователь ОТКЛОНИЛ запрос на подключение" });
+                    }
+
+                    return StatusCode((int)response.StatusCode, new { message = "Агент вернул ошибку или истекло время ожидания" });
                 }
                 catch (HttpRequestException)
                 {
-                    return StatusCode(504, new { message = "ПК недоступен или агент не запущен" });
+                    return StatusCode(504, new { message = "ПК недоступен: проверьте сеть или работу агента" });
                 }
             }
-            return Ok(new
-            {
-                success = true,
-                message = requestUser ? "Доступ разрешен пользователем" : "Подключение в режиме bypass",
-                uri = vncUri
-            });
-        }
+            return Ok(new { success = true, message = "Подключение в режиме bypass", uri = vncUri });
 
+        }
     }
 }

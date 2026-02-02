@@ -101,7 +101,7 @@
                                         <h6 class="mb-0 fw-semibold text-body">@(office.Name ?? "Офис")</h6>
                                         @if (office != null)
                                         {
-                                            <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal ms-2"
+                                            <a class="btn btn-xs btn-outline-secondary border-0 p-0 btn-open-modal ms-2"
                                                asp-controller="Geo" asp-action="OfficeEdit" asp-route-id="@office.Id">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
@@ -117,7 +117,7 @@
                                                     <strong>@wp.Name</strong> &nbsp;
                                                     <span class="text-body-secondary">(@(wp.User?.FullName ?? "Свободно"))</span>
                                                 </button>
-                                                <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal ms-2"
+                                                <a class="btn btn-xs btn-outline-secondary border-0 p-0 btn-open-modal ms-2"
                                                    asp-controller="View" asp-action="WorkplaceEdit" asp-route-id="@wp.Id">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </a>

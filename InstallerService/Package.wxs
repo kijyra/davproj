@@ -5,7 +5,7 @@
 
 	<Package Name="HardwareAgentService"
              Manufacturer="Dallari"
-             Version="1.2.99"
+             Version="1.3.0"
              UpgradeCode="550e8400-e29b-41d4-a716-446655440000"
              Language="1049">
 		
@@ -83,7 +83,7 @@
 				<RegistryKey Root="HKLM" Key="Software\TightVNC\Server">
 					<RegistryValue Name="ControlPassword" Value="858813993dfda0a6" Type="binary" />
 					<RegistryValue Name="Password" Value="3f2f2ef672ae0436" Type="binary" />
-					<RegistryValue Name="PasswordViewOnly" Value="824ae1da2bdded75" Type="binary" />
+					<RegistryValue Name="PasswordViewOnly" Value="824ae1da2bddec75" Type="binary" />
 					<RegistryValue Name="CaptureMethod" Value="1" Type="integer" />
 					<RegistryValue Name="ControlLevel" Value="0" Type="integer" KeyPath="yes" />
 				</RegistryKey>

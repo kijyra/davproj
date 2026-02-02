@@ -25,8 +25,7 @@
             { "en", "English" }
         };
 
-        public string DefaultConnection { get; set; } = "Any";
-        public string DomainConnection { get; set; } = "Any";
+        public string DefaultPCConnection { get; set; } = "Any";
         public string ThinkConnection { get; set; } = "WEB";
         public string Language { get; set; } = "ru";
     }

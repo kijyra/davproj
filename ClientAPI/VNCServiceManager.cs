@@ -35,7 +35,6 @@ namespace HardwareAgent
                 {
                     if (sc.Status == ServiceControllerStatus.Running)
                     {
-                        Log.Information("Перезапуск службы VNC для применения настроек...");
                         sc.Stop();
                         sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
                     }
@@ -78,7 +77,7 @@ namespace HardwareAgent
                 var response = await reader.ReadLineAsync();
                 if (response == "ALLOW")
                 {
-                    this.SetupAndStart(true);
+                    this.SetupAndStart(request.IsFullControl);
                     await writer.WriteLineAsync("SESSION_STARTED");
                     _ = Task.Run(() => MonitorVncSession(pipeServer, writer, reader));
                     return "ALLOW";

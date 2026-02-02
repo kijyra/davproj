@@ -1,9 +1,12 @@
 ﻿using HardwareShared;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.RegularExpressions;
 
 namespace davproj.Models
 {
+    public record MonitorSpecs(string Model, string Diagonal, string Serial);
     public class PC
     {
         public int Id { get; set; }
@@ -26,5 +29,24 @@ namespace davproj.Models
         public int? CurrentHardwareInfoId { get; set; }
         public virtual HardwareInfo CurrentHardwareInfo { get; set; } = new HardwareInfo();
         public virtual ICollection<HardwareInfo> HardwareHistory { get; set; } = new List<HardwareInfo>();
+        [NotMapped]
+        public List<MonitorSpecs> DisplayList
+        {
+            get
+            {
+                var raw = CurrentHardwareInfo?.MonitorInfo;
+                if (string.IsNullOrEmpty(raw) || raw == "Мониторы не найдены")
+                    return new List<MonitorSpecs>();
+
+                return Regex.Matches(raw, @"(?<model>.*?)\s\[(?<diag>.*?)""\]\s\(S/N:\s(?<sn>.*?)\)")
+                    .Cast<Match>()
+                    .Select(m => new MonitorSpecs(
+                        m.Groups["model"].Value.Trim(),
+                        m.Groups["diag"].Value,
+                        m.Groups["sn"].Value.Trim()
+                    ))
+                    .ToList();
+            }
+        }
     }
 }

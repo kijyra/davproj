@@ -10,20 +10,39 @@
         <div class="row g-3">
             <div class="col-md-6">
                 <h6 class="border-bottom pb-2">Система</h6>
-            <p class="mb-1 small">OS: <strong class="text-muted">@info.OSVersion</strong></p>
-            <p class="mb-1 small">Пользователь: <strong class="text-muted">@info.CurrentUserName</strong></p>
-            <p class="mb-1 small">IP: <strong class="text-muted">@info.IpAddress</strong> (ID: <span>@info.PCId</span>)</p>
-            <p class="mb-1 small">Uptime: <strong class="text-muted">@info.Uptime</strong></p>
+            <p class="mb-1 small">OS: <strong>@info.OSVersion</strong></p>
+            <p class="mb-1 small">Пользователь: <strong>@info.CurrentUserName</strong></p>
+            <p class="mb-1 small">IP: <strong>@info.IpAddress</strong> (ID: <span>@info.PCId</span>)</p>
+            <p class="mb-1 small">Uptime: <strong>@info.Uptime</strong></p>
             </div>
 
             <!-- Железо -->
             <div class="col-md-6">
                 <h6 class="border-bottom pb-2">Конфигурация</h6>
-            <p class="mb-1 small">CPU: <strong class="text-muted">@info.ProcessorName</strong></p>
-            <p class="mb-1 small">GPU: <strong class="text-muted">@info.VideoCard</strong></p>
-            <p class="mb-1 small">Monitor: <strong class="text-muted">@(string.IsNullOrEmpty(info.MonitorInfo) ? "Не определен" : info.MonitorInfo)</strong></p>
-            <p class="mb-1 small">RAM: <strong class="text-muted">@info.TotalMemoryGB GB @info.RamType (@info.UsedRamSlots/@info.TotalRamSlots slots)</strong></p>
-            <p class="mb-1 small">Disk: <strong class="text-muted">@info.DiskInfo</strong> (@info.DiskHealth)</p>
+            <p class="mb-1 small">CPU: <strong>@info.ProcessorName</strong></p>
+            <p class="mb-1 small">GPU: <strong>@info.VideoCard</strong></p>
+            <p class="mb-1 small">
+                Monitor:
+                @if (Model.DisplayList.Any())
+                {
+                    @foreach (var m in Model.DisplayList)
+                    {
+                        <br />
+                        <span class="ms-2">
+                            <i class="bi bi-display text-primary"></i>
+                            <strong>@m.Model</strong>
+                            <span class="badge border">@m.Diagonal"</span>
+                            <code class="text-muted small">[@m.Serial]</code>
+                        </span>
+                    }
+                }
+                else
+                {
+                    <strong>Не найден</strong>
+                }
+            </p>
+            <p class="mb-1 small">RAM: <strong>@info.TotalMemoryGB GB @info.RamType (@info.UsedRamSlots/@info.TotalRamSlots slots)</strong></p>
+            <p class="mb-1 small">Disk: <strong>@info.DiskInfo</strong> (@info.DiskHealth)</p>
             </div>
 
             <!-- Безопасность и ПО -->
@@ -52,7 +71,7 @@
                                 }
                                 else
                                 {
-                                    <span class="text-muted">Список пуст</span>
+                                    <span>Список пуст</span>
                                 }
                             </div>
                         </div>
@@ -74,7 +93,7 @@
                                     }
                                     else
                                     {
-                                        <span class="text-muted">Список пуст</span>
+                                        <span>Список пуст</span>
                                     }
                                 </div>
                                 <h6 class="mt-2">Принтеры:</h6> 
@@ -90,7 +109,7 @@
                                     }
                                     else
                                     {
-                                        <span class="text-muted">Список пуст</span>
+                                        <span>Список пуст</span>
                                     }
                                 </div>
                             </div>

@@ -19,7 +19,7 @@
                             </h6>
                             @if (Model.User != null)
                             {
-                                <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                                <a class="btn btn-xs btn-outline-secondary border-0 p-0 btn-open-modal"
                                     asp-controller="User" asp-action="UserEdit" asp-route-id="@Model.User.Id">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
@@ -60,7 +60,7 @@
                         </h6>
                         @if (Model.Phone != null)
                         {
-                            <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                            <a class="btn btn-xs btn-outline-secondary border-0 p-0 btn-open-modal"
                                 asp-controller="PP" asp-action="PhoneEdit" asp-route-id="@Model.Phone.Id">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
@@ -93,143 +93,221 @@
         <div class="col-md-8">
             <div class="row d-flex">
                 <!-- Карточка 3: Компьютер -->
-                <div class="col-md-6 mb-3 card flex-grow-1 border-0 shadow-sm bg-body">
-                    <div class="card-body h-100">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="text-primary fw-bold mb-0">
-                                <i class="bi bi-laptop me-1"></i> Компьютер
-                            </h6>
-                            @if (Model.PC != null)
-                            {
-                                <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
-                                    asp-controller="PP" asp-action="PCEdit" asp-route-id="@Model.PC.Id">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                            }
-                        </div>
-                        <div class="mb-3 text-white">
-                            <div class="small">
-                                <span class="text-body-secondary">Hostname:</span>
-                                <span class="fw-bold">@(Model.PC?.Hostname ?? "Нет данных")</span>
+                <div class="col-md-6 mb-3"> 
+                    <div class="card flex-grow-1 border-0 shadow-sm bg-body h-100">
+                        <div class="card-body">
+                        @if (Model.PC == null)
+                        {
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="text-primary fw-bold mb-0">
+                                    <i class="bi bi-laptop me-1"></i> Компьютер
+                                </h6>
                             </div>
-                            <div class="small">
-                                <span class="text-body-secondary">IP:</span>
-                                <span class="fw-bold">@(Model.PC?.IP ?? "—")</span>
+                            <div class="card-body">
+                                <p class="card-text">Данные о компьютере **отсутствуют**.</p>
+                                <p class="card-text">Объект **null**.</p>
+                                <button class="btn btn-dark disabled mt-3" disabled>Обновить</button>
                             </div>
-                        </div>
-                        <div class="bg-body-tertiary rounded p-2 mb-2 text-white">
-                            <div class="row small mb-1">
-                                <div class="col-6 text-body-secondary">Процессор:</div>
-                                <div class="col-6 text-end fw-bold">@(Model.PC?.CurrentHardwareInfo?.ProcessorName ?? "—")</div>
+                            <div class="card-footer">
+                                Нет данных о домене
                             </div>
-                            <div class="row small mb-1">
-                                <div class="col-6 text-body-secondary">Объем ОЗУ:</div>
-                                <div class="col-6 text-end fw-bold">
-                                    @(Model.PC?.CurrentHardwareInfo?.TotalMemoryGB != null
-                                                                        ? $"{Model.PC.CurrentHardwareInfo.TotalMemoryGB} GB {Model.PC.CurrentHardwareInfo.RamType}"
-                                                                        : "—")
+                        }
+                        else
+                        {
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="text-primary fw-bold mb-0">
+                                    <i class="bi bi-laptop me-1"></i> Компьютер
+                                </h6>
+                                @if (Model.PC != null)
+                                {
+                                    <a class="btn btn-xs btn-outline-secondary border-0 p-0 btn-open-modal"
+                                       asp-controller="PP" asp-action="PCEdit" asp-route-id="@Model.PC.Id">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                }
+                            </div>
+
+                            <div class="mb-3 text-white">
+                                <div class="small">
+                                    <span class="text-body-secondary">Hostname:</span>
+                                    <span class="fw-bold">@(Model.PC?.Hostname ?? "Нет данных")</span>
+                                </div>
+                                <div class="small">
+                                    <span class="text-body-secondary">IP:</span>
+                                    <span class="fw-bold">@(Model.PC?.IP ?? "—")</span>
+                                </div>
+                                <div class="small">
+                                    <span class="text-body-secondary">Пользователь:</span>
+                                    <span class="fw-bold">@(Model.PC?.CurrentHardwareInfo?.CurrentUserName ?? "—")</span>
                                 </div>
                             </div>
-                            <div class="row small mb-1">
-                                <div class="col-6 text-body-secondary">Слоты ОЗУ:</div>
-                                <div class="col-6 text-end fw-bold small">@($"{Model.PC?.CurrentHardwareInfo?.UsedRamSlots} / {Model.PC?.CurrentHardwareInfo?.TotalRamSlots}" ?? "—")</div>
-                            </div>
-                            <div class="row small mb-1">
-                                <div class="col-6 text-body-secondary">Тип HDD:</div>
-                                <div class="col-6 text-end fw-bold small">@(Model.PC?.CurrentHardwareInfo?.DiskType ?? "—")</div>
-                            </div>
-                            <div class="row small mb-1">
-                                <div class="col-6 text-body-secondary">Занято HDD:</div>
-                                <div class="col-6 text-end fw-bold small">@(Model.PC?.CurrentHardwareInfo?.DiskInfo ?? "—")</div>
-                            </div>
-                        </div>
-                        <div class="btn-group w-100 mb-3" role="group">
-                            <a class="btn btn-sm btn-outline-primary w-100 py-0" style="font-size: 0.75rem;"
-                               href="javascript:void(0)"
-                               onclick="requestHardwareUpdate('@Model.PC.Hostname', this)">
-                                <i class="bi bi-arrow-repeat"></i> Обновить
-                            </a>
-                            <a asp-controller="View" asp-action="PcDetails" asp-route-id="@Model.PC.Id"
-                               class="btn btn-sm btn-outline-secondary py-0 btn-open-modal" style="font-size: 0.75rem;">
-                                ИНФО
-                            </a>
-                        </div>
-                        <div class="bg-body-tertiary rounded p-2 mb-3">
-                            <div class="small fw-bold @(Model.PC?.Domain == true ? "text-success" : "text-danger")">
-                                <i class="bi bi-circle-fill" style="font-size: 0.5rem; vertical-align: middle;"></i>
-                                @(Model.PC?.Domain == true ? "В домене" : Model.PC?.Think == true ? "Тонкий клиент" : "Не в домене")
-                            </div>
-                        </div>
-                        <div class="d-grid">
-                            @if (Model.PC != null)
-                            {
-                                var defaultConnectionType = "";
-                                if (Model.PC.Domain)
-                                {
-                                    defaultConnectionType = currentSettings!.DomainConnection;
-                                }
-                                else if (Model.PC.Think)
-                                {
-                                    defaultConnectionType = currentSettings!.ThinkConnection;
-                                }
-                                else
-                                {
-                                    defaultConnectionType = currentSettings!.DefaultConnection;
-                                }
-                                var defaultConnectionUrl = UserSettings.ConnectString[defaultConnectionType] + Model.PC.IP;
-                                <div class="btn-group">
-                                    <a href="@defaultConnectionUrl"
-                                       class="btn btn-sm btn-outline-primary">
-                                        @defaultConnectionType
-                                    </a>
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-primary
-                                                    dropdown-toggle
-                                                    dropdown-toggle-split"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false">
-                                        <span class="visually-hidden">Переключить меню</span>
-                                    </button>
-                                    <div class="dropdown-menu">
-                                        @foreach (var conn in UserSettings.Connections)
+
+                            <div class="bg-body-tertiary rounded p-2 mb-2">
+                                <div class="row small mb-1">
+                                    <div class="col-6 text-body-secondary">Мониторы:</div>
+                                    <div class="col-6 text-end fw-bold">
+                                        @if (Model.PC?.DisplayList != null && Model.PC.DisplayList.Any())
                                         {
-                                            if (conn.Key == defaultConnectionType) continue;
-                                            if (Model.PC.Think && conn.Key.StartsWith("VNC") && conn.Key.EndsWith("1")) continue;
-                                            string href = "#";
-                                            string onClick = null;
-                                            if (conn.Key.StartsWith("VNC"))
-                                            {
-                                                bool control = conn.Key[3] == '1';
-                                                bool prompt = conn.Key[4] == '1';
-                                                href = $"{UserSettings.ConnectString["VNC"]}{Model.PC.IP}?mode={(control ? "control" : "view")}&prompt={(prompt ? "yes" : "no")}";
-                                                onClick = $"return connectVnc('{Model.PC.Id}', '{Model.PC.IP}', {control.ToString().ToLower()}, {prompt.ToString().ToLower()}, this)";
-                                            }
-                                            else if (UserSettings.ConnectString.TryGetValue(conn.Key, out var baseUrl))
-                                            {
-                                                href = baseUrl + Model.PC.IP;
-                                            }
-                                            if (href != "#")
-                                            {
-                                                <a class="dropdown-item" href="@href" onclick="@onClick">@conn.Value</a>
-                                            }
+                                            var uniqueDiagonals = Model.PC.DisplayList
+                                            .GroupBy(m => m.Diagonal)
+                                            .Select(g => $"{g.Count()}x {g.Key}\"");
+
+                                            <i class="bi bi-display me-1"></i>
+                                            @(string.Join(", ", uniqueDiagonals))
+                                        }
+                                        else
+                                        {
+                                            <span>—</span>
                                         }
                                     </div>
                                 </div>
-                            }
-                        </div>
+
+                                <div class="row small mb-1">
+                                    <div class="col-6 text-body-secondary">ОЗУ:</div>
+                                    <div class="col-6 text-end fw-bold">
+                                        @if (Model.PC?.CurrentHardwareInfo?.TotalMemoryGB != null)
+                                        {
+                                            var info = Model.PC.CurrentHardwareInfo;
+                                            <span>
+                                                @info.TotalMemoryGB GB
+                                                @info.RamType
+                                                (@info.UsedRamSlots/@info.TotalRamSlots)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span>—</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="row small mb-1">
+                                    <div class="col-6 text-body-secondary">Занято HDD:</div>
+                                    @{
+                                        var diskHealthClass = Model.PC?.CurrentHardwareInfo?.DiskHealth == "OK" ? "text-success" :
+                                        Model.PC?.CurrentHardwareInfo?.DiskHealth == "Warning" ? "text-warning" : "text-danger";
+                                    }
+                                    <div class="col-6 text-end fw-bold @diskHealthClass">
+                                        @if (Model.PC?.CurrentHardwareInfo?.DiskHealth != null)
+                                        {
+                                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem; vertical-align: middle;"></i>
+                                            @Model.PC.CurrentHardwareInfo.DiskInfo <span>(@Model.PC.CurrentHardwareInfo.DiskType)</span>
+                                        }
+                                        else
+                                        {
+                                            <span>—</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="btn-group w-100 mb-3" role="group">
+                                <a class="btn btn-sm btn-outline-primary w-100 py-0" style="font-size: 0.75rem;"
+                                   href="javascript:void(0)"
+                                   onclick="requestHardwareUpdate('@Model.PC.Hostname', this)">
+                                    <i class="bi bi-arrow-repeat"></i> Обновить
+                                </a>
+                                <a asp-controller="View" asp-action="PcDetails" asp-route-id="@Model.PC.Id"
+                                   class="btn btn-sm btn-outline-secondary py-0 btn-open-modal" style="font-size: 0.75rem;">
+                                    ИНФО
+                                </a>
+                            </div>
+                            <div class="bg-body-tertiary rounded p-2 mb-3">
+                                <div class="small fw-bold @(Model.PC?.Domain == true ? "text-success" : "text-danger")">
+                                    <i class="bi bi-circle-fill" style="font-size: 0.5rem; vertical-align: middle;"></i>
+                                    @(Model.PC?.Domain == true ? "В домене" : Model.PC?.Think == true ? "Тонкий клиент" : "Не в домене")
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                @if (Model.PC != null)
+                                {
+                                    var defaultConnectionType = "";
+                                    if (Model.PC.Think)
+                                    {
+                                        defaultConnectionType = currentSettings!.ThinkConnection;
+                                    }
+                                    else
+                                    {
+                                        defaultConnectionType = currentSettings!.DefaultPCConnection;
+                                    }
+                                    var defaultConnectionUrl = UserSettings.ConnectString[defaultConnectionType] + Model.PC.IP;
+                                    <div class="btn-group">
+                                        <a href="@defaultConnectionUrl"
+                                           class="btn btn-sm btn-outline-primary">
+                                            @defaultConnectionType
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary
+                                                        dropdown-toggle
+                                                        dropdown-toggle-split"
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                            <span class="visually-hidden">Переключить меню</span>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            @foreach (var conn in UserSettings.Connections)
+                                            {
+                                                if (conn.Key == defaultConnectionType) continue;
+
+                                                bool isWtrcOrWeb = conn.Key == "WTRC" || conn.Key == "WEB";
+                                                bool isVnc = conn.Key.StartsWith("VNC");
+
+                                                if (Model.PC.Think)
+                                                {
+                                                    if (!isWtrcOrWeb && !isVnc)
+                                                    {
+                                                        continue;
+                                                    }
+
+                                                    if (conn.Key.EndsWith("1"))
+                                                    {
+                                                        continue;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (isWtrcOrWeb) continue;
+                                                }
+
+                                                string href = "#";
+                                                string? onClick = null;
+
+                                                if (isVnc)
+                                                {
+                                                    bool control = conn.Key[3] == '1';
+                                                    bool prompt = conn.Key[4] == '1';
+                                                    href = "#";
+                                                    onClick = $"return connectVnc('{Model.PC.Id}', '{Model.PC.IP}', {control.ToString().ToLower()}, {prompt.ToString().ToLower()}, this)";
+                                                }
+                                                else if (UserSettings.ConnectString.TryGetValue(conn.Key, out var baseUrl))
+                                                {
+                                                    href = baseUrl + Model.PC.IP;
+                                                }
+
+                                                <a class="dropdown-item" href="@href" onclick="@onClick">@conn.Value</a>
+                                            }
+
+                                        </div>    
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
+                </div>
                 </div>
 
                 <!-- Карточка 4: Принтер -->
-                <div class="col-md-6 mb-3 card flex-grow-1 border-0 shadow-sm bg-body">
-                    <div class="card-body h-100">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="col-md-6 mb-3">
+                    <div class="card flex-grow-1 border-0 shadow-sm bg-body h-100">
+                        <div class="card-body">
+                            <!-- Ваш код принтера -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                
                             <h6 class="text-primary fw-bold mb-0">
                                 <i class="bi bi-printer me-1"></i> Принтер
                             </h6>
                             @if (Model.Printer != null)
                             {
-                                <a class="btn btn-xs btn-outline-warning border-0 p-0 btn-open-modal"
+                                <a class="btn btn-xs btn-outline-secondary border-0 p-0 btn-open-modal"
                                     asp-controller="Printer" asp-action="PrinterEdit" asp-route-id="@Model.Printer.Id">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
@@ -281,4 +359,5 @@
             </div>
         </div>
     </div>
+</div>
 </div>

@@ -74,6 +74,7 @@ namespace ClientAPI
                     long free = Convert.ToInt64(obj["FreeSpace"]) / (1024 * 1024 * 1024);
                     info.DiskInfo = $"C: {free}GB free of {total}GB";
                 }
+
             using (var searcher = new ManagementObjectSearcher("SELECT MemoryDevices FROM Win32_PhysicalMemoryArray"))
             {
                 foreach (var obj in searcher.Get())
@@ -163,14 +164,24 @@ namespace ClientAPI
                     break;
                 }
             }
-            using (var searcher = new ManagementObjectSearcher(@"root\Microsoft\Windows\Storage", "SELECT MediaType FROM MSFT_PhysicalDisk"))
+            info.DiskType = "Unspecified";
+            try
             {
-                foreach (var obj in searcher.Get())
+                using (var searcher = new ManagementObjectSearcher(@"root\Microsoft\Windows\Storage", "SELECT MediaType FROM MSFT_PhysicalDisk"))
                 {
-                    int type = Convert.ToInt32(obj["MediaType"]);
-                    info.DiskType = type switch { 3 => "HDD", 4 => "SSD", 5 => "SCM", _ => "Unspecified" };
+                    foreach (var obj in searcher.Get())
+                    {
+                        int type = Convert.ToInt32(obj["MediaType"]);
+                        info.DiskType = type switch { 3 => "HDD", 4 => "SSD", 5 => "SCM", _ => "Unspecified" };
+                    }
                 }
             }
+            catch (ManagementException ex)
+            {
+                Console.WriteLine($"Ошибка при проверке типа диска: {ex.Message}");
+                info.DiskType = "Ошибка сбора данных";
+            }
+
             using (var searcher = new ManagementObjectSearcher("SELECT PartOfDomain FROM Win32_ComputerSystem"))
             {
                 foreach (var obj in searcher.Get())
@@ -190,9 +201,18 @@ namespace ClientAPI
             info.RamSpeed = speeds.Count > 0 ? string.Join(", ", speeds.Distinct()) : "Unknown";
 
             info.DiskHealth = "OK";
-            using (var searcher = new ManagementObjectSearcher(@"root\WMI", "SELECT PredictFailure FROM MSStorageDriver_FailurePredictStatus"))
-                foreach (var obj in searcher.Get())
-                    if ((bool)obj["PredictFailure"]) info.DiskHealth = "ВНИМАНИЕ: Возможен отказ!";
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher(@"root\WMI", "SELECT PredictFailure FROM MSStorageDriver_FailurePredictStatus"))
+                    foreach (var obj in searcher.Get())
+                        if ((bool)obj["PredictFailure"]) info.DiskHealth = "ВНИМАНИЕ: Возможен отказ!";
+            }
+            catch (ManagementException ex)
+            {
+                Console.WriteLine($"Ошибка при проверке S.M.A.R.T.: {ex.Message}");
+                info.DiskHealth = "Ошибка сбора S.M.A.R.T. данных";
+            }
+
 
             var software = new List<string>();
             string[] registryPaths = {
@@ -228,10 +248,19 @@ namespace ClientAPI
             info.SoftwareList = software.Distinct().OrderBy(s => s).ToList();
 
             var avList = new List<string>();
-            using (var searcher = new ManagementObjectSearcher(@"root\SecurityCenter2", "SELECT displayName FROM AntiVirusProduct"))
-                foreach (var obj in searcher.Get())
-                    avList.Add(obj["displayName"]?.ToString());
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher(@"root\SecurityCenter2", "SELECT displayName FROM AntiVirusProduct"))
+                    foreach (var obj in searcher.Get())
+                        avList.Add(obj["displayName"]?.ToString());
+            }
+            catch (ManagementException ex)
+            {
+                Console.WriteLine($"Ошибка при сборе данных об антивирусе: {ex.Message}");
+                avList.Add("Ошибка сбора данных");
+            }
             info.Antivirus = avList.Count > 0 ? string.Join(", ", avList) : "Not Found";
+
 
             try
             {
