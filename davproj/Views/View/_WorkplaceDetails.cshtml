@@ -2,8 +2,8 @@
 @inject davproj.Services.UserSettingsService Settings
 
 @{
-    var currentSettings = Settings.GetFor(User.Identity?.Name ?? string.Empty);
-    var userSettings = Settings.GetFor(User!.Identity.Name);
+    var currentSettings = Settings.GetFor(User.Identity?.Name ?? string.Empty) ?? new UserSettings();
+    var userSettings = Settings.GetFor(User!.Identity?.Name) ?? new UserSettings();
     Func<dynamic, object> link = @<a href="@item.Url" class="btn btn-sm btn-outline-secondary" target="_blank">@item.Text</a>;
 }
 <div class="accordion-body bg-body-tertiary">
@@ -73,6 +73,10 @@
                         <div class="text-body-secondary small">
                             <i class="bi bi-globe me-1"></i> IP:
                             <span class="text-body">@(Model.Phone?.Ip ?? "—")</span>
+                        </div>
+                        <div class="text-body-secondary small">
+                            <i class="bi bi-telephone me-1"></i> IP:
+                            <span class="text-body">@(Model.Phone?.Number.ToString() ?? "—")</span>
                         </div>
                     </div>
                     @if (Model.Phone?.Handset == true)
@@ -200,17 +204,20 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="btn-group w-100 mb-3" role="group">
-                                <a class="btn btn-sm btn-outline-primary w-100 py-0" style="font-size: 0.75rem;"
-                                   href="javascript:void(0)"
-                                   onclick="requestHardwareUpdate('@Model.PC.Hostname', this)">
-                                    <i class="bi bi-arrow-repeat"></i> Обновить
-                                </a>
-                                <a asp-controller="View" asp-action="PcDetails" asp-route-id="@Model.PC.Id"
-                                   class="btn btn-sm btn-outline-secondary py-0 btn-open-modal" style="font-size: 0.75rem;">
-                                    ИНФО
-                                </a>
-                            </div>
+                                @if (!@Model.PC.Think)
+                                {
+                                    <div class="btn-group w-100 mb-3" role="group">
+                                        <a class="btn btn-sm btn-outline-primary w-100 py-0" style="font-size: 0.75rem;"
+                                        href="javascript:void(0)"
+                                        onclick="requestHardwareUpdate('@Model.PC.Hostname', this)">
+                                            <i class="bi bi-arrow-repeat"></i> Обновить
+                                        </a>
+                                        <a asp-controller="View" asp-action="PcDetails" asp-route-id="@Model.PC.Id"
+                                        class="btn btn-sm btn-outline-secondary py-0 btn-open-modal" style="font-size: 0.75rem;">
+                                            ИНФО
+                                        </a>
+                                    </div>
+                                }
                             <div class="bg-body-tertiary rounded p-2 mb-3">
                                 <div class="small fw-bold @(Model.PC?.Domain == true ? "text-success" : "text-danger")">
                                     <i class="bi bi-circle-fill" style="font-size: 0.5rem; vertical-align: middle;"></i>
@@ -299,65 +306,69 @@
                 <div class="col-md-6 mb-3">
                     <div class="card flex-grow-1 border-0 shadow-sm bg-body h-100">
                         <div class="card-body">
-                            <!-- Ваш код принтера -->
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                
-                            <h6 class="text-primary fw-bold mb-0">
-                                <i class="bi bi-printer me-1"></i> Принтер
-                            </h6>
-                            @if (Model.Printer != null)
+                            @if (Model?.Printer != null)
                             {
-                                <a class="btn btn-xs btn-outline-secondary border-0 p-0 btn-open-modal"
-                                    asp-controller="Printer" asp-action="PrinterEdit" asp-route-id="@Model.Printer.Id">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="text-primary fw-bold mb-0">
+                                        <i class="bi bi-printer me-1"></i> Принтер
+                                    </h6>
+                                    <a class="btn btn-xs btn-outline-secondary border-0 p-0 btn-open-modal"
+                                       asp-controller="Printer" asp-action="PrinterEdit" asp-route-id="@Model?.Printer?.Id">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="fw-bold small text-truncate text-body">
+                                        @(Model?.Printer?.PrinterModel?.Cartridge?.Manufactor?.Name + " " + Model?.Printer?.PrinterModel?.Name ?? "Нет данных")
+                                    </div>
+                                    <div class="text-body-secondary small">
+                                        Картридж:
+                                        <span class="text-body">@(Model?.Printer?.PrinterModel?.Cartridge?.Model ?? "—")</span>
+                                    </div>
+                                </div>
+                                <div class="bg-body-tertiary rounded p-2 mb-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-body-secondary italic">Печать:</span>
+                                        <span class="fw-bold text-body">@(Model?.Printer?.PrintCount.ToString() ?? "0")</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span class="text-body-secondary">Сканы:</span>
+                                        <span class="fw-bold text-body">@(Model?.Printer?.ScanCount.ToString() ?? "0")</span>
+                                    </div>
+                                    <div class="border-top mt-1 pt-1 text-body-secondary" style="font-size: 0.7rem;">
+                                        <i class="bi bi-clock-history"></i> @(Model?.Printer?.LastUpdateSNMP ?? "Не обновлялось")
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <div class="d-flex gap-2">
+                                        <a class="btn btn-sm btn-outline-primary w-100 py-0" style="font-size: 0.75rem;"
+                                           asp-controller="Printer" asp-action="UpdateCounters" asp-route-id="@Model?.Printer?.Id">
+                                            <i class="bi bi-arrow-repeat"></i> Счётчики
+                                        </a>
+                                        <a href="https://@Model?.Printer?.HostName" target="_blank" class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.75rem;">WEB</a>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between border-top pt-2">
+                                        <span class="text-body-secondary" style="font-size: 0.7rem;">
+                                            Печь: @(Model?.Printer?.LastFuserRepair?.LastOrDefault()?.ToString() ?? "—")
+                                        </span>
+                                        <a class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size: 0.7rem;"
+                                           asp-controller="Printer" asp-action="FuserRepair" asp-route-id="@Model?.Printer?.Id">
+                                            Ремонт
+                                        </a>
+                                    </div>
+                                </div>
                             }
-                        </div>
-                        <div class="mb-3">
-                            <div class="fw-bold small text-truncate text-body">
-                                @(Model.Printer?.PrinterModel?.Cartridge?.Manufactor?.Name + " " + Model.Printer?.PrinterModel?.Name ?? "Нет данных")
-                            </div>
-                            <div class="text-body-secondary small">
-                                Картридж:
-                                <span class="text-body">@(Model.Printer?.PrinterModel?.Cartridge?.Model ?? "—")</span>
-                            </div>
-                        </div>
-                        <div class="bg-body-tertiary rounded p-2 mb-3">
-                            <div class="d-flex justify-content-between small mb-1">
-                                <span class="text-body-secondary italic">Печать:</span>
-                                <span class="fw-bold text-body">@(Model.Printer?.PrintCount.ToString() ?? "0")</span>
-                            </div>
-                            <div class="d-flex justify-content-between small mb-1">
-                                <span class="text-body-secondary">Сканы:</span>
-                                <span class="fw-bold text-body">@(Model.Printer?.ScanCount.ToString() ?? "0")</span>
-                            </div>
-                            <div class="border-top mt-1 pt-1 text-body-secondary" style="font-size: 0.7rem;">
-                                <i class="bi bi-clock-history"></i> @(Model.Printer?.LastUpdateSNMP ?? "Не обновлялось")
-                            </div>
-                        </div>
-                        <div class="d-grid gap-2">
-                            <div class="d-flex gap-2">
-                                <a class="btn btn-sm btn-outline-primary w-100 py-0" style="font-size: 0.75rem;"
-                                    asp-controller="Printer" asp-action="UpdateCounters" asp-route-id="@Model.Printer?.Id">
-                                    <i class="bi bi-arrow-repeat"></i> Счётчики
-                                </a>
-                                @if (Model.Printer != null)
-                                {
-                                    <a href="https://@Model.Printer.HostName" target="_blank" class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.75rem;">WEB</a>
-                                }
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between border-top pt-2">
-                                <span class="text-body-secondary" style="font-size: 0.7rem;">Печь: @(Model.Printer?.LastFuserRepair?.Last().ToString() ?? "—")</span>
-                                <a class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size: 0.7rem;"
-                                    asp-controller="Printer" asp-action="FuserRepair" asp-route-id="@Model.Printer?.Id">
-                                    Ремонт
-                                </a>
-                            </div>
+                            else
+                            {
+                                <h6 class="text-primary fw-bold mb-0">
+                                    <i class="bi bi-printer me-1"></i> Принтер
+                                </h6>
+                                <p class="text-muted mt-2">**Принтер не назначен** или недоступен.</p>
+                            }
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </div>

@@ -1,6 +1,9 @@
 ﻿@model PC
+@inject davproj.Services.UserSettingsService Settings
 @{
     var info = Model.CurrentHardwareInfo;
+    var currentSettings = Settings.GetFor(User.Identity?.Name ?? string.Empty) ?? new UserSettings();
+    var userSettings = Settings.GetFor(User!.Identity?.Name) ?? new UserSettings();
 } 
     <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">🖥 Сведения о системе: @Model.Hostname</h5>

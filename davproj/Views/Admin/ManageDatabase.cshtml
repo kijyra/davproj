@@ -53,16 +53,25 @@
     <script src="https://cdn.datatables.net/2.3.6/js/dataTables.bootstrap5.min.js"></script>
     <script>
         function loadTable(tableName, element) {
-            var targetElement = element || $('#tableTabs a[onclick*="' + tableName + '"]');
-            $('#tableTabs .nav-link').removeClass('active');
-            $('#tableTabs .dropdown-item').removeClass('active');
-            if (targetElement) {
-                $(targetElement).addClass('active');
-                if ($(targetElement).hasClass('dropdown-item')) {
-                    $(targetElement).closest('.dropdown').find('.dropdown-toggle').addClass('active');
+            localStorage.setItem('activeTableName', tableName);
+            var $target = $(element);
+            if (!$target.length) {
+                $target = $('#tableTabs a').filter(function() {
+                    return $(this).attr('onclick') && $(this).attr('onclick').includes("'" + tableName + "'");
+                });
+            }
+
+            $('#tableTabs .nav-link, #tableTabs .dropdown-item, #tableTabs .dropdown-toggle').removeClass('active');
+            
+            if ($target.length > 0) {
+                $target.addClass('active');
+                if ($target.hasClass('dropdown-item')) {
+                    $target.closest('.dropdown').find('.dropdown-toggle').addClass('active');
                 }
             }
+
             $('#table-container').html('<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div>');
+            
             $.ajax({
                 url: '@Url.Action("GetTableData", "Admin")',
                 type: 'GET',
@@ -82,21 +91,27 @@
                 }
             });
         }
+
         $(document).on('click', '.btn-open-modal', function(e) {
-                   e.preventDefault();
-                   var url = $(this).attr('href');
-                   var myModal = new bootstrap.Modal(document.getElementById('modal-container'));
-                   $('#modal-container .modal-body').html('<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div>');
-                   $('#modal-container .modal-body').load(url, function(response, status, xhr) {
-                       if (status == "error") {
-                           var msg = "Ошибка при загрузке страницы: ";
-                           $('#modal-container .modal-body').html(msg + xhr.status + " " + xhr.statusText);
-                       }
-                   });
-                   myModal.show();
-               });
+            e.preventDefault();
+            var url = $(this).attr('href');
+            var modalEl = document.getElementById('modal-container');
+            var myModal = new bootstrap.Modal(modalEl);
+            
+            $('#modal-container .modal-body').html('<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div>');
+            $('#modal-container .modal-body').load(url, function(response, status, xhr) {
+                if (status == "error") {
+                    $('#modal-container .modal-body').html("Ошибка: " + xhr.status + " " + xhr.statusText);
+                }
+            });
+            myModal.show();
+        });
+
         $(document).ready(function () {
-            loadTable('Workplaces');
+            var savedTable = localStorage.getItem('activeTableName');
+            var tableToLoad = savedTable ? savedTable : 'Workplaces';
+            
+            loadTable(tableToLoad);
         });
     </script>
 }

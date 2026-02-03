@@ -21,7 +21,7 @@ namespace davproj.Models
         [DisplayName("Активна?")]
         public bool? Enabled { get; set; }
         [DisplayName("Привязанный пользователь")]
-        public User User { get; set; } = new User();
+        public User? User { get; set; }
         [Column(TypeName = "jsonb")]
         [DisplayName("Настройки")]
         public UserSettings? Settings { get; set; }

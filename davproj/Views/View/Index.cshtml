@@ -108,28 +108,31 @@
                                         }
                                     </div>
                                 </div>
-                                <div class="accordion accordion-flush" id="accordion-office-@office.Id">
-                                    @foreach (var wp in office.Workplaces)
-                                    {
-                                        <div class="accordion-item">
-                                            <h2 class="accordion-header d-flex justify-content-between align-items-center pe-3">
-                                                <button class="accordion-button collapsed text-body" type="button" data-bs-toggle="collapse" data-bs-target="#wp-@wp.Id">
-                                                    <strong>@wp.Name</strong> &nbsp;
-                                                    <span class="text-body-secondary">(@(wp.User?.FullName ?? "Свободно"))</span>
-                                                </button>
-                                                <a class="btn btn-xs btn-outline-secondary border-0 p-0 btn-open-modal ms-2"
-                                                   asp-controller="View" asp-action="WorkplaceEdit" asp-route-id="@wp.Id">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </a>
-                                            </h2>
-                                            <div id="wp-@wp.Id" 
-                                                class="accordion-collapse collapse" 
-                                                data-bs-parent="#accordion-office-@office.Id">
-                                                <partial name="_WorkplaceDetails" model="wp" />
+                                @if (office != null)
+                                {
+                                    <div class="accordion accordion-flush" id="accordion-office-@office.Id">
+                                        @foreach (var wp in office.Workplaces)
+                                        {
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header d-flex justify-content-between align-items-center pe-3">
+                                                    <button class="accordion-button collapsed text-body" type="button" data-bs-toggle="collapse" data-bs-target="#wp-@wp.Id">
+                                                        <strong>@wp.Name</strong> &nbsp;
+                                                        <span class="text-body-secondary">(@(wp.User?.FullName ?? "Свободно"))</span>
+                                                    </button>
+                                                    <a class="btn btn-xs btn-outline-secondary border-0 p-0 btn-open-modal ms-2"
+                                                       asp-controller="View" asp-action="WorkplaceEdit" asp-route-id="@wp.Id">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </a>
+                                                </h2>
+                                                <div id="wp-@wp.Id" 
+                                                    class="accordion-collapse collapse" 
+                                                    data-bs-parent="#accordion-office-@office.Id">
+                                                    <partial name="_WorkplaceDetails" model="wp" />
+                                                </div>
                                             </div>
-                                        </div>
-                                    }
-                                </div>
+                                        }
+                                    </div>
+                                }
                             </div>
                         }
                     }
