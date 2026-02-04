@@ -24,9 +24,7 @@ namespace HardwareShared
         public bool IsDomainJoined { get; set; } = false;
         public string IpAddress { get; set; } = string.Empty;
         public DateTime CollectedAtUtc { get; set; } = DateTime.UtcNow;
-
-        // --- НОВЫЕ ПАРАМЕТРЫ ---
-
+        public string MotherboardModel { get; set; } = string.Empty;
         public string CurrentUserName { get; set; } = string.Empty;
         public string RamSpeed { get; set; } = string.Empty;
         public string DiskHealth { get; set; } = string.Empty;

@@ -31,11 +31,41 @@ public class ReportsController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> ExportUsb()
+    {
+        var buildings = await GetBuildingsDataAsync();
+        var content = _excelService.GetUsbReport(buildings);
+        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "USB.xlsx");
+    }
+    [HttpGet]
+    public async Task<IActionResult> ExportPrinters()
+    {
+        var buildings = await GetBuildingsDataAsync();
+        var content = _excelService.GetPrinterReport(buildings);
+        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Printers.xlsx");
+    }
+
+    [HttpGet]
     public async Task<IActionResult> ExportMonitors()
     {
         var buildings = await GetBuildingsDataAsync();
         var content = _excelService.GetMonitorsReport(buildings);
         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Monitors.xlsx");
+    }
+    [HttpGet]
+    public async Task<IActionResult> ExportSoftware()
+    {
+        var buildings = await GetBuildingsDataAsync();
+        var content = _excelService.GetSoftwareReport(buildings);
+        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Software.xlsx");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportHardware()
+    {
+        var buildings = await GetBuildingsDataAsync();
+        var content = _excelService.GetHardwareReport(buildings);
+        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Hardware.xlsx");
     }
 
     [HttpGet]
@@ -43,12 +73,12 @@ public class ReportsController : Controller
     {
         var buildings = await GetBuildingsDataAsync();
         var content = _excelService.GetFullReport(buildings);
-        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Monitors.xlsx");
+        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Full.xlsx");
     }
 
     public async Task<IActionResult> Index()
     {
-        return View();
+        return PartialView();
     }
 }
     

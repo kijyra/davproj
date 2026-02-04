@@ -64,8 +64,18 @@ namespace ClientAPI
             using (var searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController"))
                 foreach (var obj in searcher.Get()) { info.VideoCard = obj["Name"]?.ToString() ?? string.Empty; break; }
 
-            using (var searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_BaseBoard"))
-                foreach (var obj in searcher.Get()) { info.SerialNumber = obj["SerialNumber"]?.ToString() ?? string.Empty; break; }
+            using (var searcher = new ManagementObjectSearcher("SELECT Manufacturer, Product, SerialNumber FROM Win32_BaseBoard"))
+            {
+                foreach (var obj in searcher.Get())
+                {
+                    string manufacturer = obj["Manufacturer"]?.ToString().Trim() ?? "Unknown";
+                    string product = obj["Product"]?.ToString().Trim() ?? "Unknown";
+
+                    info.MotherboardModel = $"{manufacturer} {product}";
+                    info.SerialNumber = obj["SerialNumber"]?.ToString() ?? string.Empty;
+                    break;
+                }
+            }
 
             using (var searcher = new ManagementObjectSearcher("SELECT Size, FreeSpace FROM Win32_LogicalDisk WHERE DeviceID = 'C:'"))
                 foreach (var obj in searcher.Get())
