@@ -24,6 +24,7 @@ builder.Services.AddScoped<UserSettingsService>();
 builder.Services.AddAuthorization(options => { });
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IKyoceraSnmpService, KyoceraSnmpService>();
+builder.Services.AddScoped<IExcelService, ExcelService>();
 builder.Services.AddHttpClient();
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())

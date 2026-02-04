@@ -1,0 +1,105 @@
+﻿@{
+    ViewData["Title"] = "Рабочие места";
+    ViewData["ActivePage"] = "Reports";
+}
+@section Styles{
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            background-color: var(--bs-body-bg);
+        }
+
+        .report-card {
+            border: 1px solid var(--bs-border-color);
+            background-color: var(--bs-tertiary-bg);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+            .report-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+                border-color: var(--bs-primary);
+            }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            background-color: var(--bs-secondary-bg);
+            color: var(--bs-primary);
+            margin-bottom: 1rem;
+        }
+    </style>
+}
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Полный отчёт -->
+        <div class="col-md-4">
+            <div class="card h-100 report-card p-3">
+                <div class="card-body d-flex flex-column">
+                    <div class="icon-box">
+                        <i class="bi bi-motherboard"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Полный отчёт</h5>
+                    <p class="card-text small opacity-75">Содержит все отчёты.</p>
+                    <button onclick="downloadReport('/Reports/ExportFullInventory', 'FullInventoryReport.xlsx')" class="btn btn-primary mt-auto">
+                        <i class="fa-solid fa-download me-2"></i>Скачать
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Мониторы-->
+        <div class="col-md-4">
+            <div class="card h-100 report-card p-3">
+                <div class="card-body d-flex flex-column">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-desktop"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Мониторы</h5>
+                    <p class="card-text small opacity-75">Отчет по дисплеям и диагоналям.</p>
+                    <button onclick="downloadReport('/Reports/ExportMonitors', 'MonitorReport.xlsx')" class="btn btn-primary mt-auto">
+                        <i class="fa-solid fa-download me-2"></i>Скачать
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!--  -->
+
+    </div>
+</div>
+@section Scripts
+{
+    <script>
+        function downloadReport(url, fileName) {
+        toastr.options = { "progressBar": true, "positionClass": "toast-bottom-right" };
+
+        toastr.info('Подготовка файла...', 'Пожалуйста, подождите');
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error('Ошибка сервера');
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+
+                toastr.success('Файл успешно сформирован!', 'Готово');
+            })
+            .catch(error => {
+                console.error(error);
+                toastr.error('не удалось загрузить отчет', 'Ошибка');
+            });
+    }
+    </script>
+}
