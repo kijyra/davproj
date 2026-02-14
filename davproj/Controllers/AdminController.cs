@@ -1,4 +1,5 @@
-﻿using davproj.Models;
+﻿using davproj.Filters;
+using davproj.Models;
 using davproj.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using System.Collections;
 
 namespace davproj.Controllers
 {
+    [ServiceFilter(typeof(ApiKeyAuthFilter))]
     public class AdminController : Controller
     {
         private readonly DBContext _db;
@@ -14,7 +16,6 @@ namespace davproj.Controllers
         {
             _db = db;
         }
-        [Authorize(Roles = "IT_Full")]
         public IActionResult ManageDatabase()
         {
             var viewModel = new ManageDBViewModel
@@ -36,7 +37,6 @@ namespace davproj.Controllers
             };
             return View(viewModel);
         }
-        [Authorize(Roles = "IT_Full")]
         public IActionResult GetTableData(string tableName)
         {
             IEnumerable? dataList = null;

@@ -1,3 +1,4 @@
+using davproj.Filters;
 using davproj.Models;
 using davproj.Services;
 using Microsoft.AspNetCore.Authentication.Negotiate;
@@ -10,6 +11,16 @@ builder.Services.AddControllersWithViews()
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("NextJSApp", policy =>
+    {
+        policy.WithOrigins("https://10.0.0.70", "https://dc1.dallari.biz", "https://localhost", "http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString");
 var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
 dataSourceBuilder.EnableDynamicJson();
@@ -25,6 +36,7 @@ builder.Services.AddAuthorization(options => { });
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IKyoceraSnmpService, KyoceraSnmpService>();
 builder.Services.AddScoped<IExcelService, ExcelService>();
+builder.Services.AddScoped<ApiKeyAuthFilter>();
 builder.Services.AddHttpClient();
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())
@@ -33,10 +45,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseRouting();
+app.UseCors("NextJSApp");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages();
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")

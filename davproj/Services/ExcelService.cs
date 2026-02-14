@@ -65,7 +65,7 @@ namespace davproj.Services
         {
             using (var workbook = new XLWorkbook())
             {
-                AddHardwareSheet(workbook, buildings);
+                AddUsbSheet(workbook, buildings);
 
                 using (var stream = new MemoryStream())
                 {
@@ -78,7 +78,7 @@ namespace davproj.Services
         {
             using (var workbook = new XLWorkbook())
             {
-                AddHardwareSheet(workbook, buildings);
+                AddPrinterSheet(workbook, buildings);
 
                 using (var stream = new MemoryStream())
                 {
@@ -214,15 +214,11 @@ namespace davproj.Services
         private void AddUsbSheet(IXLWorkbook workbook, List<Building> buildings)
         {
             var worksheet = workbook.Worksheets.Add("USB");
-            var currentRow = 1;
+            var headerRow = worksheet.Row(1);
+            headerRow.Style.Alignment.WrapText = true;
 
-            var headers = new[] { "Здание", "Этаж", "Кабинет", "РМ", "Пользователь", "USB-устройства" };
-            for (int i = 0; i < headers.Length; i++)
-            {
-                var cell = worksheet.Cell(currentRow, i + 1);
-                cell.Value = headers[i];
-                ApplyHeaderStyle(cell);
-            }
+            int currentCol = 1;
+            int currentRow = 2;
 
             foreach (var building in buildings)
             {
@@ -232,53 +228,39 @@ namespace davproj.Services
                     {
                         foreach (var wp in office.Workplaces ?? Enumerable.Empty<Workplace>())
                         {
-                            currentRow++;
-
-                            worksheet.Cell(currentRow, 1).Value = building.Name;
-                            worksheet.Cell(currentRow, 2).Value = floor.FloorNum;
-                            worksheet.Cell(currentRow, 3).Value = office.Name;
-                            worksheet.Cell(currentRow, 4).Value = wp.Name;
-                            worksheet.Cell(currentRow, 5).Value = wp?.User?.FullName ?? "Вакантно";
-
-                            var usb = wp.PC?.CurrentHardwareInfo.UsbDevices;
+                            var headerText = $"{building.Name}-{floor.FloorNum}-{office.Name} {Environment.NewLine}" +
+                                $"{wp.Name}{Environment.NewLine}" +
+                                $"{wp.User?.FullName ?? "Вакант"}";
+                            worksheet.Cell(1, currentCol).Value = headerText;
+                            var usb = wp.PC?.CurrentHardwareInfo?.UsbDevices;
+                            currentRow = 2;
 
                             if (usb != null && usb.Count > 0)
                             {
                                 var sortedUsb = usb.OrderBy(s => s).ToList();
 
-                                worksheet.Cell(currentRow, 6).Value = sortedUsb[0];
-
-                                if (sortedUsb.Count > 1)
+                                foreach (var programName in sortedUsb)
                                 {
-                                    int usbStartRow = currentRow + 1;
-
-                                    for (int i = 1; i < sortedUsb.Count; i++)
-                                    {
-                                        currentRow++;
-                                        worksheet.Cell(currentRow, 6).Value = sortedUsb[i];
-                                    }
-
-                                    worksheet.Rows(usbStartRow, currentRow).Group();
-                                    worksheet.Rows(usbStartRow, currentRow).Collapse();
+                                    worksheet.Cell(currentRow, currentCol).Value = programName;
+                                    currentRow++;
                                 }
                             }
                             else
                             {
-                                worksheet.Cell(currentRow, 6).Value = "Данные о USB отсутствуют";
-                                worksheet.Cell(currentRow, 6).Style.Font.Italic = true;
+                                worksheet.Cell(currentRow, currentCol).Value = "Данные о ПО отсутствуют";
+                                worksheet.Cell(currentRow, currentCol).Style.Font.Italic = true;
                             }
-
-                            var rowRange = worksheet.Range(currentRow - (usb?.Count > 0 ? usb.Count - 1 : 0), 1, currentRow, 6);
-                            if (currentRow % 2 == 0)
-                                rowRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#F2F2F2");
+                            currentCol++;
                         }
                     }
                 }
             }
 
+            var usedHeaderRange = worksheet.Row(1).AsRange().RangeUsed();
+            ApplyHeaderStyle(usedHeaderRange);
+            usedHeaderRange.Style.Alignment.WrapText = true;
             worksheet.Columns().AdjustToContents();
-            worksheet.Column(6).Width = 60;
-            worksheet.Column(6).Style.Alignment.WrapText = true;
+            worksheet.Columns().Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
 
             worksheet.SheetView.FreezeRows(1);
             worksheet.RangeUsed().Style.Border.OutsideBorder = XLBorderStyleValues.Thin;

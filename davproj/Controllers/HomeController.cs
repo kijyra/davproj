@@ -1,3 +1,4 @@
+using davproj.Filters;
 using davproj.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -8,7 +9,9 @@ using System.DirectoryServices.AccountManagement;
 
 namespace davproj.Controllers
 {
-    public class HomeController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class HomeController : ControllerBase
     {
         private readonly DBContext _db;
         private readonly IWebHostEnvironment _env;
@@ -17,6 +20,8 @@ namespace davproj.Controllers
             _db = db;
             _env = env;
         }
+        // GET: api/home/files
+        [HttpGet("files")]
         [AllowAnonymous]
         public IActionResult Index()
         {
@@ -64,13 +69,13 @@ namespace davproj.Controllers
                     {
                         Name = fileInfo.Name,
                         Type = "File",
-                        RelativePath = $"/{relativePathFromRoot}",
+                        RelativePath = $"http://10.0.0.70/{relativePathFromRoot}",
                         FormattedSize = fileSize,
                         FileExtension = fileInfo.Extension.ToLower()
                     });
                 }
             }
-            return View(rootItems);
+            return Ok(rootItems);
         }
         private void CreateDirectoryHierarchy(string rootPath, string relativePath, Dictionary<string, FileSystemItemViewModel> map, List<FileSystemItemViewModel> rootList)
         {
@@ -103,68 +108,57 @@ namespace davproj.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return Ok(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        // GET: api/home/profile
         [Authorize]
-        public IActionResult Settings()
+        [HttpGet("profile")]
+        public IActionResult GetProfile()
         {
-            ADUser adUser = new ADUser();
-            adUser.Group = new List<string>();
-            var users = _db.ADUsers.ToList();
-            bool isAlready = false;
-            foreach (ADUser u in users)
-            {
-                if (u.Cn == User?.Identity?.Name?.Split('\\').Last()) 
-                { 
-                    isAlready = true;
-                    adUser = u; 
-                    break; 
-                }
-                else { isAlready =  false;}
-            }
-            if (!isAlready)
-            {
-                adUser = UpdateADUser(User?.Identity?.Name ?? string.Empty);
-                _db.ADUsers.AddRange(adUser);
-                _db.SaveChanges();
-            }
-            return View(adUser);
-        }
-        [Authorize]
-        [HttpGet]
-        public IActionResult UserSettings()
-        {
-            string shortName = (User?.Identity?.Name?.Split('\\').Last() ?? string.Empty);
+            string? fullName = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(fullName)) return Unauthorized();
+
+            string shortName = fullName.Split('\\').Last();
+
             var adUser = _db.ADUsers.FirstOrDefault(u => u.Cn == shortName);
-            return PartialView(adUser?.Settings ?? new UserSettings());
-        }
-        [Authorize]
-        [HttpPost]
-        public IActionResult UserSettings(UserSettings userSettings)
-        {
-            if (ModelState.IsValid)
+
+            if (adUser == null)
             {
-                string? fullWinName = (User?.Identity?.Name ?? string.Empty);
-                if (string.IsNullOrEmpty(fullWinName))
-                {
-                    return Json(new { success = false, message = "Пользователь Windows не определен." });
-                }
-                string shortName = fullWinName.Contains('\\')
-                    ? fullWinName.Split('\\').Last()
-                    : fullWinName;
-                var adUser = _db.ADUsers
-                    .FirstOrDefault(u => u.Cn == shortName);
-                if (adUser == null)
-                {
-                    return Json(new { success = false, message = "Пользователь не найден в БД." });
-                }
-                adUser.Settings = userSettings;
+                adUser = UpdateADUser(fullName);
+                _db.ADUsers.Add(adUser);
                 _db.SaveChanges();
-                return Json(new { success = true, message = "Настройки сохранены." });
             }
-            return PartialView(userSettings);
+
+            return Ok(adUser);
         }
-        [Authorize]
+
+        // GET: api/home/settings
+        [Authorize(Roles = "IT_Full")]
+        [HttpGet("settings")]
+        public IActionResult GetUserSettings()
+        {
+            string shortName = User?.Identity?.Name?.Split('\\').Last() ?? string.Empty;
+            var adUser = _db.ADUsers.FirstOrDefault(u => u.Cn == shortName);
+            return Ok(adUser?.Settings ?? new UserSettings());
+        }
+
+        // POST: api/home/settings
+        [Authorize(Roles = "IT_Full")]
+        [HttpPost("settings")]
+        public IActionResult SaveUserSettings([FromBody] UserSettings userSettings)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            string shortName = User?.Identity?.Name?.Split('\\').Last() ?? string.Empty;
+            var adUser = _db.ADUsers.FirstOrDefault(u => u.Cn == shortName);
+
+            if (adUser == null) return NotFound(new { message = "Пользователь не найден" });
+
+            adUser.Settings = userSettings;
+            _db.SaveChanges();
+
+            return Ok(new { success = true, message = "Настройки сохранены" });
+        }
         static ADUser UpdateADUser(string IdentityName)
         {
             string domainName = IdentityName.Split('\\').First();
