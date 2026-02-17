@@ -75,7 +75,7 @@ jobs:
       # Шаг 5. Публикация HardwareAgent (с использованием профиля)
       # ----------------------------------------------------------------------
       - name: Publish HardwareAgent
-        run: dotnet publish ./HardwareAgent/HardwareAgent.csproj -c Release -o ./artifacts/HardwareAgent 
+        run: dotnet publish ./ClientAPI/HardwareAgent.csproj -c Release -o ./artifacts/HardwareAgent 
           --self-contained true -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true 
           -p:IncludeAllContentForSelfExtract=true -p:EnableCompressionInSingleFile=true
 
