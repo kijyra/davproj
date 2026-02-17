@@ -160,32 +160,26 @@ jobs:
           name: davproj-web
           path: ./publish/davproj
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: davproj-web
-          path: ./web-app
+deploy:
+  needs: build
+  runs-on: self-hosted
+  steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: davproj-web
+        path: ./web-app
 
-      - name: Copy files to server via SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./web-app/*"
-          target: "C:/temp/deploy/backend"
-          strip_components: 1
+    - name: Copy files to IIS folder
+      run: |
+        $source = "$env:GITHUB_WORKSPACE\web-app"
+        $destination = "C:\dav"
+        if (Test-Path $destination) {
+            Remove-Item "$destination\*" -Recurse -Force
+        }
+        Copy-Item "$source\*" $destination -Recurse -Force
 
-      - name: Run deployment script
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            powershell -Command "& 'C:\deploy\deploy-backend.ps1' -ArtifactPath 'C:\temp\deploy\backend'"
+    - name: Restart IIS app pool
+      run: |
+        Import-Module WebAdministration
+        Restart-WebAppPool -Name "dav"
