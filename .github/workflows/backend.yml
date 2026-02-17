@@ -74,6 +74,8 @@ jobs:
       # ----------------------------------------------------------------------
       # Шаг 5. Публикация HardwareAgent (с использованием профиля)
       # ----------------------------------------------------------------------
+      - name: List PublishProfiles
+        run: dir ./HardwareAgent/Properties/PublishProfiles
       - name: Publish HardwareAgent
         run: dotnet publish ./HardwareAgent/HardwareAgent.csproj -p:PublishProfile=FolderProfile1 -p:PublishDir=./artifacts/HardwareAgent
 
