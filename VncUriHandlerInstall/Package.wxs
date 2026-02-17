@@ -30,10 +30,10 @@
 		</StandardDirectory>
 
 		<ComponentGroup Id="MainComponents" Directory="INSTALLFOLDER">
-			<Component Id="Cmp_PerMachine_FilesAndFirewall" Guid="*">
+			<Component Id="Cmp_PerMachine_FilesAndFirewall" Guid="*" Win64="yes">
 				<File Id="VncHandlerExe"
-                      Source="C:\proj\davproj\VncUriHandler\bin\publish\VncUriHandler.exe"
-                      KeyPath="yes">
+					  Source="C:\proj\davproj\VncUriHandler\bin\publish\VncUriHandler.exe"
+					  KeyPath="yes">
 					<firewall:FirewallException Id="FW_ApiPort" Name="Hardware Agent API" Port="5004" Protocol="tcp" Scope="any" />
 				</File>
 				<RegistryKey Root="HKCR" Key="vnc">
@@ -45,20 +45,20 @@
 				</RegistryKey>
 			</Component>
 
-			<Component Id="AppSettings" Guid="*">
+			<Component Id="AppSettings" Guid="*" Win64="yes">
 				<File Source="C:\proj\davproj\VncUriHandler\bin\publish\appsettings.json" KeyPath="yes" />
 			</Component>
 
-			<Component Id="Cmp_ActiveSetup" Guid="*">
+			<Component Id="Cmp_ActiveSetup" Guid="*" Win64="yes">
 				<RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Active Setup\Installed Components\VncUriHandler_Config">
 					<RegistryValue Type="string" Value="VNC URI Handler User Configuration" />
 					<RegistryValue Name="StubPath" Type="string"
-                                   Value="reg.exe add &quot;HKCU\Software\Microsoft\Windows\CurrentVersion\Run&quot; /v &quot;DallariVncHandler&quot; /t REG_SZ /d &quot;\&quot;[#VncHandlerExe]\&quot;&quot; /f" />
+								   Value="reg.exe add &quot;HKCU\Software\Microsoft\Windows\CurrentVersion\Run&quot; /v &quot;DallariVncHandler&quot; /t REG_SZ /d &quot;\&quot;[#VncHandlerExe]\&quot;&quot; /f" />
 					<RegistryValue Name="Version" Type="string" Value="1" />
 				</RegistryKey>
 			</Component>
 
-			<Component Id="Cmp_PerUser_Autostart" Guid="*">
+			<Component Id="Cmp_PerUser_Autostart" Guid="*" Win64="yes">
 				<RegistryKey Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run">
 					<RegistryValue Name="DallariVncHandler" Type="string" Value="&quot;[#VncHandlerExe]&quot;" KeyPath="yes" />
 				</RegistryKey>
