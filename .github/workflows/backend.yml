@@ -29,10 +29,6 @@ jobs:
           [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
           iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-      # Установка WiX Toolset v3
-      - name: Install WiX v3
-        run: choco install wixtoolset -y
-
       # Добавление WiX в PATH (чтобы были доступны candle, light и msbuild знал о WiX targets)
       - name: Add WiX to PATH
         run: echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
@@ -69,8 +65,13 @@ jobs:
 
       - name: Build VncUriHandlerInstall MSI
         run: |
-          msbuild ./VncUriHandlerInstall/VncUriHandlerInstall.wixproj -p:Configuration=Release -p:OutputPath=./artifacts/VncUriHandlerInstall
-          Copy-Item ./artifacts/VncUriHandlerInstall/*.msi ./artifacts/VncUriHandlerInstall.msi
+          msbuild ./VncUriHandlerInstall/VncUriHandlerInstall.wixproj -p:Configuration=Release -p:Platform=x64 -p:OutputPath=./artifacts/VncUriHandlerInstall
+          if (Test-Path ./artifacts/VncUriHandlerInstall/*.msi) {
+              Copy-Item ./artifacts/VncUriHandlerInstall/*.msi ./artifacts/VncUriHandlerInstall.msi
+          } else {
+              Write-Host "MSI not found, build failed"
+              exit 1
+          }
 
       # ----------------------------------------------------------------------
       # Шаг 3. Публикация VncTrayApp

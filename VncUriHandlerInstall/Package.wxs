@@ -30,7 +30,7 @@
 		</StandardDirectory>
 
 		<ComponentGroup Id="MainComponents" Directory="INSTALLFOLDER">
-			<Component Id="Cmp_PerMachine_FilesAndFirewall" Guid="*" Win64="yes">
+			<Component Id="Cmp_PerMachine_FilesAndFirewall" Guid="*">
 				<File Id="VncHandlerExe"
 					  Source="C:\proj\davproj\VncUriHandler\bin\publish\VncUriHandler.exe"
 					  KeyPath="yes">
@@ -45,11 +45,11 @@
 				</RegistryKey>
 			</Component>
 
-			<Component Id="AppSettings" Guid="*" Win64="yes">
+			<Component Id="AppSettings" Guid="*">
 				<File Source="C:\proj\davproj\VncUriHandler\bin\publish\appsettings.json" KeyPath="yes" />
 			</Component>
 
-			<Component Id="Cmp_ActiveSetup" Guid="*" Win64="yes">
+			<Component Id="Cmp_ActiveSetup" Guid="*">
 				<RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Active Setup\Installed Components\VncUriHandler_Config">
 					<RegistryValue Type="string" Value="VNC URI Handler User Configuration" />
 					<RegistryValue Name="StubPath" Type="string"
@@ -58,7 +58,7 @@
 				</RegistryKey>
 			</Component>
 
-			<Component Id="Cmp_PerUser_Autostart" Guid="*" Win64="yes">
+			<Component Id="Cmp_PerUser_Autostart" Guid="*">
 				<RegistryKey Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run">
 					<RegistryValue Name="DallariVncHandler" Type="string" Value="&quot;[#VncHandlerExe]&quot;" KeyPath="yes" />
 				</RegistryKey>
