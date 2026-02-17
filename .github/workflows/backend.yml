@@ -160,26 +160,26 @@ jobs:
           name: davproj-web
           path: ./publish/davproj
 
-deploy:
-  needs: build
-  runs-on: self-hosted
-  steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: davproj-web
-        path: ./web-app
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: davproj-web
+          path: ./web-app
 
-    - name: Copy files to IIS folder
-      run: |
-        $source = "$env:GITHUB_WORKSPACE\web-app"
-        $destination = "C:\dav"
-        if (Test-Path $destination) {
-            Remove-Item "$destination\*" -Recurse -Force
-        }
-        Copy-Item "$source\*" $destination -Recurse -Force
+      - name: Copy files to IIS folder
+        run: |
+          $source = "$env:GITHUB_WORKSPACE\web-app"
+          $destination = "C:\dav"
+          if (Test-Path $destination) {
+              Remove-Item "$destination\*" -Recurse -Force
+          }
+          Copy-Item "$source\*" $destination -Recurse -Force
 
-    - name: Restart IIS app pool
-      run: |
-        Import-Module WebAdministration
-        Restart-WebAppPool -Name "dav"
+      - name: Restart IIS app pool
+        run: |
+          Import-Module WebAdministration
+          Restart-WebAppPool -Name "dav"
