@@ -105,6 +105,25 @@ jobs:
           Copy-Item "$outDir\*.msi" ./artifacts/InstallerService.msi
 
       # ----------------------------------------------------------------------
+      # Шаг 7a. Подготовка файлов для ServiceWithVNC (mock local paths)
+      # ----------------------------------------------------------------------
+      - name: Prepare files for ServiceWithVNC
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\proj\davproj\InstallerService\bin\x64\Release
+          Copy-Item ./artifacts/InstallerService.msi -Destination C:\proj\davproj\InstallerService\bin\x64\Release\InstallerService.msi -Force
+
+          New-Item -ItemType Directory -Force -Path C:\proj\davproj\ServiceWithVNC
+          @('tightvnc.msi', 'windowsdesktop-runtime-10.0.2-win-x64.exe', 'icon.ico') | ForEach-Object {
+              $source = "./ServiceWithVNC/$_"
+              if (Test-Path $source) {
+                  Copy-Item $source -Destination "C:\proj\davproj\ServiceWithVNC\" -Force
+                  Write-Host "Copied $_"
+              } else {
+                  Write-Host "Warning: $_ not found in ./ServiceWithVNC"
+              }
+          }
+
+      # ----------------------------------------------------------------------
       # Шаг 7. Сборка ServiceWithVNC (Wix-бандл)
       # ----------------------------------------------------------------------
       - name: Build ServiceWithVNC Bundle
