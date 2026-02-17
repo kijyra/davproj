@@ -51,6 +51,9 @@ jobs:
       # Шаг 2. Сборка VncUriHandlerInstall (MSI)
       # Предполагаем, что это WiX-проект (.wixproj)
       # ----------------------------------------------------------------------
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+
       - name: Build VncUriHandlerInstall MSI
         run: |
           msbuild ./VncUriHandlerInstall/VncUriHandlerInstall.wixproj -p:Configuration=Release -p:OutputPath=./artifacts/VncUriHandlerInstall
