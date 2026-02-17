@@ -2,11 +2,13 @@
 using davproj.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Build.Execution;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace davproj.Controllers
 {
+    [Authorize(Roles = "IT_Full")]
     public class PrinterController : Controller
     {
         private readonly IKyoceraSnmpService _printerService;
@@ -16,40 +18,58 @@ namespace davproj.Controllers
             _db = db;
             _printerService = printerService;
         }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public async Task<ActionResult> UpdateCounters(int? id)
+        [HttpPost]
+        public async Task<ActionResult> UpdateCounters(int id)
         {
-            if (id is null or 0)
+            if (id == 0)
             {
-                return NotFound();
+                return NotFound(new { success = false, message = "ID не указан" });
             }
-            Printer? printer = await _db.Printers.FindAsync(id);
+            var printer = await _db.Printers.FindAsync(id);
             if (printer == null)
             {
-                return NotFound();
+                return NotFound(new { success = false, message = "Принтер не найден" });
             }
             try
             {
                 var counters = await _printerService.GetCountersAsync(printer.IP!);
                 var changed = false;
                 if (counters.PrintCounter > 0)
-                { printer.PrintCount = counters.PrintCounter; changed = true; }
+                {
+                    printer.PrintCount = counters.PrintCounter;
+                    changed = true;
+                }
                 if (counters.ScanCounter > 0)
-                { printer.ScanCount = counters.ScanCounter; changed = true; }
+                {
+                    printer.ScanCount = counters.ScanCounter;
+                    changed = true;
+                }
                 printer.LastUpdateSNMP = DateTime.Now.ToString();
                 if (changed)
-                { await _db.SaveChangesAsync(); }
+                {
+                    await _db.SaveChangesAsync();
+                }
+                return Ok(new
+                {
+                    success = true,
+                    message = changed ? "Счётчики обновлены" : "Счётчики не изменились",
+                    printer = new
+                    {
+                        printer.Id,
+                        printer.PrintCount,
+                        printer.ScanCount,
+                        printer.LastUpdateSNMP
+                    }
+                });
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "Не удалось связаться с принтером: " + ex.Message);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Не удалось связаться с принтером: " + ex.Message
+                });
             }
-            if (!string.IsNullOrEmpty(Request.Headers["Referer"].ToString()))
-            {
-                return Redirect(Request.Headers["Referer"].ToString());
-            }
-            return View(printer);
         }
         public string GetDNS(string ipAddress)
         {
@@ -63,184 +83,204 @@ namespace davproj.Controllers
                 return "Не найдено";
             }
         }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public async Task<ActionResult> FuserRepair(int? id)
+
+        [HttpPost]
+        public async Task<ActionResult> FuserRepair(int id)
         {
-            if (id is null or 0)
+            if (id == 0)
             {
-                return NotFound();
+                return NotFound(new { success = false, message = "ID не указан" });
             }
-            Printer? printer = await _db.Printers.FindAsync(id)!;
+            var printer = await _db.Printers.FindAsync(id);
             if (printer == null)
             {
-                return NotFound();
+                return NotFound(new { success = false, message = "Принтер не найден" });
             }
             printer.LastFuserRepair ??= [];
             try
             {
                 await UpdateCounters(id);
                 printer.LastFuserRepair.Add(DateTime.Now.ToString() + " | " + printer.PrintCount);
-                _db.Entry(printer).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _db.SaveChanges();
+                _db.Entry(printer).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Запись о ремонте печи добавлена",
+                    printer = new
+                    {
+                        printer.Id,
+                        printer.PrintCount,
+                        printer.LastFuserRepair
+                    }
+                });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 printer.LastFuserRepair.Add(DateTime.Now.ToString() + " | " + printer.PrintCount);
-                _db.Entry(printer).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _db.SaveChanges();
-            }
-            if (!string.IsNullOrEmpty(Request.Headers["Referer"].ToString()))
-            {
-                return Redirect(Request.Headers["Referer"].ToString());
-            }
-            return View(printer);
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public IActionResult PrinterAdd()
-        {
-            ViewData["workplaces"] = _db.Workplaces.ToList();
-            ViewData["models"] = _db.PrinterModels.ToList();
-            ViewData["FormAction"] = "PrinterAdd";
-            return PartialView("Printer");
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult PrinterAdd(Printer printer)
-        {
-            if (ModelState.IsValid)
-            {
-                if (printer.HostName == null && printer.IP != null)
+                _db.Entry(printer).State = EntityState.Modified;
+                await _db.SaveChangesAsync();
+
+                return Ok(new
                 {
-                    printer.HostName = GetDNS(printer.IP);
-                }
-                _db.Printers.Add(printer);
-                _db.SaveChanges();
-                return Json(new { success = true, printer = new { id = printer.Id, title = printer.PrinterName } });
+                    success = true,
+                    warning = "Счётчики не обновлены, но запись добавлена",
+                    printer = new
+                    {
+                        printer.Id,
+                        printer.PrintCount,
+                        printer.LastFuserRepair
+                    }
+                });
             }
-            ViewData["workplaces"] = _db.Workplaces.ToList();
-            ViewData["models"] = _db.PrinterModels.ToList();
-            ViewData["FormAction"] = "PrinterAdd";
-            return PartialView("Printer", printer);
         }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public ActionResult PrinterEdit(int? id)
-        {
-            if (id is null or 0)
+        #region Printer
+             [HttpGet]
+            public IActionResult Printer()
             {
-                return NotFound();
+                return Json(_db.Printers.ToList());
             }
-            ViewData["workplaces"] = _db.Workplaces.ToList();
-            ViewData["models"] = _db.PrinterModels.ToList();
-            ViewData["FormAction"] = "PrinterEdit";
-            Printer printer = _db.Printers.Find(id)!;
-            if (printer != null)
+
+        
+            [HttpPost]
+            public IActionResult PrinterAdd(Printer printer)
             {
-                return PartialView("Printer", printer);
-            }
-            return NotFound();
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult PrinterEdit(Printer printer)
-        {
-            if (ModelState.IsValid)
-            {
-                if (printer.HostName == null && printer.IP != null)
+                if (ModelState.IsValid)
                 {
-                    printer.HostName = GetDNS(printer.IP);
+                    if (printer.HostName == null && printer.IP != null)
+                    {
+                        printer.HostName = GetDNS(printer.IP);
+                    }
+                    _db.Printers.Add(printer);
+                    _db.SaveChanges();
+                    return Json(new { success = true, printer = new { id = printer.Id, title = printer.PrinterName } });
                 }
-                _db.Entry(printer).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Json(new { success = false, errors });
+             }
+
+            [HttpPost]
+            public IActionResult PrinterEdit(Printer printer)
+            {
+                if (ModelState.IsValid)
+                {
+                    if (printer.HostName == null && printer.IP != null)
+                    {
+                        printer.HostName = GetDNS(printer.IP);
+                    }
+                    _db.Entry(printer).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    _db.SaveChanges();
+                    return Json(new { success = true, printer = new { id = printer.Id, title = printer.PrinterName } });
+                }
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+                    return Json(new { success = false, errors });
+            }
+
+            [HttpPost]
+            public ActionResult PrinterDelete(int id)
+            {
+            try
+            {
+                if (id == 0)
+                    return NotFound(new { success = false, message = "ID не указан" });
+
+                var printer  = _db.Printers.Find(id);
+                if (printer == null)
+                    return NotFound(new { success = false, message = "Принтер не найден" });
+
+                _db.Printers.Remove(printer);
                 _db.SaveChanges();
-                return Json(new { success = true, printer = new { id = printer.Id, title = printer.PrinterName } });
+                return Ok(new { success = true });
             }
-            ViewData["workplaces"] = _db.Workplaces.ToList();
-            ViewData["models"] = _db.PrinterModels.ToList();
-            ViewData["FormAction"] = "PrinterEdit";
-            return PartialView("Printer", printer);
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public ActionResult PrinterDelete(int id)
-        {
-            if (id == 0) { return NotFound(); }
-            var printer = _db.Printers.Find(id);
-            if (printer == null) { return NotFound(); }
-            _db.Printers.Remove(printer);
-            _db.SaveChanges();
-            return Ok();
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public IActionResult ManufactorAdd()
-        {
-            ViewData["FormAction"] = "ManufactorAdd";
-            return PartialView("Manufactor");
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult ManufactorAdd(Manufactor manufactor)
-        {
-            if (ModelState.IsValid)
+            catch (DbUpdateException ex)
             {
-                _db.Manufactors.Add(manufactor);
-                _db.SaveChanges();
-                return Json(new { success = true, manufactor = new { id = manufactor.Id, title = manufactor.Name } });
+                return StatusCode(500, new { success = false, message = "Невозможно удалить: есть связанные картриджи или модели принтеров." });
             }
-            ViewData["FormAction"] = "ManufactorAdd";
-            return PartialView("Manufactor", manufactor);
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public ActionResult ManufactorEdit(int? id)
-        {
-            if (id is null or 0)
+            catch (Exception ex)
             {
-                return NotFound();
+                return StatusCode(500, new { success = false, message = "Внутренняя ошибка сервера" });
             }
-            ViewData["FormAction"] = "ManufactorEdit";
-            Manufactor manufactor = _db.Manufactors.Find(id)!;
-            if (manufactor != null)
-            {
-                return PartialView("Manufactor", manufactor);
-            }
-            return NotFound();
         }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult ManufactorEdit(Manufactor manufactor)
-        {
-            if (ModelState.IsValid)
+        #endregion
+        #region Manufactor
+            [HttpGet]
+            public IActionResult Manufactor()
             {
-                _db.Entry(manufactor).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _db.SaveChanges();
-                return Json(new { success = true, manufactor = new { id = manufactor.Id, title = manufactor.Name } });
+                return Json(_db.Manufactors.ToList());
             }
-            ViewData["FormAction"] = "ManufactorEdit";
-            return PartialView("Manufactor", manufactor);
-        }
-        [Authorize(Roles = "IT_Full")]
+
+            [HttpPost]
+            public IActionResult ManufactorAdd(Manufactor manufactor)
+            {
+                if (ModelState.IsValid)
+                {
+                    _db.Manufactors.Add(manufactor);
+                    _db.SaveChanges();
+                    return Json(new { success = true, manufactor = new { id = manufactor.Id, title = manufactor.Name } });
+                }
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Json(new { success = false, errors });
+            }
+
+            [HttpPost]
+            public IActionResult ManufactorEdit(Manufactor manufactor)
+            {
+                if (ModelState.IsValid)
+                {
+                    _db.Entry(manufactor).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    _db.SaveChanges();
+                    return Json(new { success = true, manufactor = new { id = manufactor.Id, title = manufactor.Name } });
+                }
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Json(new { success = false, errors });
+            }
+
         [HttpPost]
         public ActionResult ManufactorDelete(int id)
         {
-            if (id == 0) { return NotFound(); }
-            var manufactor = _db.Manufactors.Find(id);
-            if (manufactor == null) { return NotFound(); }
-            _db.Manufactors.Remove(manufactor);
-            _db.SaveChanges();
-            return Ok();
+            try
+            {
+                if (id == 0)
+                    return NotFound(new { success = false, message = "ID не указан" });
+
+                var manufactor = _db.Manufactors.Find(id);
+                if (manufactor == null)
+                    return NotFound(new { success = false, message = "Производитель не найден" });
+
+                _db.Manufactors.Remove(manufactor);
+                _db.SaveChanges();
+                return Ok(new { success = true });
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, new { success = false, message = "Невозможно удалить: есть связанные картриджи или модели принтеров." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Внутренняя ошибка сервера" });
+            }
         }
-        [Authorize(Roles = "IT_Full")]
+        #endregion
+        #region Cartridge
         [HttpGet]
-        public IActionResult CartridgeAdd()
+        public IActionResult Cartridge()
         {
-            ViewData["manufactors"] = _db.Manufactors.ToList();
-            ViewData["FormAction"] = "CartridgeAdd";
-            return PartialView("Cartridge");
+            return Json(_db.Cartridges.ToList());
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public IActionResult CartridgeAdd(Cartridge cartridge)
         {
@@ -250,28 +290,13 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, cartridge = new { id = cartridge.Id, title = cartridge.Name } });
             }
-            ViewData["manufactors"] = _db.Manufactors.ToList();
-            ViewData["FormAction"] = "CartridgeAdd";
-            return PartialView("Cartridge", cartridge);
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            return Json(new { success = false, errors });
         }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public ActionResult CartridgeEdit(int? id)
-        {
-            if (id is null or 0)
-            {
-                return NotFound();
-            }
-            Cartridge cartridge = _db.Cartridges.Find(id)!;
-            ViewData["manufactors"] = _db.Manufactors.ToList();
-            ViewData["FormAction"] = "CartridgeEdit";
-            if (cartridge != null)
-            {
-                return PartialView("Cartridge", cartridge);
-            }
-            return NotFound();
-        }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public IActionResult CartridgeEdit(Cartridge cartridge)
         {
@@ -281,30 +306,46 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, cartridge = new { id = cartridge.Id, title = cartridge.Name } });
             }
-            ViewData["manufactors"] = _db.Manufactors.ToList();
-            ViewData["FormAction"] = "CartridgeEdit";
-            return PartialView("Cartridge", cartridge);
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            return Json(new { success = false, errors });
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public ActionResult CartridgeDelete(int id)
         {
-            if (id == 0) { return NotFound(); }
-            var cartridge = _db.Cartridges.Find(id);
-            if (cartridge == null) { return NotFound(); }
-            _db.Cartridges.Remove(cartridge);
-            _db.SaveChanges();
-            return Ok();
+            try
+            {
+                if (id == 0)
+                    return NotFound(new { success = false, message = "ID не указан" });
+
+                var cartridge = _db.Cartridges.Find(id);
+                if (cartridge == null)
+                    return NotFound(new { success = false, message = "Картридж не найден" });
+
+                _db.Cartridges.Remove(cartridge);
+                _db.SaveChanges();
+                return Ok(new { success = true });
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, new { success = false, message = "Невозможно удалить: есть связанные принтеры или модели принтеров." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Внутренняя ошибка сервера" });
+            }
         }
-        [Authorize(Roles = "IT_Full")]
+        #endregion
+        #region PrinterModel
         [HttpGet]
-        public IActionResult PrinterModelAdd()
+        public IActionResult PrinterModel()
         {
-            ViewData["cartridges"] = _db.Cartridges.Include(c => c.Manufactor).ToList();
-            ViewData["FormAction"] = "PrinterModelAdd";
-            return PartialView("PrinterModel");
+            return Json(_db.PrinterModels.ToList());
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public IActionResult PrinterModelAdd(PrinterModel printerModel)
         {
@@ -314,28 +355,13 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, printerModel = new { id = printerModel.Id, title = printerModel.Name } });
             }
-            ViewData["cartridges"] = _db.Cartridges.Include(c => c.Manufactor).ToList();
-            ViewData["FormAction"] = "PrinterModelAdd";
-            return PartialView("PrinterModel", printerModel);
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            return Json(new { success = false, errors });
         }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public ActionResult PrinterModelEdit(int? id)
-        {
-            if (id is null or 0)
-            {
-                return NotFound();
-            }
-            ViewData["cartridges"] = _db.Cartridges.Include(c => c.Manufactor).ToList();
-            ViewData["FormAction"] = "PrinterModelEdit";
-            PrinterModel printerModel = _db.PrinterModels.Find(id)!;
-            if (printerModel != null)
-            {
-                return PartialView("PrinterModel", printerModel);
-            }
-            return NotFound();
-        }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public IActionResult PrinterModelEdit(PrinterModel printerModel)
         {
@@ -345,20 +371,38 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, printerModel = new { id = printerModel.Id, title = printerModel.Name } });
             }
-            ViewData["cartridges"] = _db.Cartridges.ToList();
-            ViewData["FormAction"] = "PrinterModelEdit";
-            return PartialView("PrinterModel", printerModel);
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            return Json(new { success = false, errors });
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public ActionResult PrinterModelDelete(int id)
         {
-            if (id == 0) { return NotFound(); }
-            var printerModel = _db.PrinterModels.Find(id);
-            if (printerModel == null) { return NotFound(); }
-            _db.PrinterModels.Remove(printerModel);
-            _db.SaveChanges();
-            return Ok();
+            try
+            {
+                if (id == 0)
+                    return NotFound(new { success = false, message = "ID не указан" });
+
+                var printerModel = _db.PrinterModels.Find(id);
+                if (printerModel == null)
+                    return NotFound(new { success = false, message = "Производитель не найден" });
+
+                _db.PrinterModels.Remove(printerModel);
+                _db.SaveChanges();
+                return Ok(new { success = true });
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, new { success = false, message = "Невозможно удалить: есть связанные картриджи или модели принтеров." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Внутренняя ошибка сервера" });
+            }
         }
+        #endregion
     }
 }

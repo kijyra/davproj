@@ -69,7 +69,7 @@ namespace davproj.Controllers
                     {
                         Name = fileInfo.Name,
                         Type = "File",
-                        RelativePath = $"http://10.0.0.70/{relativePathFromRoot}",
+                        RelativePath = $"https://dc1.dallari.biz:3001/{relativePathFromRoot}",
                         FormattedSize = fileSize,
                         FileExtension = fileInfo.Extension.ToLower()
                     });

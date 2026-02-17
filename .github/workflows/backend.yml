@@ -1,0 +1,147 @@
+name: Build and Deploy Backend
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      artifact_path: ./publish/davproj
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Установка .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Установка Chocolatey (для WiX)
+      - name: Install Chocolatey
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+      # Установка WiX Toolset v3
+      - name: Install WiX v3
+        run: choco install wixtoolset -y
+
+      # Добавление WiX в PATH (чтобы были доступны candle, light и msbuild знал о WiX targets)
+      - name: Add WiX to PATH
+        run: echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      # Восстановление всех зависимостей (решение или отдельные проекты)
+      - name: Restore solution
+        run: dotnet restore
+
+      # ----------------------------------------------------------------------
+      # Шаг 1. Публикация VncUriHandler
+      # ----------------------------------------------------------------------
+      - name: Publish VncUriHandler
+        run: dotnet publish ./VncUriHandler/VncUriHandler.csproj -c Release -o ./artifacts/VncUriHandler
+
+      # ----------------------------------------------------------------------
+      # Шаг 2. Сборка VncUriHandlerInstall (MSI)
+      # Предполагаем, что это WiX-проект (.wixproj)
+      # ----------------------------------------------------------------------
+      - name: Build VncUriHandlerInstall MSI
+        run: |
+          msbuild ./VncUriHandlerInstall/VncUriHandlerInstall.wixproj -p:Configuration=Release -p:OutputPath=./artifacts/VncUriHandlerInstall
+          # Копируем полученный .msi в общую папку артефактов
+          Copy-Item ./artifacts/VncUriHandlerInstall/*.msi ./artifacts/VncUriHandlerInstall.msi
+
+      # ----------------------------------------------------------------------
+      # Шаг 3. Публикация VncTrayApp
+      # ----------------------------------------------------------------------
+      - name: Publish VncTrayApp
+        run: dotnet publish ./VncTrayApp/VncTrayApp.csproj -c Release -o ./artifacts/VncTrayApp
+
+      # ----------------------------------------------------------------------
+      # Шаг 4. Публикация HardwareAgent с использованием его профиля публикации
+      # Предполагаем, что файл профиля называется FolderProfile.pubxml
+      # ----------------------------------------------------------------------
+      - name: Publish HardwareAgent
+        run: dotnet publish ./HardwareAgent/HardwareAgent.csproj -p:PublishProfile=FolderProfile1 -p:PublishDir=./artifacts/HardwareAgent
+
+      # ----------------------------------------------------------------------
+      # Шаг 5. Сборка InstallerService (MSI) на основе VncTrayApp и HardwareAgent
+      # ----------------------------------------------------------------------
+      - name: Build InstallerService MSI
+        run: |
+          msbuild ./InstallerService/InstallerService.wixproj -p:Configuration=Release -p:OutputPath=./artifacts/InstallerService
+          Copy-Item ./artifacts/InstallerService/*.msi ./artifacts/InstallerService.msi
+
+      # ----------------------------------------------------------------------
+      # Шаг 6. Сборка ServiceWithVNC (Wix-бандл)
+      # На выходе получаем .exe (установщик)
+      # ----------------------------------------------------------------------
+      - name: Build ServiceWithVNC Bundle
+        run: |
+          msbuild ./ServiceWithVNC/ServiceWithVNC.wixproj -p:Configuration=Release -p:OutputPath=./artifacts/ServiceWithVNC
+          Copy-Item ./artifacts/ServiceWithVNC/*.exe ./artifacts/ServiceWithVNC.exe
+
+      # ----------------------------------------------------------------------
+      # Шаг 7. Копирование файлов в папки davproj/wwwroot
+      # ----------------------------------------------------------------------
+      - name: Copy files to davproj wwwroot
+        run: |
+          New-Item -ItemType Directory -Force -Path ./davproj/wwwroot/files
+          New-Item -ItemType Directory -Force -Path ./davproj/wwwroot/files/private
+          Copy-Item ./artifacts/ServiceWithVNC.exe -Destination ./davproj/wwwroot/files/
+          Copy-Item ./artifacts/VncUriHandlerInstall.msi -Destination ./davproj/wwwroot/files/private/
+
+      # ----------------------------------------------------------------------
+      # Шаг 8. Публикация davproj (веб-приложение)
+      # ----------------------------------------------------------------------
+      - name: Publish davproj
+        run: dotnet publish ./davproj/davproj.csproj -c Release -o ./publish/davproj
+
+      # Проверим, что файлы действительно внутри публикации
+      - name: List publish output
+        run: dir ./publish/davproj
+
+      # ----------------------------------------------------------------------
+      # Шаг 9. Загрузка артефакта для деплоя
+      # ----------------------------------------------------------------------
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: davproj-web
+          path: ./publish/davproj
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: davproj-web
+          path: ./web-app
+
+      - name: Copy files to server via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "./web-app/*"
+          target: "C:/temp/deploy/backend"
+          strip_components: 1
+
+      - name: Run deployment script
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            powershell -Command "& 'C:\deploy\deploy-backend.ps1' -ArtifactPath 'C:\temp\deploy\backend'"

@@ -74,6 +74,17 @@ namespace davproj.Models
                 .WithMany(b => b.Floors)
                 .HasForeignKey(f => f.BuildingId)
                 .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Printer>()
+                .HasOne(p => p.PrinterModel)
+                .WithMany(pm => pm.Printers)
+                .HasForeignKey(p => p.PrinterModelId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<PrinterModel>()
+                .HasOne(pm => pm.Cartridge) 
+                .WithMany()
+                .HasForeignKey(pm => pm.CartridgeId)
+                .OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<Office>()
                 .HasOne(o => o.Floor)
                 .WithMany(f => f.Offices)

@@ -6,6 +6,7 @@ using System.DirectoryServices.AccountManagement;
 
 namespace davproj.Controllers
 {
+    [Authorize(Roles = "IT_Full")]
     public class UserController : Controller
     {
         private readonly DBContext _db;
@@ -13,17 +14,13 @@ namespace davproj.Controllers
         {
             _db = db;
         }
-        [Authorize(Roles = "IT_Full")]
+        
         [HttpGet]
         public IActionResult UserAdd()
         {
-            ViewData["workplaces"] = _db.Workplaces.ToList();
-            ViewData["adusers"] = _db.ADUsers.ToList();
-            ViewData["printers"] = _db.Printers.ToList();
-            ViewData["FormAction"] = "UserAdd";
-            return PartialView("User");
+            return Json(_db.Users.ToList());
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public IActionResult UserAdd(User user)
         {
@@ -33,33 +30,13 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, user = new { id = user.Id, title = user.FullName } });
             }
-            ViewData["workplaces"] = _db.Workplaces.ToList();
-            ViewData["adusers"] = _db.ADUsers.ToList();
-            ViewData["printers"] = _db.Printers.ToList();
-            ViewData["FormAction"] = "UserAdd";
-            return PartialView("User", user);
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            return Json(new { success = false, errors });
         }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public ActionResult UserEdit(int? id)
-        {
-            if (id is null or 0)
-            {
-                return NotFound();
-            }
-            User user = _db.Users.Find(id)!;
 
-            if (user != null)
-            {
-                ViewData["workplaces"] = _db.Workplaces.ToList();
-                ViewData["adusers"] = _db.ADUsers.ToList();
-                ViewData["printers"] = _db.Printers.ToList();
-                ViewData["FormAction"] = "UserEdit";
-                return PartialView("User", user);
-            }
-            return NotFound();
-        }
-        [Authorize(Roles = "IT_Full")]
         [HttpPost]
         public IActionResult UserEdit(User user)
         {
@@ -69,30 +46,45 @@ namespace davproj.Controllers
                 _db.SaveChanges();
                 return Json(new { success = true, user = new { id = user.Id, title = user.FullName } });
             }
-            ViewData["workplaces"] = _db.Workplaces.ToList();
-            ViewData["adusers"] = _db.ADUsers.ToList();
-            ViewData["printers"] = _db.Printers.ToList();
-            ViewData["FormAction"] = "UserEdit";
-            return PartialView("User", user);
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+            return Json(new { success = false, errors });
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public ActionResult UserDelete(int id)
         {
-            if (id == 0) { return NotFound(); }
-            var user = _db.Users.Find(id);
-            if (user == null) { return NotFound(); }
-            _db.Users.Remove(user);
-            _db.SaveChanges();
-            return Ok();
+            try
+            {
+                if (id == 0)
+                    return NotFound(new { success = false, message = "ID не указан" });
+
+                var user = _db.Users.Find(id);
+                if (user == null)
+                    return NotFound(new { success = false, message = "Пользователь не найден" });
+
+                _db.Users.Remove(user);
+                _db.SaveChanges();
+                return Ok(new { success = true });
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, new { success = false, message = "Невозможно удалить: есть связанные записи в БД." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Внутренняя ошибка сервера" });
+            }
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpGet]
         public ActionResult ADUserUpdate()
         {
-            return PartialView("ADUserUpdate");
+            return Json(new { success = true });
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public ActionResult ADUserUpdate(string IdentityName)
         {
@@ -119,7 +111,33 @@ namespace davproj.Controllers
             }
             return Json(new { success = true });
         }
-        [Authorize(Roles = "IT_Full")]
+
+        [HttpPost]
+        public ActionResult ADUserDelete(int id)
+        {
+            try
+            {
+                if (id == 0)
+                    return NotFound(new { success = false, message = "ID не указан" });
+
+                var aduser = _db.ADUsers.Find(id);
+                if (aduser == null)
+                    return NotFound(new { success = false, message = "Принтер не найден" });
+
+                _db.ADUsers.Remove(aduser);
+                _db.SaveChanges();
+                return Ok(new { success = true });
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, new { success = false, message = "Невозможно удалить: есть связанные записи в БД." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Внутренняя ошибка сервера" });
+            }
+        }
+
         static ADUser UpdateADUser(string IdentityName)
         {
             string domainName = IdentityName.Split('\\')[0];

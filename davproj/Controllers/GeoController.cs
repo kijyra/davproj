@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 namespace davproj.Controllers
 {
+    [Authorize(Roles = "IT_Full")]
     public class GeoController : Controller
     {
         private readonly DBContext _db;
@@ -18,274 +19,203 @@ namespace davproj.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public IActionResult LocationAdd()
-        {
-            ViewData["FormAction"] = "LocationAdd";
-            return PartialView("Location");
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult LocationAdd(Location location)
-        {
-            if (ModelState.IsValid)
-            {
-                _db.Locations.Add(location);
-                _db.SaveChanges();
-                return Json(new { success = true, location = new { id = location.Id, title = location.Name } });
-            }
-            ViewData["FormAction"] = "LocationAdd";
-            return PartialView("Location", location);
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public ActionResult LocationEdit(int? id)
-        {
-            if (id is 0)
-            {
-                return NotFound();
-            }
-            Location location = _db.Locations.Find(id)!;
-            ViewData["FormAction"] = "LocationEdit";
-            if (location != null)
-            {
-                return PartialView("Location", location);
-            }
-            return NotFound();
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult LocationEdit(Location location)
-        {
-            if (ModelState.IsValid)
-            {
-                _db.Entry(location).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _db.SaveChanges();
-                return Json(new { success = true, location = new { id = location.Id, title = location.Name } });
-            }
-            ViewData["FormAction"] = "LocationEdit";
-            return PartialView("Location", location);
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public ActionResult LocationDelete(int id)
-        {
-            if (id is 0) { return NotFound(); }
-            var location = _db.Locations.Find(id);
-            if (location == null) { return NotFound(); }
-            if (location.Buildings != null)
-            {
-                foreach (var building in location.Buildings)
-                {
-                    building.Location = null;
-                }
-                location.Buildings.Clear();
-            }
-            _db.Locations.Remove(location);
-            _db.SaveChanges();
-            return Json(new { success = true });
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public IActionResult BuildingAdd()
-        {
-            ViewData["locations"] = _db.Locations.ToList();
-            ViewData["FormAction"] = "BuildingAdd";
-            return PartialView("Building");
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult BuildingAdd(Building building)
-        {
-            if (ModelState.IsValid)
-            {
-                _db.Buildings.Add(building);
-                _db.SaveChanges();
-                return Json(new { success = true, building = new { id = building.Id, title = building.Name } });
-            }
-            ViewData["FormAction"] = "BuildingAdd";
-            ViewData["locations"] = _db.Locations.ToList();
-            return PartialView("Building", building);
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public ActionResult BuildingEdit(int? id)
-        {
 
-            if (id == 0)
+        #region Location
+            [HttpGet]
+            public IActionResult Location()
             {
-                return NotFound();
+                return Json(_db.Locations.ToList());
             }
-            ViewData["locations"] = _db.Locations.ToList();
-            ViewData["FormAction"] = "BuildingEdit";
-            Building building = _db.Buildings.Find(id)!;
-            if (building != null)
+            [HttpPost]
+            public IActionResult LocationAdd(Location location)
             {
-                return PartialView("Building", building);
+                if (ModelState.IsValid)
+                {
+                    _db.Locations.Add(location);
+                    _db.SaveChanges();
+                    return Json(new { success = true, location = new { id = location.Id, title = location.Name } });
+                }
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Json(new { success = false, errors });
             }
-            return NotFound();
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult BuildingEdit(Building building)
-        {
-            ViewData["locations"] = _db.Locations.ToList();
-            if (ModelState.IsValid)
+            [HttpPost]
+            public IActionResult LocationEdit(Location location)
             {
-                _db.Entry(building).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _db.SaveChanges();
-                return Json(new { success = true, building = new { id = building.Id, title = building.Name } });
-            }
-            ViewData["FormAction"] = "BuildingEdit";
-            return PartialView("Building", building);
-        }
-        [Authorize(Roles = "IT_Full")]
-        public ActionResult BuildingDelete(int id)
-        {
-            if (id == 0) { return NotFound(); }
-            var building = _db.Buildings.Find(id);
-            if (building == null) { return NotFound(); }
-            _db.Buildings.Remove(building);
-            _db.SaveChanges();
-            return Json(new { success = true });
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public IActionResult FloorAdd()
-        {
-            ViewData["buildings"] = _db.Buildings.ToList();
-            ViewData["FormAction"] = "FloorAdd";
-            return PartialView("Floor");
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult FloorAdd(Floor floor)
-        {
-            if (ModelState.IsValid)
-            {
-                _db.Floors.Add(floor);
-                _db.SaveChanges();
-                return Json(new { success = true, floor = new { id = floor.Id, title = floor.FloorNum } });
-            }
-            ViewData["FormAction"] = "FloorAdd";
-            ViewData["buildings"] = _db.Buildings.ToList();
-            return PartialView("Floor",floor);
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public ActionResult FloorEdit(int? id)
-        {
-            if (id is null or 0)
-            {
-                return NotFound();
-            }
-            ViewData["buildings"] = _db.Buildings.ToList();
-            ViewData["FormAction"] = "FloorEdit";
-            Floor floor = _db.Floors.Find(id)!;
-            if (floor != null)
-            {
-                return PartialView("Floor", floor);
-            }
-            return NotFound();
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult FloorEdit(Floor floor)
-        {
-            if (ModelState.IsValid)
-            {
-                _db.Entry(floor).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _db.SaveChanges();
-                return Json(new { success = true, floor = new { id = floor.Id, title = floor.FloorNum } });
-            }
-            ViewData["FormAction"] = "FloorEdit";
-            ViewData["buildings"] = _db.Buildings.ToList();
-            return PartialView("Floor", floor);
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public ActionResult FloorDelete(int id)
-        {
-            if (id == 0) { return NotFound(); }
-            var floor = _db.Floors.Find(id);
-            if (floor == null) { return NotFound(); }
-            _db.Floors.Remove(floor);
-            _db.SaveChanges();
-            return Json(new { success = true });
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public IActionResult OfficeAdd()
-        {
-            ViewData["floors"] = _db.Floors
-                .Include(f => f.Building)
-                .OrderBy(m => m.Id)
+                if (ModelState.IsValid)
+                {
+                    _db.Entry(location).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    _db.SaveChanges();
+                    return Json(new { success = true, location = new { id = location.Id, title = location.Name } });
+                }
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
                 .ToList();
-            ViewData["FormAction"] = "OfficeAdd";
-            return PartialView("Office");
-        }
-        [HttpPost]
-        [Authorize(Roles = "IT_Full")]
-        public IActionResult OfficeAdd(Office office)
-        {
-            if (ModelState.IsValid)
+            return Json(new { success = false, errors });
+            }
+            [HttpPost]
+            public ActionResult LocationDelete(int id)
             {
-                _db.Offices.Add(office);
+                if (id is 0) { return NotFound(); }
+                var location = _db.Locations.Find(id);
+                if (location == null) { return NotFound(); }
+                if (location.Buildings != null)
+                {
+                    foreach (var building in location.Buildings)
+                    {
+                        building.Location = null;
+                    }
+                    location.Buildings.Clear();
+                }
+                _db.Locations.Remove(location);
                 _db.SaveChanges();
-                return Json(new { success = true, office = new { id = office.Id, title = office.FullTitle } });
+                return Json(new { success = true });
             }
-            ViewData["FormAction"] = "OfficeAdd";
-            ViewData["floors"] = _db.Floors
-                .Include(f => f.Building)
-                .OrderBy(m => m.Id)
+        #endregion
+        #region Building
+            [HttpGet]
+            public IActionResult Building()
+            {
+                return Json(_db.Buildings.ToList());
+            }
+            [HttpPost]
+            public IActionResult BuildingAdd(Building building)
+            {
+                if (ModelState.IsValid)
+                {
+                    _db.Buildings.Add(building);
+                    _db.SaveChanges();
+                    return Json(new { success = true, building = new { id = building.Id, title = building.Name } });
+                }
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Json(new { success = false, errors });
+            }
+            [HttpPost]
+            public IActionResult BuildingEdit(Building building)
+            {
+                ViewData["locations"] = _db.Locations.ToList();
+                if (ModelState.IsValid)
+                {
+                    _db.Entry(building).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    _db.SaveChanges();
+                    return Json(new { success = true, building = new { id = building.Id, title = building.Name } });
+                }
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
                 .ToList();
-            return PartialView("Office", office);
+            return Json(new { success = false, errors });
         }
-        [Authorize(Roles = "IT_Full")]
-        [HttpGet]
-        public IActionResult OfficeEdit(int id)
-        {
-            if (id == 0)
+            public ActionResult BuildingDelete(int id)
             {
-                return NotFound();
-            }
-            ViewData["FormAction"] = "OfficeEdit";
-            ViewData["floors"] = _db.Floors.ToList();
-            Office office = _db.Offices.Find(id)!;
-            if (office != null)
-            {
-                return PartialView("Office", office);
-            }
-            return NotFound();
-        }
-        [Authorize(Roles = "IT_Full")]
-        [HttpPost]
-        public IActionResult OfficeEdit(Office office)
-        {
-            if (ModelState.IsValid)
-            {
-                _db.Entry(office).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                if (id == 0) { return NotFound(); }
+                var building = _db.Buildings.Find(id);
+                if (building == null) { return NotFound(); }
+                _db.Buildings.Remove(building);
                 _db.SaveChanges();
-                return Json(new { success = true, office = new { id = office.Id, title = office.FullTitle } });
+                return Json(new { success = true });
             }
-            ViewData["FormAction"] = "OfficeEdit";
-            ViewData["floors"] = _db.Floors
-                .Include(f => f.Building)
-                .OrderBy(m => m.Id)
-                .ToList();
-            return PartialView("Office", office); 
+        #endregion
+        #region Floor
+            [HttpGet]
+            public IActionResult Floor()
+            {
+                return Json(_db.Floors.ToList());
+            }
+            [HttpPost]
+            public IActionResult FloorAdd(Floor floor)
+            {
+                if (ModelState.IsValid)
+                {
+                    _db.Floors.Add(floor);
+                    _db.SaveChanges();
+                    return Json(new { success = true, floor = new { id = floor.Id, title = floor.FloorNum } });
+                }
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Json(new { success = false, errors });
+            }
+           
+            [HttpPost]
+            public IActionResult FloorEdit(Floor floor)
+            {
+                if (ModelState.IsValid)
+                {
+                    _db.Entry(floor).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    _db.SaveChanges();
+                    return Json(new { success = true, floor = new { id = floor.Id, title = floor.FloorNum } });
+                }
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Json(new { success = false, errors });
+            }
+            [HttpPost]
+            public ActionResult FloorDelete(int id)
+            {
+                if (id == 0) { return NotFound(); }
+                var floor = _db.Floors.Find(id);
+                if (floor == null) { return NotFound(); }
+                _db.Floors.Remove(floor);
+                _db.SaveChanges();
+                return Json(new { success = true });
+            }
+        #endregion
+        #region Office
+            [HttpGet]
+            public IActionResult Office()
+            {
+                return Json(_db.Offices.ToList());
+            }
+            [HttpPost]
+            public IActionResult OfficeAdd(Office office)
+            {
+                if (ModelState.IsValid)
+                {
+                    _db.Offices.Add(office);
+                    _db.SaveChanges();
+                    return Json(new { success = true, office = new { id = office.Id, title = office.FullTitle } });
+                }
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Json(new { success = false, errors });
+            }
+            [HttpPost]
+            public IActionResult OfficeEdit(Office office)
+            {
+                if (ModelState.IsValid)
+                {
+                    _db.Entry(office).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    _db.SaveChanges();
+                    return Json(new { success = true, office = new { id = office.Id, title = office.FullTitle } });
+                }
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Json(new { success = false, errors });
         }
-        [HttpPost]
-        [Authorize(Roles = "IT_Full")]
-        public ActionResult OfficeDelete(int id)
-        {
-            if (id == 0) { return NotFound(); }
-            var office = _db.Offices.Find(id);
-            if (office == null) { return NotFound(); }
-            _db.Offices.Remove(office);
-            _db.SaveChanges();
-            return Json(new { success = true });
-        }
+            [HttpPost]
+            public ActionResult OfficeDelete(int id)
+            {
+                if (id == 0) { return NotFound(); }
+                var office = _db.Offices.Find(id);
+                if (office == null) { return NotFound(); }
+                _db.Offices.Remove(office);
+                _db.SaveChanges();
+                return Json(new { success = true });
+            }
+        #endregion
     }
 }
