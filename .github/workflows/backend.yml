@@ -54,10 +54,22 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
 
+      - name: Publish VncUriHandler
+        run: dotnet publish ./VncUriHandler/VncUriHandler.csproj -c Release -o ./artifacts/VncUriHandler
+
+      - name: Prepare files for VncUriHandlerInstall (mock local paths)
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\proj\davproj\VncUriHandler\bin\publish
+          Copy-Item ./artifacts/VncUriHandler/* -Destination C:\proj\davproj\VncUriHandler\bin\publish -Recurse -Force
+          if (Test-Path ./VncUriHandler/icon.ico) {
+              Copy-Item ./VncUriHandler/icon.ico -Destination C:\proj\davproj\VncUriHandler\ -Force
+          } else {
+              Write-Host "icon.ico not found, check if needed"
+          }
+
       - name: Build VncUriHandlerInstall MSI
         run: |
           msbuild ./VncUriHandlerInstall/VncUriHandlerInstall.wixproj -p:Configuration=Release -p:OutputPath=./artifacts/VncUriHandlerInstall
-          # Копируем полученный .msi в общую папку артефактов
           Copy-Item ./artifacts/VncUriHandlerInstall/*.msi ./artifacts/VncUriHandlerInstall.msi
 
       # ----------------------------------------------------------------------
