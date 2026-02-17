@@ -82,6 +82,22 @@ jobs:
       # ----------------------------------------------------------------------
       # Ўаг 6. —борка InstallerService MSI
       # ----------------------------------------------------------------------
+      - name: Prepare files for InstallerService (mock local paths)
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\proj\davproj\ClientApi
+          New-Item -ItemType Directory -Force -Path C:\proj\davproj\ClientAPI\bin\Release\publish
+          New-Item -ItemType Directory -Force -Path C:\proj\davproj\VncTrayApp\bin\Release\net10.0-windows
+          if (Test-Path ./HardwareAgent/icon.ico) {
+              Copy-Item ./HardwareAgent/icon.ico -Destination C:\proj\davproj\ClientApi\icon.ico -Force
+          } elseif (Test-Path ./VncUriHandler/icon.ico) {
+              Copy-Item ./VncUriHandler/icon.ico -Destination C:\proj\davproj\ClientApi\icon.ico -Force
+          } else {
+              Write-Host "icon.ico not found, check if needed"
+          }
+
+          Copy-Item ./artifacts/HardwareAgent/* -Destination C:\proj\davproj\ClientAPI\bin\Release\publish -Recurse -Force
+          Copy-Item ./artifacts/VncTrayApp/* -Destination C:\proj\davproj\VncTrayApp\bin\Release\net10.0-windows -Recurse -Force
+      
       - name: Build InstallerService MSI
         run: |
           $outDir = "$env:GITHUB_WORKSPACE\artifacts\InstallerService"
