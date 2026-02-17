@@ -74,10 +74,10 @@ jobs:
       # ----------------------------------------------------------------------
       # Шаг 5. Публикация HardwareAgent (с использованием профиля)
       # ----------------------------------------------------------------------
-      - name: List PublishProfiles
-        run: dir ./HardwareAgent/Properties/PublishProfiles
       - name: Publish HardwareAgent
-        run: dotnet publish ./HardwareAgent/HardwareAgent.csproj -p:PublishProfile=FolderProfile1 -p:PublishDir=./artifacts/HardwareAgent
+        run: dotnet publish ./HardwareAgent/HardwareAgent.csproj -c Release -o ./artifacts/HardwareAgent 
+          --self-contained true -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true 
+          -p:IncludeAllContentForSelfExtract=true -p:EnableCompressionInSingleFile=true
 
       # ----------------------------------------------------------------------
       # Шаг 6. Сборка InstallerService MSI
