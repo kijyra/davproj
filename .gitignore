@@ -12,6 +12,10 @@ davproj/migrations/
 davproj/wwwroot/lib/*
 !davproj/wwwroot/lib/
 
+davproj/wwwroot/files/private/anydesk-5-4-2.exe
+davproj/wwwroot/files/private/setup.wtrc.exe
+davproj/wwwroot/files/private/tightvnc-2.8.81-gpl-setup-64bit.msi
+
 # User-specific files
 *.rsuser
 *.suo
