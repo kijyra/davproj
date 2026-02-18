@@ -142,6 +142,26 @@ jobs:
           Copy-Item ./artifacts/ServiceWithVNC.exe -Destination ./davproj/wwwroot/files/
           Copy-Item ./artifacts/VncUriHandlerInstall.msi -Destination ./davproj/wwwroot/files/private/
 
+      # ----------------------------------------------------------------------
+      # Шаг 8.5. Удаление статических файлов из wwwroot/files
+      # ----------------------------------------------------------------------
+      - name: Clean wwwroot/files from static files (keep only generated)
+        run: |
+          $keepInRoot = @("ServiceWithVNC.exe")
+          $keepInPrivate = @("VncUriHandlerInstall.msi")
+
+          # В корне wwwroot/files удаляем всё, кроме указанных файлов
+          if (Test-Path ./davproj/wwwroot/files) {
+            Get-ChildItem ./davproj/wwwroot/files -File | Where-Object { $_.Name -notin $keepInRoot } | Remove-Item -Force
+            Get-ChildItem ./davproj/wwwroot/files -Directory | Where-Object { $_.Name -ne "private" } | Remove-Item -Recurse -Force
+          }
+
+          # В папке private удаляем всё, кроме указанных файлов
+          $privatePath = "./davproj/wwwroot/files/private"
+          if (Test-Path $privatePath) {
+            Get-ChildItem $privatePath -File | Where-Object { $_.Name -notin $keepInPrivate } | Remove-Item -Force
+          }
+
       - name: Check wwwroot files before publish
         run: |
           Write-Host "Contents of wwwroot/files:"
