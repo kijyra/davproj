@@ -16,35 +16,35 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Установка .NET SDK
+      # Г“Г±ГІГ Г­Г®ГўГЄГ  .NET SDK
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      # Установка MSBuild (чтобы была доступна команда msbuild)
+      # Г“Г±ГІГ Г­Г®ГўГЄГ  MSBuild (Г·ГІГ®ГЎГ» ГЎГ»Г«Г  Г¤Г®Г±ГІГіГЇГ­Г  ГЄГ®Г¬Г Г­Г¤Г  msbuild)
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
 
-      # Установка Chocolatey
+      # Г“Г±ГІГ Г­Г®ГўГЄГ  Chocolatey
       - name: Install Chocolatey
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
           [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
           iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-      # Восстановление всех зависимостей
+      # Г‚Г®Г±Г±ГІГ Г­Г®ГўГ«ГҐГ­ГЁГҐ ГўГ±ГҐГµ Г§Г ГўГЁГ±ГЁГ¬Г®Г±ГІГҐГ©
       - name: Restore solution
         run: dotnet restore
 
       # ----------------------------------------------------------------------
-      # Шаг 1. Публикация VncUriHandler
+      # ГГ ГЈ 1. ГЏГіГЎГ«ГЁГЄГ Г¶ГЁГї VncUriHandler
       # ----------------------------------------------------------------------
       - name: Publish VncUriHandler
         run: dotnet publish ./VncUriHandler/VncUriHandler.csproj -c Release -o ./artifacts/VncUriHandler
 
       # ----------------------------------------------------------------------
-      # Шаг 2. Подготовка файлов для VncUriHandlerInstall (подмена локальных путей)
+      # ГГ ГЈ 2. ГЏГ®Г¤ГЈГ®ГІГ®ГўГЄГ  ГґГ Г©Г«Г®Гў Г¤Г«Гї VncUriHandlerInstall (ГЇГ®Г¤Г¬ГҐГ­Г  Г«Г®ГЄГ Г«ГјГ­Г»Гµ ГЇГіГІГҐГ©)
       # ----------------------------------------------------------------------
       - name: Prepare files for VncUriHandlerInstall
         run: |
@@ -57,7 +57,7 @@ jobs:
           }
 
       # ----------------------------------------------------------------------
-      # Шаг 3. Сборка VncUriHandlerInstall MSI (WiX v4)
+      # ГГ ГЈ 3. Г‘ГЎГ®Г°ГЄГ  VncUriHandlerInstall MSI (WiX v4)
       # ----------------------------------------------------------------------
       - name: Build VncUriHandlerInstall MSI
         run: |
@@ -66,13 +66,13 @@ jobs:
           Copy-Item "$outDir\*.msi" ./artifacts/VncUriHandlerInstall.msi
 
       # ----------------------------------------------------------------------
-      # Шаг 4. Публикация VncTrayApp
+      # ГГ ГЈ 4. ГЏГіГЎГ«ГЁГЄГ Г¶ГЁГї VncTrayApp
       # ----------------------------------------------------------------------
       - name: Publish VncTrayApp
         run: dotnet publish ./VncTrayApp/VncTrayApp.csproj -c Release -o ./artifacts/VncTrayApp
 
       # ----------------------------------------------------------------------
-      # Шаг 5. Публикация HardwareAgent (с использованием профиля)
+      # ГГ ГЈ 5. ГЏГіГЎГ«ГЁГЄГ Г¶ГЁГї HardwareAgent (Г± ГЁГ±ГЇГ®Г«ГјГ§Г®ГўГ Г­ГЁГҐГ¬ ГЇГ°Г®ГґГЁГ«Гї)
       # ----------------------------------------------------------------------
       - name: Publish HardwareAgent
         run: dotnet publish ./ClientAPI/HardwareAgent.csproj -c Release -o ./artifacts/HardwareAgent 
@@ -80,7 +80,7 @@ jobs:
           -p:IncludeAllContentForSelfExtract=true -p:EnableCompressionInSingleFile=true
 
       # ----------------------------------------------------------------------
-      # Шаг 6. Сборка InstallerService MSI
+      # ГГ ГЈ 6. Г‘ГЎГ®Г°ГЄГ  InstallerService MSI
       # ----------------------------------------------------------------------
       - name: Prepare files for InstallerService (mock local paths)
         run: |
@@ -105,7 +105,7 @@ jobs:
           Copy-Item "$outDir\*.msi" ./artifacts/InstallerService.msi
 
       # ----------------------------------------------------------------------
-      # Шаг 7a. Подготовка файлов для ServiceWithVNC (mock local paths)
+      # ГГ ГЈ 7a. ГЏГ®Г¤ГЈГ®ГІГ®ГўГЄГ  ГґГ Г©Г«Г®Гў Г¤Г«Гї ServiceWithVNC (mock local paths)
       # ----------------------------------------------------------------------
       - name: Prepare files for ServiceWithVNC
         run: |
@@ -124,7 +124,7 @@ jobs:
           }
 
       # ----------------------------------------------------------------------
-      # Шаг 7. Сборка ServiceWithVNC (Wix-бандл)
+      # ГГ ГЈ 7. Г‘ГЎГ®Г°ГЄГ  ServiceWithVNC (Wix-ГЎГ Г­Г¤Г«)
       # ----------------------------------------------------------------------
       - name: Build ServiceWithVNC Bundle
         run: |
@@ -133,7 +133,7 @@ jobs:
           Copy-Item "$outDir\*.exe" ./artifacts/ServiceWithVNC.exe
 
       # ----------------------------------------------------------------------
-      # Шаг 8. Копирование файлов в папки davproj/wwwroot
+      # ГГ ГЈ 8. ГЉГ®ГЇГЁГ°Г®ГўГ Г­ГЁГҐ ГґГ Г©Г«Г®Гў Гў ГЇГ ГЇГЄГЁ davproj/wwwroot
       # ----------------------------------------------------------------------
       - name: Copy files to davproj wwwroot
         run: |
@@ -143,33 +143,33 @@ jobs:
           Copy-Item ./artifacts/VncUriHandlerInstall.msi -Destination ./davproj/wwwroot/files/private/
 
       # ----------------------------------------------------------------------
-      # Шаг 8.5. Удаление статических файлов из wwwroot/files
+      # ГГ ГЈ 8.5. Г“Г¤Г Г«ГҐГ­ГЁГҐ Г±ГІГ ГІГЁГ·ГҐГ±ГЄГЁГµ ГґГ Г©Г«Г®Гў ГЁГ§ wwwroot/files
       # ----------------------------------------------------------------------
       - name: Clean wwwroot/files from static files (keep only generated)
         run: |
           $keepInRoot = @("ServiceWithVNC.exe")
           $keepInPrivate = @("VncUriHandlerInstall.msi")
 
-          # В корне wwwroot/files удаляем всё, кроме указанных файлов
+          # Г‚ ГЄГ®Г°Г­ГҐ wwwroot/files ГіГ¤Г Г«ГїГҐГ¬ ГўГ±Вё, ГЄГ°Г®Г¬ГҐ ГіГЄГ Г§Г Г­Г­Г»Гµ ГґГ Г©Г«Г®Гў
           if (Test-Path ./davproj/wwwroot/files) {
             Get-ChildItem ./davproj/wwwroot/files -File | Where-Object { $_.Name -notin $keepInRoot } | Remove-Item -Force
             Get-ChildItem ./davproj/wwwroot/files -Directory | Where-Object { $_.Name -ne "private" } | Remove-Item -Recurse -Force
           }
 
-          # В папке private удаляем всё, кроме указанных файлов
+          # Г‚ ГЇГ ГЇГЄГҐ private ГіГ¤Г Г«ГїГҐГ¬ ГўГ±Вё, ГЄГ°Г®Г¬ГҐ ГіГЄГ Г§Г Г­Г­Г»Гµ ГґГ Г©Г«Г®Гў
           $privatePath = "./davproj/wwwroot/files/private"
           if (Test-Path $privatePath) {
             Get-ChildItem $privatePath -File | Where-Object { $_.Name -notin $keepInPrivate } | Remove-Item -Force
           }
 
       # ----------------------------------------------------------------------
-      # Шаг 9. Публикация davproj (веб-приложение)
+      # ГГ ГЈ 9. ГЏГіГЎГ«ГЁГЄГ Г¶ГЁГї davproj (ГўГҐГЎ-ГЇГ°ГЁГ«Г®Г¦ГҐГ­ГЁГҐ)
       # ----------------------------------------------------------------------
       - name: Publish davproj
         run: dotnet publish ./davproj/davproj.csproj -c Release -o ./publish/davproj
 
       # ----------------------------------------------------------------------
-      # Шаг 10. Загрузка артефакта для деплоя
+      # ГГ ГЈ 10. Г‡Г ГЈГ°ГіГ§ГЄГ  Г Г°ГІГҐГґГ ГЄГІГ  Г¤Г«Гї Г¤ГҐГЇГ«Г®Гї
       # ----------------------------------------------------------------------
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -198,29 +198,29 @@ jobs:
               Write-Host "App pool already stopped or not found."
           }
 
-          - name: Stop IIS app pool
-            run: |
-              Import-Module WebAdministration
-              $maxRetries = 5
-              $retryDelay = 2
-              for ($i = 0; $i -lt $maxRetries; $i++) {
-                  $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
-                  if ($pool -and $pool.Value -eq 'Stopped') {
-                      Write-Host "App pool already stopped."
-                      exit 0
-                  }
-                  try {
-                      Stop-WebAppPool -Name "dav" -ErrorAction Stop
-                      Write-Host "App pool stopped successfully."
-                      exit 0
-                  } catch {
-                      Write-Host "Attempt $($i+1) failed: $_"
-                      if ($i -eq $maxRetries-1) {
-                          throw "Failed to stop app pool after $maxRetries attempts."
-                      }
-                      Start-Sleep -Seconds $retryDelay
-                  }
+      - name: Stop IIS app pool
+        run: |
+          Import-Module WebAdministration
+          $maxRetries = 5
+          $retryDelay = 2
+          for ($i = 0; $i -lt $maxRetries; $i++) {
+              $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
+              if ($pool -and $pool.Value -eq 'Stopped') {
+                  Write-Host "App pool already stopped."
+                  exit 0
               }
+              try {
+                  Stop-WebAppPool -Name "dav" -ErrorAction Stop
+                  Write-Host "App pool stopped successfully."
+                  exit 0
+              } catch {
+                  Write-Host "Attempt $($i+1) failed: $_"
+                  if ($i -eq $maxRetries-1) {
+                      throw "Failed to stop app pool after $maxRetries attempts."
+                  }
+                  Start-Sleep -Seconds $retryDelay
+              }
+          }
 
       - name: Copy files to IIS folder
         run: |
