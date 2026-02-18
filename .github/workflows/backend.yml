@@ -179,6 +179,7 @@ jobs:
               New-Item -ItemType Directory -Path $destination -Force
           }
           robocopy "$source" "$destination" /E /IS /IT /NP
+
           $exitCode = $LASTEXITCODE
           Write-Host "Robocopy exit code: $exitCode"
           if ($exitCode -ge 8) {

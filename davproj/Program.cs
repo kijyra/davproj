@@ -2,6 +2,7 @@ using davproj.Filters;
 using davproj.Models;
 using davproj.Services;
 using Microsoft.AspNetCore.Authentication.Negotiate;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.Text.Json;
@@ -47,6 +48,17 @@ if (!app.Environment.IsDevelopment())
 app.UseRouting();
 app.UseCors("NextJSApp");
 app.UseAuthentication();
+
+var provider = new FileExtensionContentTypeProvider();
+provider.Mappings[".msi"] = "application/octet-stream";
+provider.Mappings[".exe"] = "application/octet-stream";
+provider.Mappings[".bat"] = "application/octet-stream";
+provider.Mappings[".zip"] = "application/octet-stream";
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = provider,
+});
+
 app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages();
