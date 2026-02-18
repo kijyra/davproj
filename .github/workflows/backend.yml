@@ -198,22 +198,42 @@ jobs:
               Write-Host "App pool already stopped or not found."
           }
 
-      - name: Copy files to IIS folder
+      - name: Stop IIS app pool
+        run: |
+          Import-Module WebAdministration
+          $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
+          if ($pool -and $pool.Value -ne 'Stopped') {
+              Stop-WebAppPool -Name "dav"
+              Write-Host "App pool stopped."
+          } else {
+              Write-Host "App pool already stopped or not found."
+          }
+
+      - name: Update specific files in IIS folder
         run: |
           $source = "$env:GITHUB_WORKSPACE\web-app"
           $destination = "C:\dav"
-          if (Test-Path $destination) {
-              Remove-Item "$destination\*" -Recurse -Force -ErrorAction SilentlyContinue
-          } else {
-              New-Item -ItemType Directory -Path $destination -Force
-          }
+
+          Remove-Item "$destination\wwwroot\files\ServiceWithVNC.exe" -Force -ErrorAction SilentlyContinue
+          Remove-Item "$destination\wwwroot\files\private\VncUriHandlerInstall.msi" -Force -ErrorAction SilentlyContinue
+
           robocopy "$source" "$destination" /E /IS /IT /NP
           $exitCode = $LASTEXITCODE
           Write-Host "Robocopy exit code: $exitCode"
           if ($exitCode -ge 8) {
               throw "Robocopy failed with exit code $exitCode"
           }
-          exit 0
+
+      - name: Start IIS app pool
+        run: |
+          Import-Module WebAdministration
+          $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
+          if ($pool -and $pool.Value -ne 'Started') {
+              Start-WebAppPool -Name "dav"
+              Write-Host "App pool started."
+          } else {
+              Write-Host "App pool already running or not found."
+          }
 
       - name: List deployed files
         run: Get-ChildItem C:\dav -Recurse | Select-Object FullName
