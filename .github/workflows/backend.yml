@@ -142,6 +142,13 @@ jobs:
           Copy-Item ./artifacts/ServiceWithVNC.exe -Destination ./davproj/wwwroot/files/
           Copy-Item ./artifacts/VncUriHandlerInstall.msi -Destination ./davproj/wwwroot/files/private/
 
+      - name: Check wwwroot files before publish
+        run: |
+          Write-Host "Contents of wwwroot/files:"
+          Get-ChildItem ./davproj/wwwroot/files -Recurse
+          Write-Host "Contents of wwwroot/files/private:"
+          Get-ChildItem ./davproj/wwwroot/files/private -Recurse
+
       # ----------------------------------------------------------------------
       # Шаг 9. Публикация davproj (веб-приложение)
       # ----------------------------------------------------------------------
@@ -150,6 +157,13 @@ jobs:
 
       - name: List publish output
         run: dir ./publish/davproj
+
+      - name: Check publish output includes wwwroot
+        run: |
+          Write-Host "Contents of publish/davproj/wwwroot/files:"
+          Get-ChildItem ./publish/davproj/wwwroot/files -Recurse
+          Write-Host "Contents of publish/davproj/wwwroot/files/private:"
+          Get-ChildItem ./publish/davproj/wwwroot/files/private -Recurse
 
       # ----------------------------------------------------------------------
       # Шаг 10. Загрузка артефакта для деплоя
