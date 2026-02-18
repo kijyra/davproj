@@ -190,37 +190,26 @@ jobs:
       - name: Stop IIS app pool
         run: |
           Import-Module WebAdministration
-          $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
-          if ($pool -and $pool.Value -ne 'Stopped') {
-              Stop-WebAppPool -Name "dav"
-              Write-Host "App pool stopped."
-          } else {
-              Write-Host "App pool already stopped or not found."
-          }
-
-          - name: Stop IIS app pool
-            run: |
-              Import-Module WebAdministration
-              $maxRetries = 5
-              $retryDelay = 2
-              for ($i = 0; $i -lt $maxRetries; $i++) {
-                  $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
-                  if ($pool -and $pool.Value -eq 'Stopped') {
-                      Write-Host "App pool already stopped."
-                      exit 0
-                  }
-                  try {
-                      Stop-WebAppPool -Name "dav" -ErrorAction Stop
-                      Write-Host "App pool stopped successfully."
-                      exit 0
-                  } catch {
-                      Write-Host "Attempt $($i+1) failed: $_"
-                      if ($i -eq $maxRetries-1) {
-                          throw "Failed to stop app pool after $maxRetries attempts."
-                      }
-                      Start-Sleep -Seconds $retryDelay
-                  }
+          $maxRetries = 5
+          $retryDelay = 2
+          for ($i = 0; $i -lt $maxRetries; $i++) {
+              $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
+              if ($pool -and $pool.Value -eq 'Stopped') {
+                  Write-Host "App pool already stopped."
+                  exit 0
               }
+              try {
+                  Stop-WebAppPool -Name "dav" -ErrorAction Stop
+                  Write-Host "App pool stopped successfully."
+                  exit 0
+              } catch {
+                  Write-Host "Attempt $($i+1) failed: $_"
+                  if ($i -eq $maxRetries-1) {
+                      throw "Failed to stop app pool after $maxRetries attempts."
+                  }
+                  Start-Sleep -Seconds $retryDelay
+              }
+          }
 
       - name: Copy files to IIS folder
         run: |
