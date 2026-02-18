@@ -184,16 +184,27 @@ jobs:
           name: davproj-web
           path: ./web-app
 
+      - name: Stop IIS app pool
+        run: |
+          Import-Module WebAdministration
+          Stop-WebAppPool -Name "dav" -ErrorAction SilentlyContinue
+
       - name: Copy files to IIS folder
         run: |
           $source = "$env:GITHUB_WORKSPACE\web-app"
           $destination = "C:\dav"
           if (Test-Path $destination) {
-              Remove-Item "$destination\*" -Recurse -Force
+              Remove-Item "$destination\*" -Recurse -Force -ErrorAction SilentlyContinue
+          } else {
+              New-Item -ItemType Directory -Path $destination -Force
           }
-          Copy-Item "$source\*" $destination -Recurse -Force
+          robocopy "$source" "$destination" /E /IS /IT /NP
+          if ($LASTEXITCODE -ge 8) { throw "Robocopy failed with exit code $LASTEXITCODE" }
 
-      - name: Restart IIS app pool
+      - name: List deployed files
+        run: Get-ChildItem C:\dav -Recurse | Select-Object FullName
+
+      - name: Start IIS app pool
         run: |
           Import-Module WebAdministration
-          Restart-WebAppPool -Name "dav"
+          Start-WebAppPool -Name "dav"
