@@ -115,7 +115,7 @@ namespace ClientAPI
                 {
                     foreach (ManagementObject obj in searcherID.Get())
                     {
-                        string instName = obj["InstanceName"]?.ToString();
+                        string? instName = obj["InstanceName"]?.ToString();
                         var nameCodes = (ushort[])obj["UserFriendlyName"];
                         string model = nameCodes != null
                             ? Encoding.ASCII.GetString(Array.ConvertAll(nameCodes, x => (byte)x)).Replace("\0", "").Trim()
@@ -257,7 +257,7 @@ namespace ClientAPI
             }
             info.SoftwareList = software.Distinct().OrderBy(s => s).ToList();
 
-            var avList = new List<string>();
+            var avList = new List<string?>();
             try
             {
                 using (var searcher = new ManagementObjectSearcher(@"root\SecurityCenter2", "SELECT displayName FROM AntiVirusProduct"))
@@ -294,7 +294,7 @@ namespace ClientAPI
             {
                 foreach (var obj in searcher.Get())
                 {
-                    string printerName = obj["Name"]?.ToString();
+                    string? printerName = obj["Name"]?.ToString();
 
                     if (printerName != "Microsoft XPS Document Writer" &&
                         printerName != "Microsoft Print to PDF" &&

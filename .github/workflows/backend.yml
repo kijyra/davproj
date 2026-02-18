@@ -189,37 +189,26 @@ jobs:
               exit 0
           }
 
-          - name: Start IIS app pool
-            run: |
-              Import-Module WebAdministration
-              $maxRetries = 5
-              $retryDelay = 2
-              for ($i = 0; $i -lt $maxRetries; $i++) {
-                  $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
-                  if ($pool -and $pool.Value -eq 'Started') {
-                      Write-Host "App pool already started."
-                      exit 0
-                  }
-                  try {
-                      Start-WebAppPool -Name "dav" -ErrorAction Stop
-                      Write-Host "App pool started successfully."
-                      exit 0
-                  } catch {
-                      Write-Host "Attempt $($i+1) failed: $_"
-                      if ($i -eq $maxRetries-1) {
-                          throw "Failed to start app pool after $maxRetries attempts."
-                      }
-                      Start-Sleep -Seconds $retryDelay
-                  }
-              }
-
       - name: Start IIS app pool
         run: |
           Import-Module WebAdministration
-          $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
-          if ($pool -and $pool.Value -ne 'Started') {
-              Start-WebAppPool -Name "dav"
-              Write-Host "App pool started."
-          } else {
-              Write-Host "App pool already running or not found."
+          $maxRetries = 5
+          $retryDelay = 2
+          for ($i = 0; $i -lt $maxRetries; $i++) {
+              $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
+              if ($pool -and $pool.Value -eq 'Started') {
+                  Write-Host "App pool already started."
+                  exit 0
+              }
+              try {
+                  Start-WebAppPool -Name "dav" -ErrorAction Stop
+                  Write-Host "App pool started successfully."
+                  exit 0
+              } catch {
+                  Write-Host "Attempt $($i+1) failed: $_"
+                  if ($i -eq $maxRetries-1) {
+                      throw "Failed to start app pool after $maxRetries attempts."
+                  }
+                  Start-Sleep -Seconds $retryDelay
+              }
           }
