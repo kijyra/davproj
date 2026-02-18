@@ -162,28 +162,11 @@ jobs:
             Get-ChildItem $privatePath -File | Where-Object { $_.Name -notin $keepInPrivate } | Remove-Item -Force
           }
 
-      - name: Check wwwroot files before publish
-        run: |
-          Write-Host "Contents of wwwroot/files:"
-          Get-ChildItem ./davproj/wwwroot/files -Recurse
-          Write-Host "Contents of wwwroot/files/private:"
-          Get-ChildItem ./davproj/wwwroot/files/private -Recurse
-
       # ----------------------------------------------------------------------
       # Шаг 9. Публикация davproj (веб-приложение)
       # ----------------------------------------------------------------------
       - name: Publish davproj
         run: dotnet publish ./davproj/davproj.csproj -c Release -o ./publish/davproj
-
-      - name: List publish output
-        run: dir ./publish/davproj
-
-      - name: Check publish output includes wwwroot
-        run: |
-          Write-Host "Contents of publish/davproj/wwwroot/files:"
-          Get-ChildItem ./publish/davproj/wwwroot/files -Recurse
-          Write-Host "Contents of publish/davproj/wwwroot/files/private:"
-          Get-ChildItem ./publish/davproj/wwwroot/files/private -Recurse
 
       # ----------------------------------------------------------------------
       # Шаг 10. Загрузка артефакта для деплоя
@@ -219,7 +202,12 @@ jobs:
               New-Item -ItemType Directory -Path $destination -Force
           }
           robocopy "$source" "$destination" /E /IS /IT /NP
-          if ($LASTEXITCODE -ge 8) { throw "Robocopy failed with exit code $LASTEXITCODE" }
+          $exitCode = $LASTEXITCODE
+          Write-Host "Robocopy exit code: $exitCode"
+          if ($exitCode -ge 8) {
+              throw "Robocopy failed with exit code $exitCode"
+          }
+          exit 0
 
       - name: List deployed files
         run: Get-ChildItem C:\dav -Recurse | Select-Object FullName
