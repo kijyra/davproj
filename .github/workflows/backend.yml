@@ -190,7 +190,13 @@ jobs:
       - name: Stop IIS app pool
         run: |
           Import-Module WebAdministration
-          Stop-WebAppPool -Name "dav" -ErrorAction SilentlyContinue
+          $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
+          if ($pool -and $pool.Value -ne 'Stopped') {
+              Stop-WebAppPool -Name "dav"
+              Write-Host "App pool stopped."
+          } else {
+              Write-Host "App pool already stopped or not found."
+          }
 
       - name: Copy files to IIS folder
         run: |
@@ -215,4 +221,10 @@ jobs:
       - name: Start IIS app pool
         run: |
           Import-Module WebAdministration
-          Start-WebAppPool -Name "dav"
+          $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
+          if ($pool -and $pool.Value -ne 'Started') {
+              Start-WebAppPool -Name "dav"
+              Write-Host "App pool started."
+          } else {
+              Write-Host "App pool already running or not found."
+          }
