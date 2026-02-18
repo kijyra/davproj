@@ -191,22 +191,13 @@ jobs:
 
       - name: Copy static files from local storage
         run: |
-          New-Item -ItemType Directory -Force -Path C:\dav\wwwroot\files\private
-          robocopy C:\static\private C:\dav\wwwroot\files\private /E /IS /IT /NP
-          if ($LASTEXITCODE -ge 8) {
-              throw "Robocopy failed with exit code $LASTEXITCODE"
+          robocopy C:\static C:\dav\wwwroot\files /E /IS /IT /NP
+          $exitCode = $LASTEXITCODE
+          Write-Host "Robocopy exit code: $exitCode"
+          if ($exitCode -ge 8) {
+              throw "Robocopy failed with exit code $exitCode"
           }
-
-          New-Item -ItemType Directory -Force -Path C:\dav\wwwroot\files\1c
-          robocopy C:\static\1c C:\dav\wwwroot\files\1c /E /IS /IT /NP
-          if ($LASTEXITCODE -ge 8) {
-              throw "Robocopy failed with exit code $LASTEXITCODE"
-          }
-          New-Item -ItemType Directory -Force -Path C:\dav\wwwroot\files\Other
-          robocopy C:\static\Other C:\dav\wwwroot\files\Other /E /IS /IT /NP
-          if ($LASTEXITCODE -ge 8) {
-              throw "Robocopy failed with exit code $LASTEXITCODE"
-          }
+          Write-Host "Static files copied successfully (exit code $exitCode)."
 
       - name: Start IIS app pool
         run: |
