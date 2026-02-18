@@ -16,36 +16,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Óñòàíîâêà .NET SDK
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      # Óñòàíîâêà MSBuild (÷òîáû áûëà äîñòóïíà êîìàíäà msbuild)
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.1
 
-      # Óñòàíîâêà Chocolatey
       - name: Install Chocolatey
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
           [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
           iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-      # Âîññòàíîâëåíèå âñåõ çàâèñèìîñòåé
       - name: Restore solution
         run: dotnet restore
 
-      # ----------------------------------------------------------------------
-      # Øàã 1. Ïóáëèêàöèÿ VncUriHandler
-      # ----------------------------------------------------------------------
       - name: Publish VncUriHandler
         run: dotnet publish ./VncUriHandler/VncUriHandler.csproj -c Release -o ./artifacts/VncUriHandler
 
-      # ----------------------------------------------------------------------
-      # Øàã 2. Ïîäãîòîâêà ôàéëîâ äëÿ VncUriHandlerInstall (ïîäìåíà ëîêàëüíûõ ïóòåé)
-      # ----------------------------------------------------------------------
       - name: Prepare files for VncUriHandlerInstall
         run: |
           New-Item -ItemType Directory -Force -Path C:\proj\davproj\VncUriHandler\bin\publish
@@ -56,32 +46,20 @@ jobs:
               Write-Host "icon.ico not found, check if needed"
           }
 
-      # ----------------------------------------------------------------------
-      # Øàã 3. Ñáîðêà VncUriHandlerInstall MSI (WiX v4)
-      # ----------------------------------------------------------------------
       - name: Build VncUriHandlerInstall MSI
         run: |
           $outDir = "$env:GITHUB_WORKSPACE\artifacts\VncUriHandlerInstall"
           msbuild ./VncUriHandlerInstall/VncUriHandlerInstall.wixproj -p:Configuration=Release -p:Platform=x64 -p:OutputPath=$outDir
           Copy-Item "$outDir\*.msi" ./artifacts/VncUriHandlerInstall.msi
 
-      # ----------------------------------------------------------------------
-      # Øàã 4. Ïóáëèêàöèÿ VncTrayApp
-      # ----------------------------------------------------------------------
       - name: Publish VncTrayApp
         run: dotnet publish ./VncTrayApp/VncTrayApp.csproj -c Release -o ./artifacts/VncTrayApp
 
-      # ----------------------------------------------------------------------
-      # Øàã 5. Ïóáëèêàöèÿ HardwareAgent (ñ èñïîëüçîâàíèåì ïðîôèëÿ)
-      # ----------------------------------------------------------------------
       - name: Publish HardwareAgent
         run: dotnet publish ./ClientAPI/HardwareAgent.csproj -c Release -o ./artifacts/HardwareAgent 
           --self-contained true -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true 
           -p:IncludeAllContentForSelfExtract=true -p:EnableCompressionInSingleFile=true
 
-      # ----------------------------------------------------------------------
-      # Øàã 6. Ñáîðêà InstallerService MSI
-      # ----------------------------------------------------------------------
       - name: Prepare files for InstallerService (mock local paths)
         run: |
           New-Item -ItemType Directory -Force -Path C:\proj\davproj\ClientApi
@@ -104,9 +82,6 @@ jobs:
           msbuild ./InstallerService/InstallerService.wixproj -p:Configuration=Release -p:Platform=x64 -p:OutputPath=$outDir
           Copy-Item "$outDir\*.msi" ./artifacts/InstallerService.msi
 
-      # ----------------------------------------------------------------------
-      # Øàã 7a. Ïîäãîòîâêà ôàéëîâ äëÿ ServiceWithVNC (mock local paths)
-      # ----------------------------------------------------------------------
       - name: Prepare files for ServiceWithVNC
         run: |
           New-Item -ItemType Directory -Force -Path C:\proj\davproj\InstallerService\bin\x64\Release
@@ -123,18 +98,12 @@ jobs:
               }
           }
 
-      # ----------------------------------------------------------------------
-      # Øàã 7. Ñáîðêà ServiceWithVNC (Wix-áàíäë)
-      # ----------------------------------------------------------------------
       - name: Build ServiceWithVNC Bundle
         run: |
           $outDir = "$env:GITHUB_WORKSPACE\artifacts\ServiceWithVNC"
           msbuild ./ServiceWithVNC/ServiceWithVNC.wixproj -p:Configuration=Release -p:Platform=x64 -p:OutputPath=$outDir
           Copy-Item "$outDir\*.exe" ./artifacts/ServiceWithVNC.exe
 
-      # ----------------------------------------------------------------------
-      # Øàã 8. Êîïèðîâàíèå ôàéëîâ â ïàïêè davproj/wwwroot
-      # ----------------------------------------------------------------------
       - name: Copy files to davproj wwwroot
         run: |
           New-Item -ItemType Directory -Force -Path ./davproj/wwwroot/files
@@ -142,35 +111,24 @@ jobs:
           Copy-Item ./artifacts/ServiceWithVNC.exe -Destination ./davproj/wwwroot/files/
           Copy-Item ./artifacts/VncUriHandlerInstall.msi -Destination ./davproj/wwwroot/files/private/
 
-      # ----------------------------------------------------------------------
-      # Øàã 8.5. Óäàëåíèå ñòàòè÷åñêèõ ôàéëîâ èç wwwroot/files
-      # ----------------------------------------------------------------------
       - name: Clean wwwroot/files from static files (keep only generated)
         run: |
           $keepInRoot = @("ServiceWithVNC.exe")
           $keepInPrivate = @("VncUriHandlerInstall.msi")
 
-          # Â êîðíå wwwroot/files óäàëÿåì âñ¸, êðîìå óêàçàííûõ ôàéëîâ
           if (Test-Path ./davproj/wwwroot/files) {
             Get-ChildItem ./davproj/wwwroot/files -File | Where-Object { $_.Name -notin $keepInRoot } | Remove-Item -Force
             Get-ChildItem ./davproj/wwwroot/files -Directory | Where-Object { $_.Name -ne "private" } | Remove-Item -Recurse -Force
           }
 
-          # Â ïàïêå private óäàëÿåì âñ¸, êðîìå óêàçàííûõ ôàéëîâ
           $privatePath = "./davproj/wwwroot/files/private"
           if (Test-Path $privatePath) {
             Get-ChildItem $privatePath -File | Where-Object { $_.Name -notin $keepInPrivate } | Remove-Item -Force
           }
 
-      # ----------------------------------------------------------------------
-      # Øàã 9. Ïóáëèêàöèÿ davproj (âåá-ïðèëîæåíèå)
-      # ----------------------------------------------------------------------
       - name: Publish davproj
         run: dotnet publish ./davproj/davproj.csproj -c Release -o ./publish/davproj
 
-      # ----------------------------------------------------------------------
-      # Øàã 10. Çàãðóçêà àðòåôàêòà äëÿ äåïëîÿ
-      # ----------------------------------------------------------------------
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -190,37 +148,26 @@ jobs:
       - name: Stop IIS app pool
         run: |
           Import-Module WebAdministration
-          $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
-          if ($pool -and $pool.Value -ne 'Stopped') {
-              Stop-WebAppPool -Name "dav"
-              Write-Host "App pool stopped."
-          } else {
-              Write-Host "App pool already stopped or not found."
-          }
-
-          - name: Stop IIS app pool
-            run: |
-              Import-Module WebAdministration
-              $maxRetries = 5
-              $retryDelay = 2
-              for ($i = 0; $i -lt $maxRetries; $i++) {
-                  $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
-                  if ($pool -and $pool.Value -eq 'Stopped') {
-                      Write-Host "App pool already stopped."
-                      exit 0
-                  }
-                  try {
-                      Stop-WebAppPool -Name "dav" -ErrorAction Stop
-                      Write-Host "App pool stopped successfully."
-                      exit 0
-                  } catch {
-                      Write-Host "Attempt $($i+1) failed: $_"
-                      if ($i -eq $maxRetries-1) {
-                          throw "Failed to stop app pool after $maxRetries attempts."
-                      }
-                      Start-Sleep -Seconds $retryDelay
-                  }
+          $maxRetries = 5
+          $retryDelay = 2
+          for ($i = 0; $i -lt $maxRetries; $i++) {
+              $pool = Get-WebAppPoolState -Name "dav" -ErrorAction SilentlyContinue
+              if ($pool -and $pool.Value -eq 'Stopped') {
+                  Write-Host "App pool already stopped."
+                  exit 0
               }
+              try {
+                  Stop-WebAppPool -Name "dav" -ErrorAction Stop
+                  Write-Host "App pool stopped successfully."
+                  exit 0
+              } catch {
+                  Write-Host "Attempt $($i+1) failed: $_"
+                  if ($i -eq $maxRetries-1) {
+                      throw "Failed to stop app pool after $maxRetries attempts."
+                  }
+                  Start-Sleep -Seconds $retryDelay
+              }
+          }
 
       - name: Copy files to IIS folder
         run: |
