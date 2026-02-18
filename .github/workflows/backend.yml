@@ -209,19 +209,24 @@ jobs:
               Write-Host "App pool already stopped or not found."
           }
 
-      - name: Update specific files in IIS folder
+      - name: Copy files to IIS folder
         run: |
           $source = "$env:GITHUB_WORKSPACE\web-app"
           $destination = "C:\dav"
-
-          Remove-Item "$destination\wwwroot\files\ServiceWithVNC.exe" -Force -ErrorAction SilentlyContinue
-          Remove-Item "$destination\wwwroot\files\private\VncUriHandlerInstall.msi" -Force -ErrorAction SilentlyContinue
-
+          if (Test-Path $destination) {
+              Remove-Item "$destination\*" -Recurse -Force -ErrorAction SilentlyContinue
+          } else {
+              New-Item -ItemType Directory -Path $destination -Force
+          }
           robocopy "$source" "$destination" /E /IS /IT /NP
           $exitCode = $LASTEXITCODE
           Write-Host "Robocopy exit code: $exitCode"
           if ($exitCode -ge 8) {
-              throw "Robocopy failed with exit code $exitCode"
+              Write-Host "Robocopy failed with exit code $exitCode"
+              exit 1
+          } else {
+              Write-Host "Robocopy completed successfully (exit code $exitCode, which is within 0-7)"
+              exit 0
           }
 
       - name: Start IIS app pool
