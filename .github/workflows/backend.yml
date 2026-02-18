@@ -189,6 +189,25 @@ jobs:
               exit 0
           }
 
+      - name: Copy static files from local storage
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\dav\wwwroot\files\private
+          robocopy C:\static\private C:\dav\wwwroot\files\private /E /IS /IT /NP
+          if ($LASTEXITCODE -ge 8) {
+              throw "Robocopy failed with exit code $LASTEXITCODE"
+          }
+
+          New-Item -ItemType Directory -Force -Path C:\dav\wwwroot\files\1c
+          robocopy C:\static\1c C:\dav\wwwroot\files\1c /E /IS /IT /NP
+          if ($LASTEXITCODE -ge 8) {
+              throw "Robocopy failed with exit code $LASTEXITCODE"
+          }
+          New-Item -ItemType Directory -Force -Path C:\dav\wwwroot\files\Other
+          robocopy C:\static\Other C:\dav\wwwroot\files\Other /E /IS /IT /NP
+          if ($LASTEXITCODE -ge 8) {
+              throw "Robocopy failed with exit code $LASTEXITCODE"
+          }
+
       - name: Start IIS app pool
         run: |
           Import-Module WebAdministration
