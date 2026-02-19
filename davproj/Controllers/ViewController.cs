@@ -15,7 +15,7 @@ namespace davproj.Controllers
         {
             _db = db;
         }
-
+        [HttpGet("api/view/data")]
         public IActionResult Data(int? buildingId, int? floorId)
         {
             var allBuildings = _db.Buildings
