@@ -7,6 +7,7 @@ using System.Net.Sockets;
 
 namespace davproj.Controllers
 {
+    [Authorize(Roles = "IT_Full")]
     public class ViewController : Controller
     {
         private readonly DBContext _db;
@@ -14,126 +15,63 @@ namespace davproj.Controllers
         {
             _db = db;
         }
-        [Authorize(Roles = "IT_Full")]
-        public IActionResult Index(int? buildingId, int? floorId)
+
+        public IActionResult Data(int? buildingId, int? floorId)
         {
             var allBuildings = _db.Buildings
-                .Include(l => l.Location)
-                .Include(b => b.Floors!)
-                    .ThenInclude(f => f.Offices!)
-                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.User!)
-                                .ThenInclude(u => u.ADUser!)
-                .Include(b => b.Floors!)
-                    .ThenInclude(f => f.Offices!)
-                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.User!)
-                .Include(b => b.Floors!)
-                    .ThenInclude(f => f.Offices!)
-                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.PC!)
-                                .ThenInclude(p => p.CurrentHardwareInfo)
-                .Include(b => b.Floors!)
-                    .ThenInclude(f => f.Offices!)
-                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.Phone!)
-                .Include(b => b.Floors!)
-                    .ThenInclude(f => f.Offices!)
-                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.Printer)
-                                .ThenInclude(p => p!.PrinterModel)
-                                    .ThenInclude(pm => pm!.Cartridge)
-                                        .ThenInclude(c => c.Manufactor)
+                .Select(b => new { b.Id, b.Name })
                 .ToList();
-            if (!allBuildings.Any())
-            {
-                return View();
-            }
-            Building? selectedBuilding;
+
+            object? selectedBuilding = null;
+            object? selectedFloor = null;
+
             if (buildingId.HasValue)
             {
-                selectedBuilding = _db.Buildings
-                .Include(l => l.Location)
-                .Include(b => b.Floors!)
-                    .ThenInclude(f => f.Offices!)
-                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.User!)
-                                .ThenInclude(u => u.ADUser!)
-                .Include(b => b.Floors!)
-                    .ThenInclude(f => f.Offices!)
-                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.User!)
-                .Include(b => b.Floors!)
-                    .ThenInclude(f => f.Offices!)
-                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.PC!)
-                                .ThenInclude(p => p.CurrentHardwareInfo)
-                .Include(b => b.Floors!)
-                    .ThenInclude(f => f.Offices!)
-                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.Phone!)
-                .Include(b => b.Floors!)
-                    .ThenInclude(f => f.Offices!)
-                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.Printer!)
-                                .ThenInclude(p => p.PrinterModel!)
-                                    .ThenInclude(pm => pm.Cartridge!)
-                                        .ThenInclude(c => c.Manufactor!)
-                                       .FirstOrDefault(b => b.Id == buildingId.Value);
-                if (selectedBuilding == null)
+                var building = _db.Buildings
+                    .Include(b => b.Location)
+                    .Include(b => b.Floors!)
+                        .ThenInclude(f => f.Offices!)
+                            .ThenInclude(o => o.Workplaces!)
+                                .ThenInclude(w => w.User!)
+                                    .ThenInclude(u => u.ADUser)
+                    .Include(b => b.Floors!)
+                        .ThenInclude(f => f.Offices!)
+                            .ThenInclude(o => o.Workplaces!)
+                                .ThenInclude(w => w.PC!)
+                                    .ThenInclude(p => p.CurrentHardwareInfo)
+                    .Include(b => b.Floors!)
+                        .ThenInclude(f => f.Offices!)
+                            .ThenInclude(o => o.Workplaces!)
+                                .ThenInclude(w => w.Phone)
+                    .Include(b => b.Floors!)
+                        .ThenInclude(f => f.Offices!)
+                            .ThenInclude(o => o.Workplaces!)
+                                .ThenInclude(w => w.Printer!)
+                                    .ThenInclude(p => p.PrinterModel!)
+                                        .ThenInclude(pm => pm.Cartridge!)
+                                            .ThenInclude(c => c.Manufactor)
+                    .FirstOrDefault(b => b.Id == buildingId.Value);
+
+                if (building != null)
                 {
-                    selectedBuilding = allBuildings.FirstOrDefault()!;
+                    selectedBuilding = MapBuilding(building);
+
+                    if (floorId.HasValue)
+                    {
+                        selectedFloor = building.Floors?.FirstOrDefault(f => f.Id == floorId.Value);
+                    }
+                    selectedFloor ??= building.Floors?.FirstOrDefault();
                 }
             }
-            else
+
+            return Ok(new
             {
-                selectedBuilding = allBuildings.FirstOrDefault();
-            }
-            if (selectedBuilding != null && selectedBuilding.Floors == null)
-            {
-                _db.Entry(selectedBuilding).Collection(b => b.Floors!).Load();
-            }
-            Floor? selectedFloor;
-            IEnumerable<Floor> availableFloors = selectedBuilding?.Floors ?? Enumerable.Empty<Floor>();
-            if (floorId.HasValue)
-            {
-                selectedFloor = _db.Floors
-                                   .Include(f => f.Offices!)
-                                   .ThenInclude(f => f.Workplaces!)
-                                        .ThenInclude(w => w.User!)
-                                            .ThenInclude(u => u.ADUser!)
-                                   .Include(f => f.Offices!)
-                                        .ThenInclude(o => o.Workplaces!)
-                                            .ThenInclude(w => w.User!)
-                                    .Include(f => f.Offices!)
-                                        .ThenInclude(o => o.Workplaces!)
-                                            .ThenInclude(w => w.PC!)
-                                                .ThenInclude(p => p.CurrentHardwareInfo)
-                                    .Include(f => f.Offices!)
-                                        .ThenInclude(o => o.Workplaces!)
-                                            .ThenInclude(w => w.Phone!)
-                                    .Include(f => f.Offices!)
-                                        .ThenInclude(o => o.Workplaces!)
-                            .ThenInclude(w => w.Printer)
-                                .ThenInclude(p => p!.PrinterModel)
-                                    .ThenInclude(pm => pm!.Cartridge)
-                                        .ThenInclude(c => c.Manufactor)
-                                   .FirstOrDefault(f => f.Id == floorId.Value);
-                if (selectedFloor == null || selectedFloor.BuildingId != selectedBuilding!.Id)
-                {
-                    selectedFloor = availableFloors.FirstOrDefault();
-                }
-            }
-            else
-            {
-                selectedFloor = availableFloors.FirstOrDefault();
-            }
-            ViewBag.Buildings = allBuildings;
-            ViewBag.SelectedBuilding = selectedBuilding;
-            ViewBag.SelectedFloor = selectedFloor;
-            return View();
+                buildings = allBuildings,
+                selectedBuilding,
+                selectedFloor = selectedFloor != null ? MapFloor((Floor)selectedFloor) : null
+            });
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpGet]
         public IActionResult WorkplaceAdd()
         {
@@ -153,7 +91,7 @@ namespace davproj.Controllers
             ViewData["FormAction"] = "WorkplaceAdd";
             return PartialView("Workplace");
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public IActionResult WorkplaceAdd(Workplace workplace)
         {
@@ -204,7 +142,7 @@ namespace davproj.Controllers
             ViewData["FormAction"] = "WorkplaceAdd";
             return PartialView("Workplace", workplace);
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpGet]
         public ActionResult WorkplaceEdit(int? id)
         {
@@ -233,7 +171,7 @@ namespace davproj.Controllers
             }
             return NotFound();
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public IActionResult WorkplaceEdit(Workplace workplace)
         {
@@ -284,7 +222,7 @@ namespace davproj.Controllers
             ViewData["FormAction"] = "WorkplaceEdit";
             return PartialView("Workplace", workplace);
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpPost]
         public ActionResult WorkplaceDelete(int id)
         {
@@ -319,7 +257,7 @@ namespace davproj.Controllers
             _db.SaveChanges();
             return Ok();
         }
-        [Authorize(Roles = "IT_Full")]
+
         [HttpGet]
         public async Task<IActionResult> PcDetails(int id)
         {
@@ -331,6 +269,123 @@ namespace davproj.Controllers
                 return NotFound();
             }
             return PartialView("_HardwareDetails", PC);
+        }
+
+        private object MapBuilding(Building b)
+        {
+            return new
+            {
+                b.Id,
+                b.Name,
+                Location = b.Location == null ? null : new { b.Location.Id, b.Location.Name },
+                Floors = b.Floors?.Select(f => MapFloor(f)).ToList()
+            };
+        }
+
+        private object MapFloor(Floor f)
+        {
+            return new
+            {
+                f.Id,
+                f.FloorNum,
+                Offices = f.Offices?.Select(o => MapOffice(o)).ToList()
+            };
+        }
+
+        private object MapOffice(Office o)
+        {
+            return new
+            {
+                o.Id,
+                o.Name,
+                Workplaces = o.Workplaces?.Select(w => MapWorkplace(w)).ToList()
+            };
+        }
+
+        private object MapWorkplace(Workplace w)
+        {
+            return new
+            {
+                w.Id,
+                w.Name,
+                w.Print,
+                User = w.User == null ? null : new
+                {
+                    w.User.Id,
+                    FullName = w.User.FullName,
+                    w.User.Position,
+                    ADUser = w.User.ADUser == null ? null : new { w.User.ADUser.Cn }
+                },
+                PC = w.PC == null ? null : new
+                {
+                    w.PC.Id,
+                    w.PC.Hostname,
+                    w.PC.IP,
+                    w.PC.Domain,
+                    w.PC.Think,
+                    CurrentHardwareInfo = w.PC.CurrentHardwareInfo == null ? null : new
+                    {
+                        w.PC.CurrentHardwareInfo.Id,
+                        w.PC.CurrentHardwareInfo.ComputerName,
+                        w.PC.CurrentHardwareInfo.ProcessorName,
+                        w.PC.CurrentHardwareInfo.MonitorInfo,
+                        w.PC.CurrentHardwareInfo.TotalMemoryGB,
+                        w.PC.CurrentHardwareInfo.VideoCard,
+                        w.PC.CurrentHardwareInfo.OSVersion,
+                        w.PC.CurrentHardwareInfo.DiskInfo,
+                        w.PC.CurrentHardwareInfo.DiskType,
+                        w.PC.CurrentHardwareInfo.SerialNumber,
+                        w.PC.CurrentHardwareInfo.TotalRamSlots,
+                        w.PC.CurrentHardwareInfo.UsedRamSlots,
+                        w.PC.CurrentHardwareInfo.RamType,
+                        w.PC.CurrentHardwareInfo.RamManufacturer,
+                        w.PC.CurrentHardwareInfo.IsDomainJoined,
+                        w.PC.CurrentHardwareInfo.IpAddress,
+                        w.PC.CurrentHardwareInfo.CollectedAtUtc,
+                        w.PC.CurrentHardwareInfo.MotherboardModel,
+                        w.PC.CurrentHardwareInfo.CurrentUserName,
+                        w.PC.CurrentHardwareInfo.RamSpeed,
+                        w.PC.CurrentHardwareInfo.DiskHealth,
+                        w.PC.CurrentHardwareInfo.Antivirus,
+                        w.PC.CurrentHardwareInfo.Uptime,
+                        SoftwareList = w.PC.CurrentHardwareInfo.SoftwareList,
+                        UsbDevices = w.PC.CurrentHardwareInfo.UsbDevices,
+                        Printers = w.PC.CurrentHardwareInfo.Printers,
+                        OpenPorts = w.PC.CurrentHardwareInfo.OpenPorts,
+                        w.PC.CurrentHardwareInfo.PendingUpdatesCount,
+                        w.PC.CurrentHardwareInfo.LastUpdateDate
+                    }
+                },
+                Phone = w.Phone == null ? null : new
+                {
+                    w.Phone.Id,
+                    w.Phone.Number,
+                    w.Phone.Model,
+                    w.Phone.Ip,
+                    w.Phone.Handset,
+                    w.Phone.NameInBase
+                },
+                Printer = w.Printer == null ? null : new
+                {
+                    w.Printer.Id,
+                    w.Printer.PrinterName,
+                    w.Printer.IP,
+                    w.Printer.HostName,
+                    w.Printer.PrintCount,
+                    w.Printer.ScanCount,
+                    w.Printer.LastUpdateSNMP,
+                    w.Printer.LastFuserRepair,
+                    PrinterModel = w.Printer.PrinterModel == null ? null : new
+                    {
+                        w.Printer.PrinterModel.Name,
+                        Cartridge = w.Printer.PrinterModel.Cartridge == null ? null : new
+                        {
+                            w.Printer.PrinterModel.Cartridge.Model,
+                            Manufactor = w.Printer.PrinterModel.Cartridge.Manufactor?.Name
+                        }
+                    }
+                }
+            };
         }
     }
 }
