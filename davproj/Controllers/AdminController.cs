@@ -9,7 +9,7 @@ using System.Collections;
 namespace davproj.Controllers
 {
     [Route("api/[controller]")]
-    [ServiceFilter(typeof(ApiKeyAuthFilter))]
+    [Authorize(Roles = "IT_Full")]
     public class AdminController : Controller
     {
         private readonly DBContext _db;
