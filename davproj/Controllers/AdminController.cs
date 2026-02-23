@@ -8,6 +8,7 @@ using System.Collections;
 
 namespace davproj.Controllers
 {
+    [Route("api/[controller]")]
     [ServiceFilter(typeof(ApiKeyAuthFilter))]
     public class AdminController : Controller
     {
@@ -16,31 +17,11 @@ namespace davproj.Controllers
         {
             _db = db;
         }
-        public IActionResult ManageDatabase()
-        {
-            var viewModel = new ManageDBViewModel
-            {
-                ADUsers = [.. _db.ADUsers],
-                Buildings = [.. _db.Buildings],
-                Cartridges = [.. _db.Cartridges],
-                Floors = [.. _db.Floors],
-                Locations = [.. _db.Locations],
-                Manufactors = [.. _db.Manufactors],
-                Offices = [.. _db.Offices],
-                PCs = [.. _db.PCs],
-                Phones = [.. _db.Phones],
-                PrinterModels = [.. _db.PrinterModels],
-                Workplaces = [.. _db.Workplaces],
-                Users = [.. _db.Users],
-                Printers = [.. _db.Printers],
-                HardwareInfo = [.. _db.HardwareInfo]
-            };
-            return View(viewModel);
-        }
+
+        [HttpGet("GetTableData")]
         public IActionResult GetTableData(string tableName)
         {
             IEnumerable? dataList = null;
-            string viewName = "_DynamicTablePartial";
             switch (tableName)
             {
                 case "ADUsers":
@@ -125,7 +106,7 @@ namespace davproj.Controllers
             {
                 return NotFound($"Таблица '{tableName}' не найдена или не обрабатывается.");
             }
-            return PartialView(viewName, dataList);
+            return Ok(dataList); // JSON
         }
     }
 }
