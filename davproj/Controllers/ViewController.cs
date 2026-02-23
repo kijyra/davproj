@@ -1,12 +1,12 @@
-﻿using davproj.Models;
+﻿using davproj.Filters;
+using davproj.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
-using System.Net.Sockets;
 
 namespace davproj.Controllers
 {
+    [Route("api/[controller]")]
     [Authorize(Roles = "IT_Full")]
     public class ViewController : Controller
     {
@@ -15,7 +15,9 @@ namespace davproj.Controllers
         {
             _db = db;
         }
-        [HttpGet("api/view/data")]
+
+        // GET: api/view/data?buildingId=...&floorId=...
+        [HttpGet("data")]
         public IActionResult Data(int? buildingId, int? floorId)
         {
             var allBuildings = _db.Buildings
@@ -72,203 +74,288 @@ namespace davproj.Controllers
             });
         }
 
-        [HttpGet]
-        public IActionResult WorkplaceAdd()
+        // GET: api/view/workplace/add – возвращает справочники для формы создания рабочего места
+        [HttpGet("workplace/add")]
+        public IActionResult GetWorkplaceAddData()
         {
-            ViewData["offices"] = _db.Offices
+            var offices = _db.Offices
                 .Include(o => o.Floor)
                     .ThenInclude(f => f!.Building)
                     .ThenInclude(b => b!.Location)
+                .Select(o => new
+                {
+                    o.Id,
+                    Title = o.FullTitle,
+                    o.FloorId,
+                    FloorNumber = o.Floor != null ? o.Floor.FloorNum : null,
+                    BuildingName = o.Floor != null && o.Floor.Building != null ? o.Floor.Building.Name : null,
+                    LocationName = o.Floor != null && o.Floor.Building != null && o.Floor.Building.Location != null ? o.Floor.Building.Location.Name : null
+                })
                 .ToList();
-            ViewData["users"] = _db.Users.ToList();
-            ViewData["pcs"] = _db.PCs.ToList();
-            ViewData["phones"] = _db.Phones.ToList();
-            ViewData["printers"] = _db.Printers
+
+            var users = _db.Users
+                .Select(u => new { u.Id, FullName = u.FullName })
+                .ToList();
+
+            var pcs = _db.PCs
+                .Select(p => new { p.Id, Title = p.FullName })
+                .ToList();
+
+            var phones = _db.Phones
+                .Select(p => new { p.Id, Title = p.Number + " (" + p.Model + ")" })
+                .ToList();
+
+            var printers = _db.Printers
                 .Include(p => p.PrinterModel)
                     .ThenInclude(pm => pm!.Cartridge)
                     .ThenInclude(c => c.Manufactor)
+                .Select(p => new
+                {
+                    p.Id,
+                    Title = p.PrinterName + " (" + (p.PrinterModel != null ? p.PrinterModel.Name : "без модели") + ")",
+                    p.IP,
+                    p.HostName,
+                    PrinterModel = p.PrinterModel != null ? new
+                    {
+                        p.PrinterModel.Name,
+                        Cartridge = p.PrinterModel.Cartridge != null ? new
+                        {
+                            p.PrinterModel.Cartridge.Model,
+                            Manufactor = p.PrinterModel.Cartridge.Manufactor != null ? p.PrinterModel.Cartridge.Manufactor.Name : null
+                        } : null
+                    } : null
+                })
                 .ToList();
-            ViewData["FormAction"] = "WorkplaceAdd";
-            return PartialView("Workplace");
+
+            return Ok(new
+            {
+                offices,
+                users,
+                pcs,
+                phones,
+                printers,
+                formAction = "add"
+            });
         }
 
-        [HttpPost]
-        public IActionResult WorkplaceAdd(Workplace workplace)
+        // POST: api/view/workplace/add – создание рабочего места
+        [HttpPost("workplace/add")]
+        public IActionResult WorkplaceAdd([FromBody] Workplace workplace)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var printer = _db.Printers.Find(workplace.PrinterId);
-                var office = _db.Offices.Find(workplace.OfficeId);
-                var user = _db.Users.Find(workplace.UserId);
-                var pc = _db.PCs.Find(workplace.PCId);
-                var phone = _db.Phones.Find(workplace.PhoneId);
-                if (printer != null)
-                {
-                    workplace.Printer = printer;
-                }
-                if (office != null)
-                {
-                    workplace.Office = office;
-                }
-                if (user != null)
-                {
-                    workplace.User = user;
-                }
-                if (pc != null)
-                {
-                    workplace.PC = pc;
-                }
-                if (phone != null)
-                {
-                    workplace.Phone = phone;
-                }
-                _db.Workplaces.Add(workplace);
-                _db.SaveChanges();
-                return Json(new { success = true });
+                return BadRequest(ModelState);
             }
-            ViewData["offices"] = _db.Offices
-                .Include(o => o.Floor)
-                    .ThenInclude(f => f!.Building)
-                        .ThenInclude(b => b!.Location)
-                .ToList();
-            ViewData["users"] = _db.Users.ToList();
-            ViewData["pcs"] = _db.PCs.ToList();
-            ViewData["phones"] = _db.Phones.ToList();
-            ViewData["printers"] = _db.Printers
-                .Include(p => p.PrinterModel)
-                    .ThenInclude(pm => pm!.Cartridge)
-                    .ThenInclude(c => c.Manufactor)
-                .ToList();
-            ViewData["FormAction"] = "WorkplaceAdd";
-            return PartialView("Workplace", workplace);
+
+            if (workplace.PrinterId.HasValue)
+                workplace.Printer = _db.Printers.Find(workplace.PrinterId.Value);
+            if (workplace.OfficeId.HasValue)
+                workplace.Office = _db.Offices.Find(workplace.OfficeId.Value);
+            if (workplace.UserId.HasValue)
+                workplace.User = _db.Users.Find(workplace.UserId.Value);
+            if (workplace.PCId.HasValue)
+                workplace.PC = _db.PCs.Find(workplace.PCId.Value);
+            if (workplace.PhoneId.HasValue)
+                workplace.Phone = _db.Phones.Find(workplace.PhoneId.Value);
+
+            _db.Workplaces.Add(workplace);
+            _db.SaveChanges();
+
+            return Ok(new { success = true, workplaceId = workplace.Id });
         }
 
-        [HttpGet]
-        public ActionResult WorkplaceEdit(int? id)
+        // GET: api/view/workplace/edit/{id} – возвращает данные для редактирования рабочего места
+        [HttpGet("workplace/edit/{id}")]
+        public IActionResult GetWorkplaceEditData(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-            Workplace? workplace = _db.Workplaces.Find(id);
-            if (workplace != null)
-            {
-                ViewData["offices"] = _db.Offices
-                    .Include(o => o.Floor)
-                        .ThenInclude(f => f!.Building)
-                        .ThenInclude(b => b!.Location)
-                    .ToList();
-                ViewData["users"] = _db.Users.ToList();
-                ViewData["pcs"] = _db.PCs.ToList();
-                ViewData["phones"] = _db.Phones.ToList();
-                ViewData["printers"] = _db.Printers
-                    .Include(p => p.PrinterModel)
-                        .ThenInclude(pm => pm!.Cartridge)
-                        .ThenInclude(c => c.Manufactor)
-                    .ToList();
-                ViewData["FormAction"] = "WorkplaceEdit";
-                return PartialView("Workplace", workplace);
-            }
-            return NotFound();
-        }
-
-        [HttpPost]
-        public IActionResult WorkplaceEdit(Workplace workplace)
-        {
-            if (ModelState.IsValid)
-            {
-                var printer = _db.Printers.Find(workplace.PrinterId);
-                var office = _db.Offices.Find(workplace.OfficeId);
-                var user = _db.Users.Find(workplace.UserId);
-                var pc = _db.PCs.Find(workplace.PCId);
-                var phone = _db.Phones.Find(workplace.PhoneId);
-                if (printer != null)
-                {
-                    workplace.Printer = printer;
-                }
-                if (office != null)
-                {
-                    workplace.Office = office;
-                }
-                if (user != null)
-                {
-                    workplace.User = user;
-                }
-                if (pc != null)
-                {
-                    workplace.PC = pc;
-                }
-                if (phone != null)
-                {
-                    workplace.Phone = phone;
-                }
-                _db.Entry(workplace).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _db.SaveChanges();
-                return Json(new { success = true });
-            }
-            ViewData["offices"] = _db.Offices
-                .Include(o => o.Floor)
-                    .ThenInclude(f => f!.Building)
-                        .ThenInclude(b => b!.Location)
-                .ToList();
-            ViewData["users"] = _db.Users.ToList();
-            ViewData["pcs"] = _db.PCs.ToList();
-            ViewData["phones"] = _db.Phones.ToList();
-            ViewData["printers"] = _db.Printers
-                .Include(p => p.PrinterModel)
-                    .ThenInclude(pm => pm!.Cartridge)
-                    .ThenInclude(c => c.Manufactor)
-                .ToList();
-            ViewData["FormAction"] = "WorkplaceEdit";
-            return PartialView("Workplace", workplace);
-        }
-
-        [HttpPost]
-        public ActionResult WorkplaceDelete(int id)
-        {
-            if (id == 0) { return NotFound(); }
             var workplace = _db.Workplaces
-                    .Include(w => w.Phone)
-                    .Include(w => w.Printer)
-                    .Include(w => w.User)
-                    .Include(w => w.PC)
-                    .FirstOrDefault(w => w.Id == id);
-            if (workplace != null)
+                .Include(w => w.Office)
+                    .ThenInclude(o => o!.Floor)
+                        .ThenInclude(f => f!.Building)
+                            .ThenInclude(b => b!.Location)
+                .Include(w => w.User)
+                .Include(w => w.PC)
+                .Include(w => w.Phone)
+                .Include(w => w.Printer)
+                    .ThenInclude(p => p!.PrinterModel)
+                        .ThenInclude(pm => pm!.Cartridge)
+                            .ThenInclude(c => c!.Manufactor)
+                .FirstOrDefault(w => w.Id == id);
+
+            if (workplace == null)
+                return NotFound();
+
+            var offices = _db.Offices
+                .Include(o => o.Floor)
+                    .ThenInclude(f => f!.Building)
+                    .ThenInclude(b => b!.Location)
+                .Select(o => new
+                {
+                    o.Id,
+                    Title = o.FullTitle,
+                    o.FloorId,
+                    FloorNumber = o.Floor != null ? o.Floor.FloorNum : null,
+                    BuildingName = o.Floor != null && o.Floor.Building != null ? o.Floor.Building.Name : null,
+                    LocationName = o.Floor != null && o.Floor.Building != null && o.Floor.Building.Location != null ? o.Floor.Building.Location.Name : null
+                })
+                .ToList();
+
+            var users = _db.Users.Select(u => new { u.Id, FullName = u.FullName }).ToList();
+            var pcs = _db.PCs.Select(p => new { p.Id, Title = p.FullName }).ToList();
+            var phones = _db.Phones.Select(p => new { p.Id, Title = p.Number + " (" + p.Model + ")" }).ToList();
+            var printers = _db.Printers
+                .Include(p => p.PrinterModel)
+                    .ThenInclude(pm => pm!.Cartridge)
+                    .ThenInclude(c => c.Manufactor)
+                .Select(p => new
+                {
+                    p.Id,
+                    Title = p.PrinterName + " (" + (p.PrinterModel != null ? p.PrinterModel.Name : "без модели") + ")",
+                    p.IP,
+                    p.HostName,
+                    PrinterModel = p.PrinterModel != null ? new
+                    {
+                        p.PrinterModel.Name,
+                        Cartridge = p.PrinterModel.Cartridge != null ? new
+                        {
+                            p.PrinterModel.Cartridge.Model,
+                            Manufactor = p.PrinterModel.Cartridge.Manufactor != null ? p.PrinterModel.Cartridge.Manufactor.Name : null
+                        } : null
+                    } : null
+                })
+                .ToList();
+
+            return Ok(new
             {
-                if (workplace.Phone != null)
+                workplace = new
                 {
-                    workplace.Phone = null;
-                }
-                if (workplace.Printer != null)
-                {
-                    workplace.Printer = null;
-                }
-                if (workplace.User != null)
-                {
-                    workplace.User = null; 
-                }
-                if (workplace.PC != null)
-                {
-                    workplace.PC = null;
-                }
-            }
-            if (workplace == null) { return NotFound(); }
+                    workplace.Id,
+                    workplace.Name,
+                    workplace.Print,
+                    workplace.OfficeId,
+                    workplace.UserId,
+                    workplace.PCId,
+                    workplace.PhoneId,
+                    workplace.PrinterId
+                },
+                offices,
+                users,
+                pcs,
+                phones,
+                printers,
+                formAction = "edit"
+            });
+        }
+
+        // POST: api/view/workplace/edit – обновление рабочего места
+        [HttpPost("workplace/edit")]
+        public IActionResult WorkplaceEdit([FromBody] Workplace workplace)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var existing = _db.Workplaces
+                .Include(w => w.Printer)
+                .Include(w => w.Office)
+                .Include(w => w.User)
+                .Include(w => w.PC)
+                .Include(w => w.Phone)
+                .FirstOrDefault(w => w.Id == workplace.Id);
+
+            if (existing == null)
+                return NotFound();
+
+            existing.Name = workplace.Name;
+            existing.Print = workplace.Print;
+            existing.OfficeId = workplace.OfficeId;
+            existing.UserId = workplace.UserId;
+            existing.PCId = workplace.PCId;
+            existing.PhoneId = workplace.PhoneId;
+            existing.PrinterId = workplace.PrinterId;
+
+            _db.Entry(existing).State = EntityState.Modified;
+            _db.SaveChanges();
+
+            return Ok(new { success = true });
+        }
+
+        // POST: api/view/workplace/delete/{id}
+        [HttpPost("workplace/delete/{id}")]
+        public IActionResult WorkplaceDelete(int id)
+        {
+            var workplace = _db.Workplaces
+                .Include(w => w.Phone)
+                .Include(w => w.Printer)
+                .Include(w => w.User)
+                .Include(w => w.PC)
+                .FirstOrDefault(w => w.Id == id);
+
+            if (workplace == null)
+                return NotFound();
+
+            workplace.Phone = null;
+            workplace.Printer = null;
+            workplace.User = null;
+            workplace.PC = null;
+            workplace.Office = null;
+
             _db.Workplaces.Remove(workplace);
             _db.SaveChanges();
-            return Ok();
+
+            return Ok(new { success = true });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> PcDetails(int id)
+        // GET: api/view/pc/details/{id}
+        [HttpGet("pc/details/{id}")]
+        public IActionResult PcDetails(int id)
         {
-            var PC = _db.PCs
+            var pc = _db.PCs
                 .Include(p => p.CurrentHardwareInfo)
                 .FirstOrDefault(p => p.Id == id);
-            if (PC == null)
-            {
+
+            if (pc == null)
                 return NotFound();
-            }
-            return PartialView("_HardwareDetails", PC);
+
+            return Ok(new
+            {
+                pc.Id,
+                pc.Hostname,
+                pc.IP,
+                pc.Domain,
+                pc.Think,
+                pc.Anydesk,
+                HardwareInfo = pc.CurrentHardwareInfo != null ? new
+                {
+                    pc.CurrentHardwareInfo.ComputerName,
+                    pc.CurrentHardwareInfo.ProcessorName,
+                    pc.CurrentHardwareInfo.MonitorInfo,
+                    pc.CurrentHardwareInfo.TotalMemoryGB,
+                    pc.CurrentHardwareInfo.VideoCard,
+                    pc.CurrentHardwareInfo.OSVersion,
+                    pc.CurrentHardwareInfo.DiskInfo,
+                    pc.CurrentHardwareInfo.DiskType,
+                    pc.CurrentHardwareInfo.SerialNumber,
+                    pc.CurrentHardwareInfo.TotalRamSlots,
+                    pc.CurrentHardwareInfo.UsedRamSlots,
+                    pc.CurrentHardwareInfo.RamType,
+                    pc.CurrentHardwareInfo.RamManufacturer,
+                    pc.CurrentHardwareInfo.IsDomainJoined,
+                    pc.CurrentHardwareInfo.IpAddress,
+                    pc.CurrentHardwareInfo.CollectedAtUtc,
+                    pc.CurrentHardwareInfo.MotherboardModel,
+                    pc.CurrentHardwareInfo.CurrentUserName,
+                    pc.CurrentHardwareInfo.RamSpeed,
+                    pc.CurrentHardwareInfo.DiskHealth,
+                    pc.CurrentHardwareInfo.Antivirus,
+                    pc.CurrentHardwareInfo.Uptime,
+                    SoftwareList = pc.CurrentHardwareInfo.SoftwareList,
+                    UsbDevices = pc.CurrentHardwareInfo.UsbDevices,
+                    Printers = pc.CurrentHardwareInfo.Printers,
+                    OpenPorts = pc.CurrentHardwareInfo.OpenPorts,
+                    pc.CurrentHardwareInfo.PendingUpdatesCount,
+                    pc.CurrentHardwareInfo.LastUpdateDate
+                } : null
+            });
         }
 
         private object MapBuilding(Building b)
