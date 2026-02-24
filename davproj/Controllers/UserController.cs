@@ -14,7 +14,18 @@ namespace davproj.Controllers
         {
             _db = db;
         }
-        
+
+        [HttpGet]
+        public IActionResult User()
+        {
+            return Json(_db.Users.ToList());
+        }
+        [HttpGet]
+        public IActionResult ADUser()
+        {
+            return Json(_db.ADUsers.ToList());
+        }
+
         [HttpGet]
         public IActionResult UserAdd()
         {

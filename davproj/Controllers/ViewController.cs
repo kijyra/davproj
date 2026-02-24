@@ -16,6 +16,12 @@ namespace davproj.Controllers
             _db = db;
         }
 
+        [HttpGet]
+        public IActionResult Workplace()
+        {
+            return Json(_db.Workplaces.ToList());
+        }
+
         // GET: api/view/data?buildingId=...&floorId=...
         [HttpGet("data")]
         public IActionResult Data(int? buildingId, int? floorId)
