@@ -85,7 +85,7 @@ namespace davproj.Controllers
             }
         }
 
-        [HttpGet("aduser")]
+        [HttpGet("aduser/list")]
         public ActionResult ADUserUpdate()
         {
             return Json(new { success = true });
