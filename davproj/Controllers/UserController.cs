@@ -6,6 +6,7 @@ using System.DirectoryServices.AccountManagement;
 
 namespace davproj.Controllers
 {
+    [Route("api/[controller]")]
     [Authorize(Roles = "IT_Full")]
     public class UserController : Controller
     {

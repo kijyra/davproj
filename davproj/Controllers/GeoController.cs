@@ -7,6 +7,7 @@ using System.Diagnostics;
 namespace davproj.Controllers
 {
     [Authorize(Roles = "IT_Full")]
+    [Route("api/[controller]")]
     public class GeoController : Controller
     {
         private readonly DBContext _db;
