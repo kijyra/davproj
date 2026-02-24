@@ -31,14 +31,14 @@ public class ReportsController : Controller
             .ToListAsync();
     }
 
-    [HttpGet]
+    [HttpGet("ExportUsb")]
     public async Task<IActionResult> ExportUsb()
     {
         var buildings = await GetBuildingsDataAsync();
         var content = _excelService.GetUsbReport(buildings);
         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "USB.xlsx");
     }
-    [HttpGet]
+    [HttpGet("ExportPrinters")]
     public async Task<IActionResult> ExportPrinters()
     {
         var buildings = await GetBuildingsDataAsync();
@@ -46,14 +46,14 @@ public class ReportsController : Controller
         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Printers.xlsx");
     }
 
-    [HttpGet]
+    [HttpGet("ExportMonitors")]
     public async Task<IActionResult> ExportMonitors()
     {
         var buildings = await GetBuildingsDataAsync();
         var content = _excelService.GetMonitorsReport(buildings);
         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Monitors.xlsx");
     }
-    [HttpGet]
+    [HttpGet("ExportSoftware")]
     public async Task<IActionResult> ExportSoftware()
     {
         var buildings = await GetBuildingsDataAsync();
@@ -61,7 +61,7 @@ public class ReportsController : Controller
         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Software.xlsx");
     }
 
-    [HttpGet]
+    [HttpGet("ExportHardware")]
     public async Task<IActionResult> ExportHardware()
     {
         var buildings = await GetBuildingsDataAsync();
@@ -69,7 +69,7 @@ public class ReportsController : Controller
         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Hardware.xlsx");
     }
 
-    [HttpGet]
+    [HttpGet("ExportFullInventory")]
     public async Task<IActionResult> ExportFullInventory()
     {
         var buildings = await GetBuildingsDataAsync();

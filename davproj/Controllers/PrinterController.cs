@@ -19,7 +19,7 @@ namespace davproj.Controllers
             _db = db;
             _printerService = printerService;
         }
-        [HttpPost]
+        [HttpPost("UpdateCounters")]
         public async Task<ActionResult> UpdateCounters(int id)
         {
             if (id == 0)
@@ -85,7 +85,7 @@ namespace davproj.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("FuserRepair")]
         public async Task<ActionResult> FuserRepair(int id)
         {
             if (id == 0)
@@ -137,14 +137,14 @@ namespace davproj.Controllers
             }
         }
         #region Printer
-             [HttpGet]
+             [HttpGet("Printer")]
             public IActionResult Printer()
             {
                 return Json(_db.Printers.ToList());
             }
 
         
-            [HttpPost]
+            [HttpPost("Printer/Add")]
             public IActionResult PrinterAdd(Printer printer)
             {
                 if (ModelState.IsValid)
@@ -164,7 +164,7 @@ namespace davproj.Controllers
                 return Json(new { success = false, errors });
              }
 
-            [HttpPost]
+            [HttpPost("Printer/Edit")]
             public IActionResult PrinterEdit(Printer printer)
             {
                 if (ModelState.IsValid)
@@ -184,7 +184,7 @@ namespace davproj.Controllers
                     return Json(new { success = false, errors });
             }
 
-            [HttpPost]
+            [HttpPost("Printer/Delete")]
             public ActionResult PrinterDelete(int id)
             {
             try
@@ -211,13 +211,13 @@ namespace davproj.Controllers
         }
         #endregion
         #region Manufactor
-            [HttpGet]
+            [HttpGet("Manufactor")]
             public IActionResult Manufactor()
             {
                 return Json(_db.Manufactors.ToList());
             }
 
-            [HttpPost]
+            [HttpPost("Manufactor/Add")]
             public IActionResult ManufactorAdd(Manufactor manufactor)
             {
                 if (ModelState.IsValid)
@@ -233,7 +233,7 @@ namespace davproj.Controllers
                 return Json(new { success = false, errors });
             }
 
-            [HttpPost]
+            [HttpPost("Manufactor/Edit")]
             public IActionResult ManufactorEdit(Manufactor manufactor)
             {
                 if (ModelState.IsValid)
@@ -249,7 +249,7 @@ namespace davproj.Controllers
                 return Json(new { success = false, errors });
             }
 
-        [HttpPost]
+        [HttpPost("Manufactor/Delete")]
         public ActionResult ManufactorDelete(int id)
         {
             try
@@ -276,13 +276,13 @@ namespace davproj.Controllers
         }
         #endregion
         #region Cartridge
-        [HttpGet]
+        [HttpGet("Cartridge")]
         public IActionResult Cartridge()
         {
             return Json(_db.Cartridges.ToList());
         }
 
-        [HttpPost]
+        [HttpPost("Cartridge/Add")]
         public IActionResult CartridgeAdd(Cartridge cartridge)
         {
             if (ModelState.IsValid)
@@ -298,7 +298,7 @@ namespace davproj.Controllers
             return Json(new { success = false, errors });
         }
 
-        [HttpPost]
+        [HttpPost("Cartridge/Edit")]
         public IActionResult CartridgeEdit(Cartridge cartridge)
         {
             if (ModelState.IsValid)
@@ -314,7 +314,7 @@ namespace davproj.Controllers
             return Json(new { success = false, errors });
         }
 
-        [HttpPost]
+        [HttpPost("Cartridge/Delete")]
         public ActionResult CartridgeDelete(int id)
         {
             try
@@ -341,13 +341,13 @@ namespace davproj.Controllers
         }
         #endregion
         #region PrinterModel
-        [HttpGet]
+        [HttpGet("PrinterModel")]
         public IActionResult PrinterModel()
         {
             return Json(_db.PrinterModels.ToList());
         }
 
-        [HttpPost]
+        [HttpPost("PrinterModel/Add")]
         public IActionResult PrinterModelAdd(PrinterModel printerModel)
         {
             if (!ModelState.IsValid)
@@ -363,7 +363,7 @@ namespace davproj.Controllers
             return Json(new { success = false, errors });
         }
 
-        [HttpPost]
+        [HttpPost("PrinterModel/Edit")]
         public IActionResult PrinterModelEdit(PrinterModel printerModel)
         {
             if (!ModelState.IsValid) 
@@ -379,7 +379,7 @@ namespace davproj.Controllers
             return Json(new { success = false, errors });
         }
 
-        [HttpPost]
+        [HttpPost("PrinterModel/Delete")]
         public ActionResult PrinterModelDelete(int id)
         {
             try

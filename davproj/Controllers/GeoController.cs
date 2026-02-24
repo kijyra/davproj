@@ -18,7 +18,7 @@ namespace davproj.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 
         #region Location
-            [HttpGet]
+            [HttpGet("Location")]
             public IActionResult Location()
             {
                 return Json(_db.Locations.ToList());
@@ -38,7 +38,7 @@ namespace davproj.Controllers
                     .ToList();
                 return Json(new { success = false, errors });
             }
-            [HttpPost]
+            [HttpPost("Location/Edit")]
             public IActionResult LocationEdit(Location location)
             {
                 if (ModelState.IsValid)
@@ -53,7 +53,7 @@ namespace davproj.Controllers
                 .ToList();
             return Json(new { success = false, errors });
             }
-            [HttpPost]
+            [HttpPost("Location/Delete")]
             public ActionResult LocationDelete(int id)
             {
                 if (id is 0) { return NotFound(); }
@@ -73,12 +73,12 @@ namespace davproj.Controllers
             }
         #endregion
         #region Building
-            [HttpGet]
+            [HttpGet("Building")]
             public IActionResult Building()
             {
                 return Json(_db.Buildings.ToList());
             }
-            [HttpPost]
+            [HttpPost("Building/Add")]
             public IActionResult BuildingAdd(Building building)
             {
                 if (ModelState.IsValid)
@@ -93,7 +93,7 @@ namespace davproj.Controllers
                     .ToList();
                 return Json(new { success = false, errors });
             }
-            [HttpPost]
+            [HttpPost("Building/Edit")]
             public IActionResult BuildingEdit(Building building)
             {
                 ViewData["locations"] = _db.Locations.ToList();
@@ -108,7 +108,8 @@ namespace davproj.Controllers
                 .Select(e => e.ErrorMessage)
                 .ToList();
             return Json(new { success = false, errors });
-        }
+            }
+            [HttpPost("Building/Delete")]    
             public ActionResult BuildingDelete(int id)
             {
                 if (id == 0) { return NotFound(); }
@@ -120,12 +121,12 @@ namespace davproj.Controllers
             }
         #endregion
         #region Floor
-            [HttpGet]
+            [HttpGet("Floor")]
             public IActionResult Floor()
             {
                 return Json(_db.Floors.ToList());
             }
-            [HttpPost]
+            [HttpPost("Floor/Add")]
             public IActionResult FloorAdd(Floor floor)
             {
                 if (ModelState.IsValid)
@@ -141,7 +142,7 @@ namespace davproj.Controllers
                 return Json(new { success = false, errors });
             }
            
-            [HttpPost]
+            [HttpPost("Floor/Edit")]
             public IActionResult FloorEdit(Floor floor)
             {
                 if (ModelState.IsValid)
@@ -156,7 +157,7 @@ namespace davproj.Controllers
                     .ToList();
                 return Json(new { success = false, errors });
             }
-            [HttpPost]
+            [HttpPost("Floor/Delete")]
             public ActionResult FloorDelete(int id)
             {
                 if (id == 0) { return NotFound(); }
@@ -168,12 +169,12 @@ namespace davproj.Controllers
             }
         #endregion
         #region Office
-            [HttpGet]
+            [HttpGet("Office")]
             public IActionResult Office()
             {
                 return Json(_db.Offices.ToList());
             }
-            [HttpPost]
+            [HttpPost("Office/Add")]
             public IActionResult OfficeAdd(Office office)
             {
                 if (ModelState.IsValid)
@@ -188,7 +189,7 @@ namespace davproj.Controllers
                     .ToList();
                 return Json(new { success = false, errors });
             }
-            [HttpPost]
+            [HttpPost("Office/Edit")]
             public IActionResult OfficeEdit(Office office)
             {
                 if (ModelState.IsValid)
@@ -203,7 +204,7 @@ namespace davproj.Controllers
                     .ToList();
                 return Json(new { success = false, errors });
         }
-            [HttpPost]
+            [HttpPost("Office/Delete")]
             public ActionResult OfficeDelete(int id)
             {
                 if (id == 0) { return NotFound(); }

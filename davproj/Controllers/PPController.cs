@@ -28,14 +28,12 @@ namespace davproj.Controllers
         }
 
         #region Phone
-
-            [HttpGet]
+            [HttpGet("phone")]
             public IActionResult Phone()
             {
                 return Json(_db.Phones.ToList());
             }
-
-            [HttpPost]
+            [HttpPost("phone/add")]
             public IActionResult PhoneAdd(Phone phone)
             {
                 if (ModelState.IsValid)
@@ -51,7 +49,7 @@ namespace davproj.Controllers
                 return Json(new { success = false, errors });
             }
 
-            [HttpPost]
+            [HttpPost("phone/edit")]
             public IActionResult PhoneEdit(Phone phone)
             {
                 if (ModelState.IsValid)
@@ -67,7 +65,7 @@ namespace davproj.Controllers
                 return Json(new { success = false, errors });
            }
 
-            [HttpPost]
+            [HttpPost("phone/delete")]
             public ActionResult PhoneDelete(int id)
             {
                 if (id is 0) { return NotFound(); }
@@ -79,13 +77,13 @@ namespace davproj.Controllers
             }
         #endregion
         #region PC
-            [HttpGet]
+            [HttpGet("pc")]
             public IActionResult PC()
             {
                 return Json(_db.PCs.ToList());
             }
 
-            [HttpPost]
+            [HttpPost("pc/add")]
             public IActionResult PCAdd(PC pc)
             {
                 if (ModelState.IsValid)
@@ -105,7 +103,7 @@ namespace davproj.Controllers
                 return Json(new { success = false, errors });
             }
 
-            [HttpPost]
+            [HttpPost("pc/edit")]
             public IActionResult PCEdit(PC pc)
             {
                 if (ModelState.IsValid)
@@ -125,7 +123,7 @@ namespace davproj.Controllers
                 return Json(new { success = false, errors });
             }
 
-            [HttpPost]
+            [HttpPost("pc/delete")]
             public ActionResult PCDelete(int id)
             {
                 if (id is 0) { return NotFound(); }

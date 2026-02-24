@@ -16,24 +16,18 @@ namespace davproj.Controllers
             _db = db;
         }
 
-        [HttpGet]
+        [HttpGet("user")]
         public IActionResult User()
         {
             return Json(_db.Users.ToList());
         }
-        [HttpGet]
+        [HttpGet("aduser")]
         public IActionResult ADUser()
         {
             return Json(_db.ADUsers.ToList());
         }
 
-        [HttpGet]
-        public IActionResult UserAdd()
-        {
-            return Json(_db.Users.ToList());
-        }
-
-        [HttpPost]
+        [HttpPost("user/add")]
         public IActionResult UserAdd(User user)
         {
             if (ModelState.IsValid)
@@ -49,7 +43,7 @@ namespace davproj.Controllers
             return Json(new { success = false, errors });
         }
 
-        [HttpPost]
+        [HttpPost("user/edit")]
         public IActionResult UserEdit(User user)
         {
             if (ModelState.IsValid)
@@ -65,7 +59,7 @@ namespace davproj.Controllers
             return Json(new { success = false, errors });
         }
 
-        [HttpPost]
+        [HttpPost("user/delete")]
         public ActionResult UserDelete(int id)
         {
             try
@@ -91,13 +85,13 @@ namespace davproj.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("aduser")]
         public ActionResult ADUserUpdate()
         {
             return Json(new { success = true });
         }
 
-        [HttpPost]
+        [HttpPost("aduser/update")]
         public ActionResult ADUserUpdate(string IdentityName)
         {
             ADUser adUser = new ADUser();
@@ -124,7 +118,7 @@ namespace davproj.Controllers
             return Json(new { success = true });
         }
 
-        [HttpPost]
+        [HttpPost("aduser/delete")]
         public ActionResult ADUserDelete(int id)
         {
             try
