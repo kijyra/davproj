@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Drawing;
 
 [Authorize(Roles = "IT_Full")]
+[Route("api/[controller]")]
 public class ReportsController : Controller
 {
     private readonly DBContext _db;

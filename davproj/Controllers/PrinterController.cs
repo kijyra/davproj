@@ -8,6 +8,7 @@ using System.Net;
 
 namespace davproj.Controllers
 {
+    [Route("api/[controller]")]
     [Authorize(Roles = "IT_Full")]
     public class PrinterController : Controller
     {
