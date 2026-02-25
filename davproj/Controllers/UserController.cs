@@ -1,4 +1,5 @@
 ﻿using davproj.Models;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,13 +17,25 @@ namespace davproj.Controllers
             _db = db;
         }
 
-        [HttpGet("user")]
-        public IActionResult User()
+        [HttpGet("users")]
+        public IActionResult Users()
         {
             return Json(_db.Users.ToList());
         }
-        [HttpGet("aduser")]
-        public IActionResult ADUser()
+        [HttpGet("user/{id}")]
+        public IActionResult User(int id)
+        {
+            var user = _db.Users.FirstOrDefault(x => x.Id == id);
+            return Json(user);
+        }
+        [HttpGet("aduser/{id}")]
+        public IActionResult ADUser(int id)
+        {
+            var aduser = _db.ADUsers.FirstOrDefault(x => x.Id == id);
+            return Json(aduser);
+        }
+        [HttpGet("adusers")]
+        public IActionResult ADUsers()
         {
             return Json(_db.ADUsers.ToList());
         }

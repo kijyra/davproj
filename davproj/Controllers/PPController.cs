@@ -28,12 +28,19 @@ namespace davproj.Controllers
         }
 
         #region Phone
-            [HttpGet("phone")]
-            public IActionResult Phone()
-            {
-                return Json(_db.Phones.ToList());
-            }
-            [HttpPost("phone/add")]
+        [HttpGet("phones")]
+        public IActionResult Phones()
+        {
+            return Json(_db.Phones.ToList());
+        }
+
+        [HttpGet("phone/{id}")]
+        public IActionResult Phone(int id)
+        {
+            return Json(_db.Phones.FirstOrDefault(x => x.Id == id));
+        }
+
+        [HttpPost("phone/add")]
             public IActionResult PhoneAdd(Phone phone)
             {
                 if (ModelState.IsValid)
@@ -77,10 +84,16 @@ namespace davproj.Controllers
             }
         #endregion
         #region PC
-            [HttpGet("pc")]
-            public IActionResult PC()
+            [HttpGet("pcs")]
+            public IActionResult PCs()
             {
                 return Json(_db.PCs.ToList());
+            }
+
+            [HttpGet("pc/{id}")]
+            public IActionResult PC(int id)
+            {
+                return Json(_db.PCs.FirstOrDefault(x => x.Id == id));
             }
 
             [HttpPost("pc/add")]

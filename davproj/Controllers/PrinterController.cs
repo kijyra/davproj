@@ -137,13 +137,19 @@ namespace davproj.Controllers
             }
         }
         #region Printer
-             [HttpGet("Printer")]
-            public IActionResult Printer()
+            [HttpGet("Printers")]
+            public IActionResult Printers()
             {
                 return Json(_db.Printers.ToList());
             }
 
-        
+            [HttpGet("Printer/{id}")]
+            public IActionResult Printer(int id)
+            {
+                var printer = _db.Printers.FirstOrDefault(x => x.Id == id);
+                return Json(printer);
+            }
+
             [HttpPost("Printer/Add")]
             public IActionResult PrinterAdd(Printer printer)
             {
@@ -211,10 +217,16 @@ namespace davproj.Controllers
         }
         #endregion
         #region Manufactor
-            [HttpGet("Manufactor")]
-            public IActionResult Manufactor()
+            [HttpGet("Manufactors")]
+            public IActionResult Manufactors()
             {
                 return Json(_db.Manufactors.ToList());
+            }
+
+            [HttpGet("manufactor/{id}")]
+            public IActionResult Manufactor(int id)
+            { 
+                return Json(_db.Printers.FirstOrDefault(x => x.Id == id));
             }
 
             [HttpPost("Manufactor/Add")]
@@ -276,10 +288,16 @@ namespace davproj.Controllers
         }
         #endregion
         #region Cartridge
-        [HttpGet("Cartridge")]
-        public IActionResult Cartridge()
+        [HttpGet("cartridge")]
+        public IActionResult Cartridges()
         {
             return Json(_db.Cartridges.ToList());
+        }
+
+        [HttpGet("cartridge/{id}")]
+        public IActionResult Cartridge(int id)
+        {
+            return Json(_db.Cartridges.FirstOrDefault(x => x.Id == id));
         }
 
         [HttpPost("Cartridge/Add")]
@@ -341,10 +359,16 @@ namespace davproj.Controllers
         }
         #endregion
         #region PrinterModel
-        [HttpGet("PrinterModel")]
-        public IActionResult PrinterModel()
+        [HttpGet("printermodel")]
+        public IActionResult PrinterModels()
         {
             return Json(_db.PrinterModels.ToList());
+        }
+
+        [HttpGet("printermodel/{id}")]
+        public IActionResult PrinterModel(int id)
+        {
+            return Json(_db.PrinterModels.FirstOrDefault(x => x.Id == id));
         }
 
         [HttpPost("PrinterModel/Add")]

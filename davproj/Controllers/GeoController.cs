@@ -18,12 +18,18 @@ namespace davproj.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 
         #region Location
-            [HttpGet("Location")]
-            public IActionResult Location()
-            {
-                return Json(_db.Locations.ToList());
-            }
-            [HttpPost]
+        [HttpGet("locations")]
+        public IActionResult Locations()
+        {
+            return Json(_db.Locations.ToList());
+        }
+
+        [HttpGet("location/{id}")]
+        public IActionResult Location(int id)
+        {
+            return Json(_db.Locations.FirstOrDefault(x => x.Id == id));
+        }
+        [HttpPost]
             public IActionResult LocationAdd(Location location)
             {
                 if (ModelState.IsValid)
@@ -73,12 +79,18 @@ namespace davproj.Controllers
             }
         #endregion
         #region Building
-            [HttpGet("Building")]
-            public IActionResult Building()
-            {
-                return Json(_db.Buildings.ToList());
-            }
-            [HttpPost("Building/Add")]
+        [HttpGet("buildings")]
+        public IActionResult Buildings()
+        {
+            return Json(_db.Buildings.ToList());
+        }
+
+        [HttpGet("building/{id}")]
+        public IActionResult Building(int id)
+        {
+            return Json(_db.Buildings.FirstOrDefault(x => x.Id == id));
+        }
+        [HttpPost("Building/Add")]
             public IActionResult BuildingAdd(Building building)
             {
                 if (ModelState.IsValid)
@@ -121,12 +133,18 @@ namespace davproj.Controllers
             }
         #endregion
         #region Floor
-            [HttpGet("Floor")]
-            public IActionResult Floor()
-            {
-                return Json(_db.Floors.ToList());
-            }
-            [HttpPost("Floor/Add")]
+        [HttpGet("floors")]
+        public IActionResult Floors()
+        {
+            return Json(_db.Floors.ToList());
+        }
+
+        [HttpGet("floor/{id}")]
+        public IActionResult Floor(int id)
+        {
+            return Json(_db.Floors.FirstOrDefault(x => x.Id == id));
+        }
+        [HttpPost("Floor/Add")]
             public IActionResult FloorAdd(Floor floor)
             {
                 if (ModelState.IsValid)
@@ -169,12 +187,18 @@ namespace davproj.Controllers
             }
         #endregion
         #region Office
-            [HttpGet("Office")]
-            public IActionResult Office()
-            {
-                return Json(_db.Offices.ToList());
-            }
-            [HttpPost("Office/Add")]
+        [HttpGet("Offices")]
+        public IActionResult Offices()
+        {
+            return Json(_db.Offices.ToList());
+        }
+
+        [HttpGet("office/{id}")]
+        public IActionResult Office(int id)
+        {
+            return Json(_db.Offices.FirstOrDefault(x => x.Id == id));
+        }
+        [HttpPost("Office/Add")]
             public IActionResult OfficeAdd(Office office)
             {
                 if (ModelState.IsValid)
