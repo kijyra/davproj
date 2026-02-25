@@ -80,6 +80,27 @@ namespace davproj.Controllers
             });
         }
 
+        [HttpGet("workplace/{id}")]
+        public IActionResult GetWorkplace(int id)
+        {
+            var workplace = _db.Workplaces
+                .Include(w => w.User)
+                    .ThenInclude(u => u.ADUser)
+                .Include(w => w.PC)
+                    .ThenInclude(p => p.CurrentHardwareInfo)
+                .Include(w => w.Phone)
+                .Include(w => w.Printer)
+                    .ThenInclude(p => p.PrinterModel)
+                        .ThenInclude(pm => pm.Cartridge)
+                            .ThenInclude(c => c.Manufactor)
+                .FirstOrDefault(w => w.Id == id);
+
+            if (workplace == null)
+                return NotFound();
+
+            return Ok(MapWorkplace(workplace));
+        }
+
         // GET: api/view/workplace/add – возвращает справочники для формы создания рабочего места
         [HttpGet("workplace/add")]
         public IActionResult GetWorkplaceAddData()
