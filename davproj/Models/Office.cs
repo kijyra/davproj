@@ -16,5 +16,6 @@ namespace davproj.Models
         public int? FloorId { get; set; }
         public string FullTitle => $"{Name} —> {Floor?.FloorNum} -> " +
             $"{Floor?.Building?.Name} -> {Floor?.Building?.Location?.Name}";
+        
     }
 }

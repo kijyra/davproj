@@ -190,7 +190,13 @@ namespace davproj.Controllers
         [HttpGet("Offices")]
         public IActionResult Offices()
         {
-            return Json(_db.Offices.ToList());
+            var offices = _db.Offices
+                .Include(o => o.Floor)
+                    .ThenInclude(f => f.Building)
+                        .ThenInclude(b => b.Location)
+                .ToList();
+
+            return Json(offices);
         }
 
         [HttpGet("office/{id}")]

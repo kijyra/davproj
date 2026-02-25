@@ -16,7 +16,7 @@ namespace davproj.Controllers
             _db = db;
         }
 
-        [HttpGet("workplace")]
+        [HttpGet("workplaces")]
         public IActionResult Workplace()
         {
             return Json(_db.Workplaces.ToList());
